@@ -60,6 +60,7 @@ if strcmp(hostname, 'syndrome') || strcmp(hostname, 'zod') || strcmp(hostname, '
         ori_data_path = ['/d/DATD/datd/TMS_ori/data/ori_data/sub' subjID];
     end
 elseif strcmp(hostname, 'tmsubuntu') % Running stimulus code for testing
+    powerMate = 1;
     addpath(genpath('/usr/share/psychtoolbox-3'))
     parameters.isDemoMode = false; %set to true if you want the screen to be transparent
     parameters.TMS = 0; % set to 0 if there is no TMS stimulation
@@ -111,7 +112,7 @@ parameters.powerMate = powerMate;
 % Open TMS Port
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % detect the MagVenture and perform handshake.
-if parameters.TMS > 0
+if parameters.TMS > 1
     s = TMS('Open');
     TMS('Enable', s);
     TMS('Timing', s);
@@ -284,7 +285,7 @@ for block = start_block:end_block
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         delay2StartTime = GetSecs;
 
-        if parameters.TMS
+        if parameters.TMS > 1
             TMS('Train', s); % Train of TMS pulses, set pulse protocol on MagVenture Timing page
         end
 
@@ -323,17 +324,31 @@ for block = start_block:end_block
         
         initOri = rand*180;
         currOri = initOri;
+        if parameters.powerMate == 1
+            [button, dialPosOrig] = PsychPowerMate('Get', parameters.powMate);
+        end
        
         while GetSecs-respStartTime < parameters.respDuration * 0.95
-            [keyIsDown, keyCode] = KbQueueCheck(kbx);
-            respKey = KbName(keyCode);
             
-            if strcmp(respKey, parameters.leftarrow_key)
-                currOri = currOri - parameters.rotStep;
-            elseif strcmp(respKey, parameters.rightarrow_key)
-                currOri = currOri + parameters.rotStep;
-            end
+            if parameters.powerMate == 1
+                [button, dialPos] = PsychPowerMate('Get', parameters.powMate);
+                deltaDial = dialPos - dialPosOrig;
+                currOri = rem(initOri + parameters.rotStep * deltaDial, 180);
+            else
+                % Use keyboard if powerMate is off
+                [keyIsDown, keyCode] = KbQueueCheck(kbx);
+                respKey = KbName(keyCode);
 
+                if strcmp(respKey, parameters.leftarrow_key)
+                    currOri = currOri - parameters.rotStep;
+                elseif strcmp(respKey, parameters.rightarrow_key)
+                    currOri = currOri + parameters.rotStep;
+                end
+            end
+            
+            if currOri < 0 || currOri > 179
+                currOri = currOri+sign(currOri)*(-1)*180;
+            end
             drawTextures(parameters, screen, 'Response', parameters.procolor, tMap, trial, currOri);
             Screen('Flip', screen.win);
         end

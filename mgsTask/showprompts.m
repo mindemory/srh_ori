@@ -5,9 +5,9 @@ if nargin < 4
 end
 switch prompt_name
     case 'WelcomeWindow'
-        if num == 0
+        if num == 1
             text = 'Welcome to the task. This is a no TMS session. \n Press SPACE to continue ...';
-        elseif num == 1
+        else
             text = 'Welcome to the task. This is a TMS session. \n Press SPACE to continue ...';
         end
     case 'BlockExists'
