@@ -1,5 +1,8 @@
-function showprompts(screen, prompt_name, num)
+function showprompts(screen, prompt_name, num, doflip)
 % Created by Mrugank Dake, Curtis Lab, NYU (10/11/2022)
+if nargin < 4
+    doflip = 1;
+end
 switch prompt_name
     case 'WelcomeWindow'
         if num == 0
@@ -15,6 +18,8 @@ switch prompt_name
         text = ['End of block ' num2str(num) '. Please wait ...'];
     case 'ContinueorEsc'
         text = ['End of block ' num2str(num) '. Please take a break. Press SPACE to continue.'];
+    case 'FeedbackErr'
+        text = ['Error = ' num2str(round(num), "%i") 'º'];
     case 'EyeCalibStart'
         text = sprintf('Please press any key and \n keep focused at the central fixation point for 5 seconds');
     case 'EyeCalibEnd'
@@ -28,5 +33,7 @@ fontsize = 30;
 text_color = screen.white;
 Screen('TextSize', screen.win, fontsize);
 DrawFormattedText(screen.win, text, 'center', 'center', text_color);
-Screen('Flip', screen.win);
+if doflip == 1
+    Screen('Flip', screen.win);
+end
 end

@@ -44,4 +44,11 @@ KbQueueCreate(kbx);
 % Response keys of interest
 parameters.space_key = 'space';
 parameters.exit_key = 'ESCAPE';
+parameters.rightarrow_key = 'RightArrow';
+parameters.leftarrow_key = 'LeftArrow';
+
+% Get powerMate key if we are using it
+if parameters.powerMate == 1
+    parameters.powMate = PsychPowerMate('Open');
+end
 end

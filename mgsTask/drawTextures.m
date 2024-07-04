@@ -1,4 +1,4 @@
-function drawTextures(parameters, screen, texture_name, color, tMap, trial)
+function drawTextures(parameters, screen, texture_name, color, tMap, trial, currOri)
 % created by Mrugank (06/15/2022):
 % drawTexture can be called with texture_name to draw either a fixation
 % cross or a stimulus at periphery. color argument is optional. Default
@@ -96,10 +96,9 @@ switch texture_name
         centeredRect = CenterRectOnPointd(baseRect, dotCenter(1), dotCenter(2));
         Screen('FillOval', screen.win, color, centeredRect, maxDiameter);
 
-
     % Drawing Grating
     case 'Grating'
-        stimSize = tMap.stimSize(trial);
+        stimSize = tMap.stimSize;
         ori_target = tMap.targOri(trial);
         ori_nontarget = tMap.nontargOri(trial);
         targX = tMap.targX(trial);
@@ -107,13 +106,43 @@ switch texture_name
         nontargX = tMap.nontargX(trial);
         nontargY = tMap.nontargY(trial);
 
+        % Create grating
+        gratingTex = CreateProceduralSineGrating(screen.win, stimSize, stimSize, [0 0 0 0], stimSize/2, 1);
+        
+        % Render grating
+        Screen('DrawTexture', screen.win, gratingTex, [], ...
+            CenterRectOnPointd([0 0 stimSize stimSize], targX, targY), ori_target, 1, [], ...
+            [255, 255, 255, 255], [], [], [0, parameters.cpd/stimSize, 1, 0]);
+        Screen('DrawTexture', screen.win, gratingTex, [], ...
+            CenterRectOnPointd([0 0 stimSize stimSize], nontargX, nontargY), ori_nontarget, 1, [], ...
+            [255, 255, 255, 255], [], [], [0, parameters.cpd/stimSize, 1, 0]);
+    
+    % Draw Grating for feedback
+    case 'GratingFeedback'
+        stimSize = tMap.stimSize;
+        ori_target = tMap.targOri(trial);
+        targX = tMap.targX(trial);
+        targY = tMap.targY(trial);
 
-        gratingTex = CreateProceduralSineGrating(screen.win, stimSize, stimSize, [0 0 0 0], radius=StimSize);
-%         gratingTex_nontarget = CreateProceduralSineGrating(screen.win, )
+        % Create grating
+        gratingTex = CreateProceduralSineGrating(screen.win, stimSize, stimSize, [0 0 0 0], stimSize/2, 1);
+        
+        % Render grating
         Screen('DrawTexture', screen.win, gratingTex, [], ...
-            CenterRectOnPointd([0 0 stimSize stimSize], targX, targY), ori_target, [], [], ...
-            parameters.procolor, [], [], [0, 10, 1, 0]);
-        Screen('DrawTexture', screen.win, gratingTex, [], ...
-            CenterRectOnPointd([0 0 stimSize stimSize], nontargX, nontargY), ori_nontarget, [], [], ...
-            parameters.procolor, [], [], [0, 10, 1, 0]);
+            CenterRectOnPointd([0 0 stimSize stimSize], targX, targY), ori_target, 1, [], ...
+            [255, 255, 255, 255], [], [], [0, parameters.cpd/stimSize, 1, 0]);
+
+    % Draw Response
+    case 'Response'
+        stimSize = tMap.stimSize * 1.1;
+        targX = tMap.targX(trial);
+        targY = tMap.targY(trial);
+
+        x1 = targX - cosd(currOri) * stimSize / 2;
+        x2 = targX + cosd(currOri) * stimSize / 2;
+        y1 = targY - sind(currOri) * stimSize / 2;
+        y2 = targY + sind(currOri) * stimSize / 2;
+
+        Screen('DrawLine', screen.win, color, x1, y1, x2, y2, 5);
+        
 end

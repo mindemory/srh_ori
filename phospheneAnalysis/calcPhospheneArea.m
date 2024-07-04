@@ -23,7 +23,7 @@ PhosphReport = repmat(PhosphReport, [1, length(LocInds)]);
 parameters = loadParameters(tmsRtnTpy);
 % Not randomizing: Day 1 is always No TMS and day 2 is always TMS, 
 % randomization now happens on the end of the experimenter
-tms_timings = [0, 1, 2, 3]; 
+tms_timings = [1, 2, 3, 4]; 
 VAs = zeros(length(LocInds), 1);
 more_drops = [];
 

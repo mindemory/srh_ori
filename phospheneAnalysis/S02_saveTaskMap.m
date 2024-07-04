@@ -1,5 +1,5 @@
 function S02_saveTaskMap(subjID, session, coilLocInd)
-clearvars -except subjID session coilLocInd anti_type; close all; clc;
+clearvars -except subjID session coilLocInd; close all; clc;
 
 % Choose a session and coilLocInd that needs to be used for a given subject
 %%% Adding all necessary paths
@@ -13,8 +13,14 @@ if ret ~= 0
 end
 hostname = strtrim(hostname);
 
+sessContainer = containers.Map('KeyType', 'int64', 'ValueType', 'char');
+sessContainer(1) = 'notms';
+sessContainer(2) = 'early';
+sessContainer(3) = 'middle';
+sessContainer(4) = 'late';
+
 if strcmp(hostname, 'zod.psych.nyu.edu') || strcmp(hostname, 'zod')
-    master_dir = '/d/DATD/datd/TMS_V3AB/';
+    master_dir = '/d/DATD/datd/TMS_ori/';
 end
 
 phosphene_data_path = [master_dir '/data/phosphene_data/sub' subjID];
@@ -22,9 +28,9 @@ phosphene_data_path = [master_dir '/data/phosphene_data/sub' subjID];
 addpath(genpath(phosphene_data_path));
 
 load([phosphene_data_path '/PhospheneReport_sub' subjID '_sess' session])
-for day = 1:2
-    taskMap = PhosphReport(coilLocInd).taskMap(day, :);
-    saveName_taskMap = [phosphene_data_path '/taskMap_sub' subjID '_day' num2str(day,"%02d")];
+for sess = 1:4
+    taskMap = PhosphReport(coilLocInd).taskMap(sess, :);
+    saveName_taskMap = [phosphene_data_path '/taskMap_sub' subjID '_sess_' sessContainer(sess)];
     save(saveName_taskMap,'taskMap')
 end
 taskMapPractice = PhosphReport(coilLocInd).taskMapPractice;

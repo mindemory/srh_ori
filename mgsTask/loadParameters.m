@@ -3,10 +3,12 @@ function parameters = loadParameters(subjID)
 % program basic settings
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 parameters.eyeTrackerOn = 0;
-parameters.transparency = 0.6; % transparency for debug mode
+parameters.transparency = 0.8; % transparency for debug mode
 parameters.viewingDistance = 55; % viewDist (in cm)
 parameters.waitBeforePulse = 3.00; % seconds
 parameters.apertureSize = 28; % in degrees of visual angle
+parameters.cpd = 7; % cycles per degree for the grating
+parameters.rotStep = 1; % degrees to rotate the response by with each button press
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % study parameters
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

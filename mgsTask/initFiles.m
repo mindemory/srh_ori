@@ -29,10 +29,8 @@ end
 date_time = datestr(now, 'mmddyy_HHMM');
 edfFile = [parameters.subject parameters.block date_time(1:4)];
 matFile = ['matFile_subj' parameters.subject '_block' parameters.block '.mat'];
-eyeErrorFile = ['eyetrackerrorsFile_subj' parameters.subject '_block' parameters.block '.mat'];
 
 parameters.block_dir = block_dir;
 parameters.edfFile = edfFile;
 parameters.matFile = matFile;
-parameters.eyeErrorFile = eyeErrorFile;
 end
