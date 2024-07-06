@@ -20,6 +20,8 @@ switch prompt_name
         text = ['End of block ' num2str(num) '. Please take a break. Press SPACE to continue.'];
     case 'FeedbackErr'
         text = ['Error = ' num2str(round(num), "%i") 'º'];
+    case 'CurrOri'
+        text = ['Current Orientation = ' num2str(round(num), '%i') 'º'];
     case 'EyeCalibStart'
         text = sprintf('Please press any key and \n keep focused at the central fixation point for 5 seconds');
     case 'EyeCalibEnd'

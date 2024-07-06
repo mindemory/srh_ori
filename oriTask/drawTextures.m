@@ -95,42 +95,39 @@ switch texture_name
         maxDiameter = ceil(max(baseRect) * 1.1);
         centeredRect = CenterRectOnPointd(baseRect, dotCenter(1), dotCenter(2));
         Screen('FillOval', screen.win, color, centeredRect, maxDiameter);
-
+        
     % Drawing Grating
     case 'Grating'
         stimSize = tMap.stimSize;
+        boxSize = stimSize * 1.3;
+        segmentSize = boxSize/5;
+        lineWidth = 5;
         ori_target = tMap.targOri(trial);
         ori_nontarget = tMap.nontargOri(trial);
         targX = tMap.targX(trial);
         targY = tMap.targY(trial);
         nontargX = tMap.nontargX(trial);
         nontargY = tMap.nontargY(trial);
-
-        % Create grating
-%         gratingTex = CreateProceduralSineGrating(screen.win, stimSize, stimSize, [0 0 0 0], stimSize/2, 1);
-%         
-%         % Render grating
-%         Screen('DrawTexture', screen.win, gratingTex, [], ...
-%             CenterRectOnPointd([0 0 stimSize stimSize], targX, targY), ori_target, 1, [], ...
-%             [255, 255, 255], [], [], [0, parameters.cpd/stimSize, 1, 0]);
-%         Screen('DrawTexture', screen.win, gratingTex, [], ...
-%             CenterRectOnPointd([0 0 stimSize stimSize], nontargX, nontargY), ori_nontarget, 1, [], ...
-%             [255, 255, 255], [], [], [0, parameters.cpd/stimSize, 1, 0]);
-%         Screen('Flip', screen.win);
         
-        
-        [x_grid, ~] = meshgrid(-stimSize/2:stimSize/2, -stimSize/2:stimSize/2);
-        gratingMat = screen.grey + screen.grey * 1 * cos(2*pi*parameters.cpd/stimSize*x_grid+0);
+        [x_grid, y_grid] = meshgrid(-stimSize/2:stimSize/2, -stimSize/2:stimSize/2);
+        gratingMat = screen.grey + screen.grey * 1 * cos(2*pi*parameters.cpd/stimSize*y_grid+0);
         % Add a circular mask
         [c, r] = meshgrid(1:stimSize+1, 1:stimSize+1);
         circMask = sqrt((c-stimSize/2).^2 + (r-stimSize/2).^2) <= stimSize/2;
         gratingMat = cat(3, gratingMat, 255*circMask);
         gratingTex = Screen('MakeTexture', screen.win, gratingMat);
         Screen('DrawTexture', screen.win, gratingTex, [], ...
-            CenterRectOnPoint([0 0 stimSize stimSize], targX, targY), ori_target);
+            CenterRectOnPoint([0 0 stimSize stimSize], targX, targY), 360-ori_target);
         Screen('DrawTexture', screen.win, gratingTex, [], ...
-            CenterRectOnPoint([0 0 stimSize stimSize], nontargX, nontargY), ori_nontarget);
-    
+            CenterRectOnPoint([0 0 stimSize stimSize], nontargX, nontargY), 360-ori_nontarget);
+%         gratingTex_targ = Screen('MakeTexture', screen.win, gratingMat, 90);
+%         gratingTex_nontarg = Screen('MakeTexture', screen.win, gratingMat, 45);
+%         Screen('DrawTexture', screen.win, gratingTex_targ, [], ...
+%             CenterRectOnPoint([0 0 stimSize stimSize], targX, targY));
+%         Screen('DrawTexture', screen.win, gratingTex_nontarg, [], ...
+%             CenterRectOnPoint([0 0 stimSize stimSize], nontargX, nontargY));
+        DrawAnchors(targX, targY, boxSize, segmentSize, parameters, screen, lineWidth)
+
     % Draw Grating for feedback
     case 'GratingFeedback'
         stimSize = tMap.stimSize;
@@ -138,35 +135,27 @@ switch texture_name
         targX = tMap.targX(trial);
         targY = tMap.targY(trial);
 
-        % Create grating
-        %gratingTex = CreateProceduralSineGrating(screen.win, stimSize, stimSize, [0 0 0 0], stimSize/2, 1);
+        [x_grid, y_grid] = meshgrid(-stimSize/2:stimSize/2, -stimSize/2:stimSize/2);
+        gratingMat = screen.grey + screen.grey * 1 * cos(2*pi*parameters.cpd/stimSize*y_grid+0);
         
-        % Render grating
-        %Screen('DrawTexture', screen.win, gratingTex, [], ...
-        %    CenterRectOnPointd([0 0 stimSize stimSize], targX, targY), ori_target, 1, [], ...
-        %    [255, 255, 255, 255], [], [], [0, parameters.cpd/stimSize, 1, 0]);
-        
-        [x_grid, ~] = meshgrid(-stimSize/2:stimSize/2, -stimSize/2:stimSize/2);
-        gratingMat = screen.grey + screen.grey * 1 * cos(2*pi*parameters.cpd/stimSize*x_grid+0);
         % Add a circular mask
         [c, r] = meshgrid(1:stimSize+1, 1:stimSize+1);
         circMask = sqrt((c-stimSize/2).^2 + (r-stimSize/2).^2) <= stimSize/2;
         gratingMat = cat(3, gratingMat, 255*circMask);
         gratingTex = Screen('MakeTexture', screen.win, gratingMat);
         Screen('DrawTexture', screen.win, gratingTex, [], ...
-            CenterRectOnPoint([0 0 stimSize stimSize], targX, targY), ori_target);
+            CenterRectOnPoint([0 0 stimSize stimSize], targX, targY), 360-ori_target);
 
     % Draw Response
     case 'Response'
-        stimSize = tMap.stimSize * 1.1;
+        stimSize = tMap.stimSize * 1.5;
         targX = tMap.targX(trial);
         targY = tMap.targY(trial);
 
         x1 = targX - cosd(currOri) * stimSize / 2;
         x2 = targX + cosd(currOri) * stimSize / 2;
-        y1 = targY - sind(currOri) * stimSize / 2;
-        y2 = targY + sind(currOri) * stimSize / 2;
-
-        Screen('DrawLine', screen.win, color, x1, y1, x2, y2, 5);
+        y1 = targY + sind(currOri) * stimSize / 2;
+        y2 = targY - sind(currOri) * stimSize / 2;
         
+        Screen('DrawLine', screen.win, color, x1, y1, x2, y2, 5);
 end

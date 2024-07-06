@@ -60,7 +60,7 @@ if strcmp(hostname, 'syndrome') || strcmp(hostname, 'zod') || strcmp(hostname, '
         ori_data_path = ['/d/DATD/datd/TMS_ori/data/ori_data/sub' subjID];
     end
 elseif strcmp(hostname, 'tmsubuntu') % Running stimulus code for testing
-    powerMate = 1;
+%     powerMate = 1;
     addpath(genpath('/usr/share/psychtoolbox-3'))
     parameters.isDemoMode = false; %set to true if you want the screen to be transparent
     parameters.TMS = 0; % set to 0 if there is no TMS stimulation
@@ -119,12 +119,25 @@ if parameters.TMS > 1
     TMS('Amplitude', s, TMSamp);
 end
 
+% Delay duration based on sess
+if sess == 1
+    d1_dur = 2;
+elseif sess == 2 % early TMS
+    d1_dur = 0;
+elseif sess == 3 % middle TMS
+    d1_dur = 2;
+elseif sess == 4 % late TMS
+    d1_dur = 3;
+end
+d2_dur = parameters.delayDuration - d1_dur;
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Start Experiment
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for block = start_block:end_block
     
-    timeReport = struct;
+    timeReport = struct; % Hold time flags
+    respReport = struct; % Hold subject responses
     parameters.block = num2str(block, "%02d");
 
     % Create folders for the block and read taskMap for current block
@@ -268,15 +281,18 @@ for block = start_block:end_block
             Eyelink('command', 'record_status_message "TRIAL %i/%i /delay1"', trial, trialNum);
             Eyelink('Message', 'XDAT %i ', 3);
         end
+        
+        if d1_dur > 0
+            % Draw fixation cross
+            if aperture == 1
+                drawTextures(parameters, screen, 'Aperture');
+            end
+            drawTextures(parameters, screen, 'FixationCross');
 
-        % Draw fixation cross
-        if aperture == 1
-            drawTextures(parameters, screen, 'Aperture');
-        end
-        drawTextures(parameters, screen, 'FixationCross');
-
-        if GetSecs - delay1StartTime < parameters.delay1Duration
-            WaitSecs(parameters.delay1Duration - (GetSecs-delay1StartTime));
+            if GetSecs - delay1StartTime < d1_dur%parameters.delay1Duration
+%                 WaitSecs(parameters.delay1Duration - (GetSecs-delay1StartTime));
+                WaitSecs(d1_dur - (GetSecs-delay1StartTime));
+            end
         end
         timeReport.delay1Duration(trial) = GetSecs - delay1StartTime;
 
@@ -301,8 +317,9 @@ for block = start_block:end_block
         end
         drawTextures(parameters, screen, 'FixationCross');
 
-        if GetSecs - delay2StartTime < parameters.delay2Duration
-            WaitSecs(parameters.delay2Duration - (GetSecs - delay2StartTime));
+        if GetSecs - delay2StartTime < d2_dur %parameters.delay2Duration
+%             WaitSecs(parameters.delay2Duration - (GetSecs - delay2StartTime));
+            WaitSecs(d2_dur - (GetSecs - delay2StartTime));
         end
         timeReport.delay2Duration(trial) = GetSecs - delay2StartTime;
 
@@ -324,8 +341,13 @@ for block = start_block:end_block
         
         initOri = rand*180;
         currOri = initOri;
+        respReport.initOri(trial) = initOri;
+        ori_holder = [];
         if parameters.powerMate == 1
             [button, dialPosOrig] = PsychPowerMate('Get', parameters.powMate);
+        else
+            KbQueueCreate();
+            KbQueueStart();
         end
        
         while GetSecs-respStartTime < parameters.respDuration * 0.95
@@ -336,23 +358,28 @@ for block = start_block:end_block
                 currOri = rem(initOri + parameters.rotStep * deltaDial, 180);
             else
                 % Use keyboard if powerMate is off
-                [keyIsDown, keyCode] = KbQueueCheck(kbx);
-                respKey = KbName(keyCode);
-
-                if strcmp(respKey, parameters.leftarrow_key)
-                    currOri = currOri - parameters.rotStep;
-                elseif strcmp(respKey, parameters.rightarrow_key)
-                    currOri = currOri + parameters.rotStep;
+                [keyIsDown, s, keyCode] = KbCheck; %KbQueueCheck(kbx);
+                if keyIsDown
+                    if keyCode(KbName(parameters.leftarrow_key))
+                        currOri = currOri - parameters.rotStep;
+                    elseif keyCode(KbName(parameters.rightarrow_key))
+                        currOri = currOri + parameters.rotStep;
+                    end
                 end
             end
             
             if currOri < 0 || currOri > 179
                 currOri = currOri+sign(currOri)*(-1)*180;
             end
+            ori_holder = [ori_holder currOri];
             drawTextures(parameters, screen, 'Response', parameters.procolor, tMap, trial, currOri);
             Screen('Flip', screen.win);
+            WaitSecs(0.01);
         end
-
+        
+        respReport.oriArray(trial) = ori_holder; % Save the response vector
+        respReport.finalOri(trial) = currOri; % The final response subject selected
+%         respReport.RT(trial) =  % Figure out a way to get RT
         if GetSecs - respStartTime < parameters.respDuration
             WaitSecs(parameters.respDuration - (GetSecs - respStartTime));
         end
@@ -382,8 +409,7 @@ for block = start_block:end_block
         else
             drawTextures(parameters, screen, 'Response', parameters.procolor, tMap, trial, currOri);
         end
-        showprompts(screen, 'FeedbackErr', errorOri, 0)
-        drawTextures(parameters, screen, 'FixationCross');
+        showprompts(screen, 'FeedbackErr', errorOri, 1)
 
         if GetSecs - feedbackStartTime < parameters.feedbackDuration
             WaitSecs(parameters.feedbackDuration - (GetSecs - feedbackStartTime));
@@ -436,6 +462,7 @@ for block = start_block:end_block
     matFile.parameters = parameters;
     matFile.screen = screen;
     matFile.timeReport = timeReport;
+    matFile.respReport = respReport;
     save([parameters.block_dir filesep parameters.matFile],'matFile')
 
     % check for end of block

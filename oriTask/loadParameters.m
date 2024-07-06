@@ -22,6 +22,7 @@ parameters.anticolor = [255 0 0]; % red
 parameters.cuecolor = [0 255 0]; % green
 parameters.feebackcolor = [0 255 0]; % green
 parameters.fixationSizeDeg = 0.6; % degrees of visual angle
+parameters.boxColor = [0 0 0]; % black
 parameters.fixbreakthresh = 1; % degrees of visual angle
 
 % Adding parameters for stimulus
@@ -36,7 +37,7 @@ parameters.pulseDuration = (parameters.pulseNum-1)/parameters.pulseFrequency; % 
 % timing parameters (in seconds)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 parameters.initDuration = 1;
-parameters.sampleDuration = 0.5;
+parameters.sampleDuration = 0.5; %0.5;
 parameters.delayDuration = 4;
 parameters.delay1Duration = parameters.delayDuration/2;
 parameters.delay2Duration = parameters.delayDuration/2;%-parameters.delay1Duration-parameters.pulseDuration;
