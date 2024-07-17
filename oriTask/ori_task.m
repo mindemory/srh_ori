@@ -89,6 +89,8 @@ end
 addpath(genpath(phosphene_data_path));
 addpath(genpath(ori_data_path));
 
+% Added temporarily
+powerMate = 1;
 % Load taskMap
 if prac_status == 1
     load([phosphene_data_path '/taskMapPractice_sub' subjID])
@@ -222,7 +224,7 @@ for block = start_block:end_block
         if trial == 1 % for first trial, pause for 2 seconds
             WaitSecs(2);
         end
-        trial_start = GetSecs;
+%         trial_start = GetSecs;
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % initial fixation window
@@ -246,7 +248,7 @@ for block = start_block:end_block
         if GetSecs - initStartTime < parameters.initDuration
             WaitSecs(parameters.initDuration - (GetSecs-initStartTime));
         end
-        timeReport.initDuration(trial) = GetSecs-initStartTime;
+        timeReport(trial).initDuration = GetSecs-initStartTime;
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % sample window
@@ -270,7 +272,7 @@ for block = start_block:end_block
         if GetSecs - sampleStartTime < parameters.sampleDuration
             WaitSecs(parameters.sampleDuration - (GetSecs-sampleStartTime));
         end
-        timeReport.sampleDuration(trial) = GetSecs-sampleStartTime;
+        timeReport(trial).sampleDuration = GetSecs-sampleStartTime;
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % Delay1 window
@@ -294,7 +296,7 @@ for block = start_block:end_block
                 WaitSecs(d1_dur - (GetSecs-delay1StartTime));
             end
         end
-        timeReport.delay1Duration(trial) = GetSecs - delay1StartTime;
+        timeReport(trial).delay1Duration = GetSecs - delay1StartTime;
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % Delay2 window
@@ -321,7 +323,7 @@ for block = start_block:end_block
 %             WaitSecs(parameters.delay2Duration - (GetSecs - delay2StartTime));
             WaitSecs(d2_dur - (GetSecs - delay2StartTime));
         end
-        timeReport.delay2Duration(trial) = GetSecs - delay2StartTime;
+        timeReport(trial).delay2Duration = GetSecs - delay2StartTime;
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % Response window
@@ -341,7 +343,7 @@ for block = start_block:end_block
         
         initOri = rand*180;
         currOri = initOri;
-        respReport.initOri(trial) = initOri;
+        respReport(trial).initOri = initOri;
         ori_holder = [];
         if parameters.powerMate == 1
             [button, dialPosOrig] = PsychPowerMate('Get', parameters.powMate);
@@ -355,15 +357,24 @@ for block = start_block:end_block
             if parameters.powerMate == 1
                 [button, dialPos] = PsychPowerMate('Get', parameters.powMate);
                 deltaDial = dialPos - dialPosOrig;
-                currOri = rem(initOri + parameters.rotStep * deltaDial, 180);
+                currOri = rem(initOri - parameters.rotStep * deltaDial, 180);
+                % Check when the subject made the response
+                [keyIsDown, s, keyCode] = KbCheck;
+                if keyIsDown
+                    if keyCode(KbName(parameters.space_key))
+                        respTime = GetSecs - respStartTime;
+                    end
+                end
             else
                 % Use keyboard if powerMate is off
                 [keyIsDown, s, keyCode] = KbCheck; %KbQueueCheck(kbx);
                 if keyIsDown
                     if keyCode(KbName(parameters.leftarrow_key))
-                        currOri = currOri - parameters.rotStep;
-                    elseif keyCode(KbName(parameters.rightarrow_key))
                         currOri = currOri + parameters.rotStep;
+                    elseif keyCode(KbName(parameters.rightarrow_key))
+                        currOri = currOri - parameters.rotStep;
+                    elseif keyCode(KbName(parameters.space_key))
+                        respTime = GetSecs - respStartTime;
                     end
                 end
             end
@@ -377,13 +388,18 @@ for block = start_block:end_block
             WaitSecs(0.01);
         end
         
-        respReport.oriArray(trial) = ori_holder; % Save the response vector
-        respReport.finalOri(trial) = currOri; % The final response subject selected
+        respReport(trial).oriArray = ori_holder; % Save the response vector
+        respReport(trial).finalOri = currOri; % The final response subject selected
+        if ~exist('respTime', 'var')
+            respReport(trial).RT = parameters.respDuration;
+        else
+            respReport(trial).RT = respTime;
+        end
 %         respReport.RT(trial) =  % Figure out a way to get RT
         if GetSecs - respStartTime < parameters.respDuration
             WaitSecs(parameters.respDuration - (GetSecs - respStartTime));
         end
-        timeReport.respDuration(trial) = GetSecs - respStartTime;
+        timeReport(trial).respDuration = GetSecs - respStartTime;
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % Feedback window
@@ -414,7 +430,7 @@ for block = start_block:end_block
         if GetSecs - feedbackStartTime < parameters.feedbackDuration
             WaitSecs(parameters.feedbackDuration - (GetSecs - feedbackStartTime));
         end
-        timeReport.feedbackDuration(trial) = GetSecs-feedbackStartTime;
+        timeReport(trial).feedbackDuration = GetSecs-feedbackStartTime;
 
         if parameters.eyetracker
             Eyelink('Message', 'TRIAL_RESULT  0')
@@ -441,15 +457,16 @@ for block = start_block:end_block
             WaitSecs(ITI(trial) - (GetSecs - itiStartTime));
         end
 
-        timeReport.itiDuration(trial) = GetSecs - itiStartTime;
-        timeReport.trialDuration(trial) = GetSecs-sampleStartTime;
+        timeReport(trial).itiDuration = GetSecs - itiStartTime;
+        timeReport(trial).trialDuration = GetSecs - sampleStartTime;
     end
 
     %% Saving Data and Closing everything
     % stop eyelink and save eyelink data
     showprompts(screen, 'BlockEnd', block)
     Beeper('med',0.5,0.1)
-
+    
+    % Close Eyelink
     if parameters.eyetracker
         Eyelink('StopRecording');
         Eyelink('ReceiveFile', parameters.edfFile);
@@ -478,9 +495,13 @@ for block = start_block:end_block
         continue;
     elseif strcmp(cmndKey, parameters.exit_key)
         % end Teensy handshake
-        if parameters.TMS
+        if parameters.TMS > 1
             TMS('Disable', s);
             TMS('Close', s);
+        end
+        % Close the powerMate if being used
+        if parameters.powMate == 1
+            PsychPowerMate('Close', parameters.powMate)
         end
         showprompts(screen, 'EndExperiment');
         WaitSecs(2);
@@ -491,9 +512,13 @@ for block = start_block:end_block
 end % end of block
 
 % Close TMS Port and End Experiment
-if parameters.TMS
+if parameters.TMS > 1
     TMS('Disable', s);
     TMS('Close', s);
+end
+% Close the powerMate if being used
+if parameters.powMate == 1
+    PsychPowerMate('Close', parameters.powMate)
 end
 showprompts(screen, 'EndExperiment');
 ListenChar(1);

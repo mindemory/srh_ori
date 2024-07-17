@@ -206,37 +206,37 @@ for coilInd = 1:N
 end
 
 %% Visualize Stimulus space
-fig2 = figure();
-fig2.Position = [1000 1000 1000 1000];
-
-for coilInd = 1:N
-    subplot(n1,n2,coilInd);
-    plotGrating(parameters, PhosphReport(coilInd).polyshape_centroid(1), ...
-        PhosphReport(coilInd).polyshape_centroid(2), parameters.stimSize);
-
-%     plot(parameters.xCenter, parameters.yCenter,'+k', 'MarkerSize', 20, 'linewidth', 2);
-    hold on;
-%     pg1 = plot(PhosphReport(coilInd).overlapPolyshape);
-%     pg1.FaceColor = 'k';
-%     pg1.FaceAlpha = 0.5;
-%     plot(PhosphReport(coilInd).StimuliSampleSpace(:,1), ...
-%         PhosphReport(coilInd).StimuliSampleSpace(:,2), '.', 'Color', [0, 0, 1, 1])
-    
-    
-    plot(PhosphReport(coilInd).polyshape_centroid(1), PhosphReport(coilInd).polyshape_centroid(2), 'g*', 'MarkerSize', 2, 'linewidth', 1.5);
-    
-    ax = gca; ax.YDir = 'reverse';
-    ax.FontSize = 16;
-    ax.XAxis.FontSize = 16;
-    ax.YAxis.FontSize = 16;
-    xlim([0 parameters.screenXpixels]);
-    ylim([0 parameters.screenYpixels]);
-    xticks(parameters.screenXpixels * [0 1/4 1/2 3/4 1]);
-    yticks(parameters.screenYpixels * [0 1/4 1/2 3/4 1]);
-    hh1 = sgtitle('Stimuli Sample Space');
-    set(hh1, 'FontSize', 24, 'FontWeight', 'bold');
-    title({['Coil index: ' num2str(coilInd)], ['mean va: ' num2str(round(VAs(coilInd), 4))]}, 'FontSize', 20);pbaspect([1 1 1]);
-end
+% fig2 = figure();
+% fig2.Position = [1000 1000 1000 1000];
+% 
+% for coilInd = 1:N
+%     subplot(n1,n2,coilInd);
+%     plotGrating(parameters, PhosphReport(coilInd).polyshape_centroid(1), ...
+%         PhosphReport(coilInd).polyshape_centroid(2), parameters.stimSize);
+% 
+% %     plot(parameters.xCenter, parameters.yCenter,'+k', 'MarkerSize', 20, 'linewidth', 2);
+%     hold on;
+% %     pg1 = plot(PhosphReport(coilInd).overlapPolyshape);
+% %     pg1.FaceColor = 'k';
+% %     pg1.FaceAlpha = 0.5;
+% %     plot(PhosphReport(coilInd).StimuliSampleSpace(:,1), ...
+% %         PhosphReport(coilInd).StimuliSampleSpace(:,2), '.', 'Color', [0, 0, 1, 1])
+%     
+%     
+%     plot(PhosphReport(coilInd).polyshape_centroid(1), PhosphReport(coilInd).polyshape_centroid(2), 'g*', 'MarkerSize', 2, 'linewidth', 1.5);
+%     
+%     ax = gca; ax.YDir = 'reverse';
+%     ax.FontSize = 16;
+%     ax.XAxis.FontSize = 16;
+%     ax.YAxis.FontSize = 16;
+%     xlim([0 parameters.screenXpixels]);
+%     ylim([0 parameters.screenYpixels]);
+%     xticks(parameters.screenXpixels * [0 1/4 1/2 3/4 1]);
+%     yticks(parameters.screenYpixels * [0 1/4 1/2 3/4 1]);
+%     hh1 = sgtitle('Stimuli Sample Space');
+%     set(hh1, 'FontSize', 24, 'FontWeight', 'bold');
+%     title({['Coil index: ' num2str(coilInd)], ['mean va: ' num2str(round(VAs(coilInd), 4))]}, 'FontSize', 20);pbaspect([1 1 1]);
+% end
 
 %% Save results
 saveName_phosph = [data_dir '/PhospheneReport_sub' subjID '_sess' session];
