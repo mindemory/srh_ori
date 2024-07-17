@@ -49,6 +49,6 @@ parameters.leftarrow_key = 'LeftArrow';
 
 % Get powerMate key if we are using it
 if parameters.powerMate == 1
-    parameters.powMate = PsychPowerMate('Open');
+    parameters.powMate = PsychPowerMateMrugank('Open');
 end
 end

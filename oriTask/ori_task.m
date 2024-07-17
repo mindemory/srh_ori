@@ -346,7 +346,7 @@ for block = start_block:end_block
         respReport(trial).initOri = initOri;
         ori_holder = [];
         if parameters.powerMate == 1
-            [button, dialPosOrig] = PsychPowerMate('Get', parameters.powMate);
+            [button, dialPosOrig] = PsychPowerMateMrugank('Get', parameters.powMate);
         else
             KbQueueCreate();
             KbQueueStart();
@@ -355,7 +355,7 @@ for block = start_block:end_block
         while GetSecs-respStartTime < parameters.respDuration * 0.95
             
             if parameters.powerMate == 1
-                [button, dialPos] = PsychPowerMate('Get', parameters.powMate);
+                [button, dialPos] = PsychPowerMateMrugank('Get', parameters.powMate);
                 deltaDial = dialPos - dialPosOrig;
                 currOri = rem(initOri - parameters.rotStep * deltaDial, 180);
                 % Check when the subject made the response
@@ -501,7 +501,7 @@ for block = start_block:end_block
         end
         % Close the powerMate if being used
         if parameters.powMate == 1
-            PsychPowerMate('Close', parameters.powMate)
+            PsychPowerMateMrugank('Close', parameters.powMate)
         end
         showprompts(screen, 'EndExperiment');
         WaitSecs(2);
@@ -518,7 +518,7 @@ if parameters.TMS > 1
 end
 % Close the powerMate if being used
 if parameters.powMate == 1
-    PsychPowerMate('Close', parameters.powMate)
+    PsychPowerMateMrugank('Close', parameters.powMate)
 end
 showprompts(screen, 'EndExperiment');
 ListenChar(1);
