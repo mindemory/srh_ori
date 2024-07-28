@@ -1,44 +1,57 @@
-function plotGrating(parameters, centerX, centerY, size, sf, ori)
-% Parameters:
-% centerX: X coordiante of the grating center
-% centerY: Y coordiante of the grating center
-% size: Size of the grating in pixels
-% sf: Spatial frequency of the grating
-% ori: Orientation of the grating in degrees
+function plotGrating(parameters, targX, targY, stimSize, cpd, contrast, gaussWidth)
 
-if nargin < 5
-    sf = 1;
-end
-
-if nargin < 6
-    ori =  45; % in degrees
-end
-size_cm = tand(size) * parameters.viewingDistance;
-size_pixx = size_cm / parameters.pixSize;
-
-% Create a meshgrid
-[x, y] = meshgrid(-size_pixx/2:size_pixx/2, -size_pixx/2:size_pixx/2);
-
-% Rotate the grid 
-xRot = x * cos(deg2rad(ori)) - y * sin(deg2rad(ori));
-
-% Create a gray screen
-grayScreen = 0.5 * ones(parameters.screenYpixels, parameters.screenXpixels);
-
-% Determine the position of the grating on the screen
-xStart = max(1, centerX - size_pixx/2);
-xEnd = min(parameters.screenXpixels, centerX + size_pixx/2);
-yStart = max(1, centerY - size_pixx/2);
-yEnd = min(parameters.screenYpixels, centerY + size_pixx/2);
-
-% Make the sinusoidal grating
-grating = sin(2 * pi * sf * xRot);
-
-grayScreen(yStart:yEnd, xStart:xEnd) = grating(1:(yEnd-yStart+1), 1:(xEnd-xStart+1));
-figure();
-imagesc(grayScreen, [0 1]);
-% imagesc(centerX + [-size_pixx/2, size_pixx/2], centerY + [-size_pixx/2, size_pixx/2], grating);
-colormap gray;
-
-
-end
+    if nargin < 4
+        stimSize = parameters.stimSize; % in degrees
+        % Compute stimSize in pixels
+        stimSize = tand(stimSize) * parameters.viewingDistance / parameters.pixSize;
+    
+    end
+    
+    if nargin < 5
+        cpd = 7;
+    end
+    
+    if nargin < 6
+        contrast = 1;
+    end
+    
+    if nargin < 7
+        gaussWidth = 0.65 * (stimSize/4);
+    end
+    
+    gaussOn = 1;
+    % targY = resolution(1) - targY;
+    ori_target = 45;
+    background = 128;
+    % targX = tMap.targX(trial);
+    % targY = tMap.targY(trial);
+    
+    [x_grid, y_grid] = meshgrid(-stimSize/2:stimSize/2, -stimSize/2:stimSize/2);
+    gratingMat =  background * contrast * cos(2*pi*cpd/stimSize*y_grid+0);
+    % Rotate the grating 
+    gratingMat = imrotate(gratingMat, ori_target, 'bilinear', 'crop');
+    % Add a circular mask
+    [c, r] = meshgrid(1:stimSize+1, 1:stimSize+1);
+    circMask = sqrt((c-stimSize/2).^2 + (r-stimSize/2).^2) <= stimSize/2;
+    
+    if gaussOn == 1
+        % Add a gaussian mask
+        [x, y] = meshgrid(linspace(-stimSize/2, stimSize/2, stimSize+1));
+        gaussMask = exp(-(x.^2 + y.^2) / (2 * gaussWidth^2));
+        combinedMask = circMask .* gaussMask;
+        gratingMat = background + gratingMat .* combinedMask;
+    else
+        gratingMat = background + gratingMat .* circMask;
+    end
+    
+    % Embed the grating in a larger matrix
+    fullMat = 128 * ones([parameters.screenXpixels, parameters.screenYpixels]);
+    % res = min(parameters.screenXpixels, parameters.screenYpixels);
+    % fullMat = 128 * ones([res, res]);
+    % fullMat(targY-stimSize/2:targY+stimSize/2, targX-stimSize/2:targX+stimSize/2) = gratingMat;
+    fullMat(targX-stimSize/2:targX+stimSize/2, targY-stimSize/2:targY+stimSize/2) = gratingMat;
+    
+    % Draw the full matrix
+    imshow(fullMat', [0, 255]);
+    end
+    

@@ -1,5 +1,7 @@
 function calcPhospheneArea(subjID, session, data_dir, figures_dir)
 
+% Set random seed
+rng(42, 'twister');
 
 data_path = [data_dir '/tmsRtnTpy_sub' subjID '_sess' session];
 load(data_path);
@@ -71,26 +73,22 @@ for coilInd = LocInds %1:length(LocInds)
             TMScond = tms_timings(sess);
             % Compute taskMaps
             for block = 1:parameters.numBlocks
-                % Holder for orientations of target and nontarget
-                ori_target = randsample(parameters.valOris, parameters.numTrials, true);
-                ori_nontarget = zeros(1, parameters.numTrials);
-                for tr = 1:parameters.numTrials
-                    tmpOris = parameters.valOris;
-                    tmpOris(tmpOris == ori_target(tr)) =  [];
-                    ori_nontarget(tr) = tmpOris(randi(length(tmpOris)));
-                end
-                
-                targIn = repmat([targX, targY], parameters.numTrials/2, 1);
-                nontargIn = repmat([nontargX, nontargY], parameters.numTrials/2, 1);
-                targOut = repmat([nontargX, nontargY], parameters.numTrials/2, 1);
-                nontargOut = repmat([targX, targY], parameters.numTrials/2, 1);
+                % Holder for orientations of target category and actual
+                % target
+                ori_target = repelem(parameters.valOris, parameters.numRepeatsPerBlock);
+                ori_target = ori_target(randperm(length(ori_target')));
 
+                % actual target obtained by shuffling from a unfiorm distribution
+                ori_target_ = arrayfun(@(x) (x-parameters.jitterOris)+(2*parameters.jitterOris*rand()), ori_target); 
+                
+                % Set the location of target and randomly decide if it will
+                % be inside or outside PF on half the trials
+                targIn = repmat([targX, targY], parameters.numTrials/2, 1);
+                targOut = repmat([nontargX, nontargY], parameters.numTrials/2, 1);
                 targSetOrig = [targIn; targOut];
-                nontargSetOrig = [nontargIn; nontargOut];
 
                 trialInds = randperm(parameters.numTrials);
                 targSet = targSetOrig(trialInds', :);
-                nontargSet = nontargSetOrig(trialInds', :);
 
                 % 1 if stimulus is inside TMS VF
                 stimVF = [ones(size(targIn, 1), 1); zeros(size(targOut, 1), 1)];
@@ -99,52 +97,44 @@ for coilInd = LocInds %1:length(LocInds)
                 % Store all the details in PhosphReport
                 PhosphReport(coilInd).taskMap(sess, block).TMScond = TMScond;
                 PhosphReport(coilInd).taskMap(sess, block).stimVF = stimVF;
-                PhosphReport(coilInd).taskMap(sess, block).targOri = ori_target';
-                PhosphReport(coilInd).taskMap(sess, block).nontargOri = ori_nontarget';
+                PhosphReport(coilInd).taskMap(sess, block).targOri = ori_target;
+                PhosphReport(coilInd).taskMap(sess, block).targOri_ = ori_target_;
                 PhosphReport(coilInd).taskMap(sess, block).stimSize = stimSize_px;
                 PhosphReport(coilInd).taskMap(sess, block).targX = targSet(:, 1);
                 PhosphReport(coilInd).taskMap(sess, block).targY = targSet(:, 2);
-                PhosphReport(coilInd).taskMap(sess, block).nontargX = nontargSet(:, 1);
-                PhosphReport(coilInd).taskMap(sess, block).nontargY = nontargSet(:, 2);
             end
         end
 
         % Compute taskMaps for Practice
         for blockPractice = 1:parameters.numBlocksPractice
-            % Holder for orientations of target and nontarget
-            ori_targetPractice = randsample(parameters.valOris, parameters.numTrials, true);
-            ori_nontargetPractice = zeros(1, parameters.numTrials);
-            for tr = 1:parameters.numTrials
-                tmpOrisPractice = parameters.valOris;
-                tmpOrisPractice(tmpOrisPractice == ori_targetPractice(tr)) = [];
-                ori_nontargetPractice(tr) = tmpOrisPractice(randi(length(tmpOrisPractice)));
-            end
+            % Holder for orientations of target category and actual
+            % target
+            ori_targetPractice = repelem(parameters.valOris, parameters.numRepeatsPerBlock);
+            ori_targetPractice = ori_targetPractice(randperm(length(ori_targetPractice')));
 
+            % actual target obtained by shuffling from a unfiorm distribution
+            ori_targetPractice_ = arrayfun(@(x) (x-parameters.jitterOris)+(2*parameters.jitterOris*rand()), ori_targetPractice);
+
+            % Set the location of target and randomly decide if it will
+            % be inside or outside PF on half the trials
             targInPractice = repmat([targX, targY], parameters.numTrials/2, 1);
-            nontargInPractice = repmat([nontargX, nontargY], parameters.numTrials/2, 1);
             targOutPractice = repmat([nontargX, nontargY], parameters.numTrials/2, 1);
-            nontargOutPractice = repmat([targX, targY], parameters.numTrials/2, 1);
-
             targSetOrigPractice = [targInPractice; targOutPractice];
-            nontargSetOrigPractice = [nontargInPractice; nontargOutPractice];
 
             trialIndsPractice = randperm(parameters.numTrials);
             targSetPractice = targSetOrigPractice(trialIndsPractice', :);
-            nontargSetPractice = nontargSetOrigPractice(trialIndsPractice', :);
 
             % 1 if stimulus is inside TMS VF
             stimVFPractice = [ones(size(targInPractice, 1), 1); zeros(size(targOutPractice, 1), 1)];
             stimVFPractice = stimVFPractice(trialIndsPractice);
-            
+
             % Store all the details in PhosphReport
             PhosphReport(coilInd).taskMapPractice(blockPractice).stimVF = stimVFPractice;
-            PhosphReport(coilInd).taskMapPractice(blockPractice).targOri = ori_targetPractice';
-            PhosphReport(coilInd).taskMapPractice(blockPractice).nontargOri = ori_nontargetPractice';
+            PhosphReport(coilInd).taskMapPractice(blockPractice).targOri = ori_targetPractice;
+            PhosphReport(coilInd).taskMapPractice(blockPractice).targOri_ = ori_targetPractice_;
             PhosphReport(coilInd).taskMapPractice(blockPractice).stimSize = stimSize_px;
             PhosphReport(coilInd).taskMapPractice(blockPractice).targX = targSetPractice(:, 1);
             PhosphReport(coilInd).taskMapPractice(blockPractice).targY = targSetPractice(:, 2);
-            PhosphReport(coilInd).taskMapPractice(blockPractice).nontargX = nontargSetPractice(:, 1);
-            PhosphReport(coilInd).taskMapPractice(blockPractice).nontargY = nontargSetPractice(:, 2);
         end
     end
 end
@@ -205,38 +195,30 @@ for coilInd = 1:N
     pbaspect([1 1 1]);
 end
 
-%% Visualize Stimulus space
-% fig2 = figure();
-% fig2.Position = [1000 1000 1000 1000];
-% 
-% for coilInd = 1:N
-%     subplot(n1,n2,coilInd);
-%     plotGrating(parameters, PhosphReport(coilInd).polyshape_centroid(1), ...
-%         PhosphReport(coilInd).polyshape_centroid(2), parameters.stimSize);
-% 
-% %     plot(parameters.xCenter, parameters.yCenter,'+k', 'MarkerSize', 20, 'linewidth', 2);
-%     hold on;
-% %     pg1 = plot(PhosphReport(coilInd).overlapPolyshape);
-% %     pg1.FaceColor = 'k';
-% %     pg1.FaceAlpha = 0.5;
-% %     plot(PhosphReport(coilInd).StimuliSampleSpace(:,1), ...
-% %         PhosphReport(coilInd).StimuliSampleSpace(:,2), '.', 'Color', [0, 0, 1, 1])
-%     
-%     
-%     plot(PhosphReport(coilInd).polyshape_centroid(1), PhosphReport(coilInd).polyshape_centroid(2), 'g*', 'MarkerSize', 2, 'linewidth', 1.5);
-%     
-%     ax = gca; ax.YDir = 'reverse';
-%     ax.FontSize = 16;
-%     ax.XAxis.FontSize = 16;
-%     ax.YAxis.FontSize = 16;
-%     xlim([0 parameters.screenXpixels]);
-%     ylim([0 parameters.screenYpixels]);
-%     xticks(parameters.screenXpixels * [0 1/4 1/2 3/4 1]);
-%     yticks(parameters.screenYpixels * [0 1/4 1/2 3/4 1]);
-%     hh1 = sgtitle('Stimuli Sample Space');
-%     set(hh1, 'FontSize', 24, 'FontWeight', 'bold');
-%     title({['Coil index: ' num2str(coilInd)], ['mean va: ' num2str(round(VAs(coilInd), 4))]}, 'FontSize', 20);pbaspect([1 1 1]);
-% end
+%% Visualize stimulus space as a gabor
+fig2 = figure();
+fig2.Position = [1000 1000 1000 1000];
+
+for coilInd = 1:N
+    subplot(n1,n2,coilInd);
+    plotGrating(parameters, PhosphReport(coilInd).polyshape_centroid(1), ...
+        PhosphReport(coilInd).polyshape_centroid(2));
+
+    hold on;
+    plot(PhosphReport(coilInd).polyshape_centroid(1), PhosphReport(coilInd).polyshape_centroid(2), 'g*', 'MarkerSize', 10, 'linewidth', 1.5);
+    plot(parameters.xCenter, parameters.yCenter,'+k', 'MarkerSize', 10, 'linewidth', 1.5);
+    ax = gca; ax.YDir = 'reverse';
+    ax.FontSize = 16;
+    ax.XAxis.FontSize = 16;
+    ax.YAxis.FontSize = 16;
+    xlim([0 parameters.screenXpixels]);
+    ylim([0 parameters.screenYpixels]);
+    xticks(parameters.screenXpixels * [0 1/4 1/2 3/4 1]);
+    yticks(parameters.screenYpixels * [0 1/4 1/2 3/4 1]);
+    hh1 = sgtitle('Stimuli Sample Space');
+    set(hh1, 'FontSize', 24, 'FontWeight', 'bold');
+    title({['Coil index: ' num2str(coilInd)], ['mean va: ' num2str(round(VAs(coilInd), 4))]}, 'FontSize', 20);pbaspect([1 1 1]);
+end
 
 %% Save results
 saveName_phosph = [data_dir '/PhospheneReport_sub' subjID '_sess' session];
@@ -246,13 +228,13 @@ if ~exist(figures_dir, 'dir')
     mkdir(figures_dir);
 end
 saveName_phosph_fig = [figures_dir '/PhospheneReport_sub' subjID '_sess' session];
-% saveName_samplespace_fig = [figures_dir '/SampleSpace_sub' subjID '_sess' session];
+saveName_samplespace_fig = [figures_dir '/SampleSpace_sub' subjID '_sess' session];
 
 saveas(fig1,saveName_phosph_fig,'fig')
 saveas(fig1,saveName_phosph_fig,'png')
 saveas(fig1,saveName_phosph_fig,'epsc')
-% saveas(fig2,saveName_samplespace_fig,'fig')
-% saveas(fig2,saveName_samplespace_fig,'png')
-% saveas(fig2,saveName_samplespace_fig,'epsc')
+saveas(fig2,saveName_samplespace_fig,'fig')
+saveas(fig2,saveName_samplespace_fig,'png')
+saveas(fig2,saveName_samplespace_fig,'epsc')
 end
 

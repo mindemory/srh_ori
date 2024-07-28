@@ -99,27 +99,31 @@ switch texture_name
     % Drawing Grating
     case 'Grating'
         stimSize = tMap.stimSize;
-        boxSize = stimSize * 1.3;
-        segmentSize = boxSize/5;
-        lineWidth = 5;
+        gaussWidth = 0.8 * stimSize/4;
+        %boxSize = stimSize * 1.3;
+        %segmentSize = boxSize/5;
+        %lineWidth = 5;
         ori_target = tMap.targOri(trial);
-        ori_nontarget = tMap.nontargOri(trial);
+        %ori_nontarget = tMap.nontargOri(trial);
         targX = tMap.targX(trial);
         targY = tMap.targY(trial);
-        nontargX = tMap.nontargX(trial);
-        nontargY = tMap.nontargY(trial);
+        %nontargX = tMap.nontargX(trial);
+        %nontargY = tMap.nontargY(trial);
         if strcmp(computer, 'MACI64')
             [x_grid, y_grid] = meshgrid(-stimSize/2:stimSize/2, -stimSize/2:stimSize/2);
             gratingMat =  screen.grey * 1 * cos(2*pi*parameters.cpd/stimSize*y_grid+0);
             % Add a circular mask
             [c, r] = meshgrid(1:stimSize+1, 1:stimSize+1);
             circMask = sqrt((c-stimSize/2).^2 + (r-stimSize/2).^2) <= stimSize/2;
-            gratingMat = screen.grey + gratingMat .* circMask;
+            [x, y] = meshgrid(linspace(-stimSize/2, stimSize/2, stimSize+1));
+            gaussMask = exp(-(x.^2 + y.^2) / (2 * gaussWidth^2));
+            combinedMask = circMask .* gaussMask;
+            gratingMat = screen.grey + gratingMat .* combinedMask;
             gratingTex = Screen('MakeTexture', screen.win, gratingMat);
             Screen('DrawTexture', screen.win, gratingTex, [], ...
                 CenterRectOnPoint([0 0 stimSize stimSize], targX, targY), 360-ori_target);
-            Screen('DrawTexture', screen.win, gratingTex, [], ...
-                CenterRectOnPoint([0 0 stimSize stimSize], nontargX, nontargY), 360-ori_nontarget);
+%             Screen('DrawTexture', screen.win, gratingTex, [], ...
+%                 CenterRectOnPoint([0 0 stimSize stimSize], nontargX, nontargY), 360-ori_nontarget);
 %             Screen('Flip', screen.win);
         elseif strcmp(computer, 'GLNXA64')
             [x_grid, y_grid] = meshgrid(-stimSize/2:stimSize/2, -stimSize/2:stimSize/2);
@@ -127,12 +131,16 @@ switch texture_name
             % Add a circular mask
             [c, r] = meshgrid(1:stimSize+1, 1:stimSize+1);
             circMask = sqrt((c-stimSize/2).^2 + (r-stimSize/2).^2) <= stimSize/2;
+%             [x, y] = meshgrid(linspace(-stimSize/2, stimSize/2, stimSize+1));
+%             gaussMask = exp(-(x.^2 + y.^2) / (2 * gaussWidth^2));
+%             combinedMask = circMask .* gaussMask;
+%             gratingMat = screen.grey + gratingMat .* combinedMask;
             gratingMat = cat(3, gratingMat, 255*circMask);
             gratingTex = Screen('MakeTexture', screen.win, gratingMat);
             Screen('DrawTexture', screen.win, gratingTex, [], ...
                 CenterRectOnPoint([0 0 stimSize stimSize], targX, targY), 360-ori_target);
-            Screen('DrawTexture', screen.win, gratingTex, [], ...
-                CenterRectOnPoint([0 0 stimSize stimSize], nontargX, nontargY), 360-ori_nontarget);
+%             Screen('DrawTexture', screen.win, gratingTex, [], ...
+%                 CenterRectOnPoint([0 0 stimSize stimSize], nontargX, nontargY), 360-ori_nontarget);
         end
 %         gratingTex_targ = Screen('MakeTexture', screen.win, gratingMat, 90);
 %         gratingTex_nontarg = Screen('MakeTexture', screen.win, gratingMat, 45);
@@ -140,11 +148,12 @@ switch texture_name
 %             CenterRectOnPoint([0 0 stimSize stimSize], targX, targY));
 %         Screen('DrawTexture', screen.win, gratingTex_nontarg, [], ...
 %             CenterRectOnPoint([0 0 stimSize stimSize], nontargX, nontargY));
-        DrawAnchors(targX, targY, boxSize, segmentSize, parameters, screen, lineWidth)
+        %DrawAnchors(targX, targY, boxSize, segmentSize, parameters, screen, lineWidth)
 
     % Draw Grating for feedback
     case 'GratingFeedback'
         stimSize = tMap.stimSize;
+        gaussWidth = 0.8 * stimSize/4;
         ori_target = tMap.targOri(trial);
         targX = tMap.targX(trial);
         targY = tMap.targY(trial);
@@ -156,7 +165,10 @@ switch texture_name
             % Add a circular mask
             [c, r] = meshgrid(1:stimSize+1, 1:stimSize+1);
             circMask = sqrt((c-stimSize/2).^2 + (r-stimSize/2).^2) <= stimSize/2;
-            gratingMat = screen.grey + gratingMat .* circMask;
+            [x, y] = meshgrid(linspace(-stimSize/2, stimSize/2, stimSize+1));
+            gaussMask = exp(-(x.^2 + y.^2) / (2 * gaussWidth^2));
+            combinedMask = circMask .* gaussMask;
+            gratingMat = screen.grey + gratingMat .* combinedMask;
             gratingTex = Screen('MakeTexture', screen.win, gratingMat);
             Screen('DrawTexture', screen.win, gratingTex, [], ...
                 CenterRectOnPoint([0 0 stimSize stimSize], targX, targY), 360-ori_target);
@@ -167,11 +179,17 @@ switch texture_name
             % Add a circular mask
             [c, r] = meshgrid(1:stimSize+1, 1:stimSize+1);
             circMask = sqrt((c-stimSize/2).^2 + (r-stimSize/2).^2) <= stimSize/2;
+%             [x, y] = meshgrid(linspace(-stimSize/2, stimSize/2, stimSize+1));
+%             gaussMask = exp(-(x.^2 + y.^2) / (2 * gaussWidth^2));
+%             combinedMask = circMask .* gaussMask;
+%             gratingMat = screen.grey + gratingMat .* combinedMask;
             gratingMat = cat(3, gratingMat, 255*circMask);
             gratingTex = Screen('MakeTexture', screen.win, gratingMat);
             Screen('DrawTexture', screen.win, gratingTex, [], ...
                 CenterRectOnPoint([0 0 stimSize stimSize], targX, targY), 360-ori_target);
         end
+
+       
     % Draw Response
     case 'Response'
         stimSize = tMap.stimSize * 1.5;

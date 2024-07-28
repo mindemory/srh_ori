@@ -90,7 +90,7 @@ addpath(genpath(phosphene_data_path));
 addpath(genpath(ori_data_path));
 
 % Added temporarily
-powerMate = 1;
+powerMate = 0;
 % Load taskMap
 if prac_status == 1
     load([phosphene_data_path '/taskMapPractice_sub' subjID])
