@@ -152,7 +152,7 @@ if ~isempty(more_drops)
 end
 
 %% Visualize Phosphene maps
-fig1 = figure();
+fig1 = figure('visible', 'off');
 fig1.Position = [50 50 1000 1000];
 N = length(LocInds);
 N1 = [1, 1, 2, 2, 2, 2, 3, 2, 3, 3, 3, 3];
@@ -196,7 +196,7 @@ for coilInd = 1:N
 end
 
 %% Visualize stimulus space as a gabor
-fig2 = figure();
+fig2 = figure('visible', 'off');
 fig2.Position = [1000 1000 1000 1000];
 
 for coilInd = 1:N

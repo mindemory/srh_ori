@@ -22,5 +22,5 @@ parameters.numRepeatsPerBlock = 3;
 parameters.numTrials = length(parameters.valOris) * 2 * parameters.numRepeatsPerBlock; % make sure it is a multiple of 2
 parameters.numBlocks = 10;
 parameters.numBlocksPractice = 10;
-parameters.sessions = 4; % notms, early, middle, late
+parameters.sessions = 4; % 1: notms, 2: early, 3: middle, 4: late
 end
