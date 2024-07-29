@@ -90,61 +90,69 @@ addpath(genpath(ori_data_path));
 % Load taskMap
 if prac_status == 1
     load([phosphene_data_path '/taskMapPractice_sub' subjID])
-    parameters.TMS = 0;
-    parameters.TMScond = 1; % 1 corresponds to No TMS
+%     parameters.TMS = 0;
+%     parameters.TMScond = 1; % 1 corresponds to No TMS
     end_block = length(taskMapPractice);
 else
 %     load([phosphene_data_path '/taskMap_sub' subjID, '_sess_' sessContainer(sess)])
     load([phosphene_data_path '/taskMap_sub' subjID '_day' num2str(day, '%02d')])
-    parameters.TMScond = taskMap(1).TMScond;
-    if parameters.TMScond > 1 % determine if this is a TMS task (for early, middle or late TMS)
-        parameters.TMS = 1;
-    elseif parameters.TMScond == 0
-        parameters.TMS = 0;
-    end
+
     end_block = length(taskMap);
 end
 
-parameters.TMS = 0;
+% parameters.TMS = 0;
 % Initialize screen and peripherals
 screen = initScreen(parameters);
 parameters.powerMate = powerMate;
 [kbx, parameters] = initPeripherals(parameters);
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Open TMS Port
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% detect the MagVenture and perform handshake.
-if parameters.TMS == 1
-    s = TMS('Open');
-    TMS('Enable', s);
-    TMS('Timing', s);
-    TMS('Amplitude', s, TMSamp);
-end
-
-% Delay duration based on TMScond
-if parameters.TMScond == 1
-    d1_dur = 4;
-elseif parameters.TMScond == 2 % early TMS
-    d1_dur = 0;
-elseif parameters.TMScond == 3 % middle TMS
-    d1_dur = 2;
-elseif parameters.TMScond == 4 % late TMS
-    d1_dur = 3;
-end
-d2_dur = parameters.delayDuration - d1_dur;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Start Experiment
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for block = start_block:end_block
+
+    if prac_status == 1
+        parameters.TMS = 0;
+        parameters.TMScond = 1; % 1 corresponds to NoTMS
+    else
+        parameters.TMScond = taskMap(block).TMScond;
+        if parameters.TMScond > 1 % determine if this is a TMS task (for early, middle or late TMS)
+            parameters.TMS = 1;
+        elseif parameters.TMScond == 0
+            parameters.TMS = 0;
+        end
+    end
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Open TMS Port
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % detect the MagVenture and perform handshake.
+    if parameters.TMS == 1
+        s = TMS('Open');
+        TMS('Enable', s);
+        TMS('Timing', s);
+        TMS('Amplitude', s, TMSamp);
+    end
     
+    % Delay duration based on TMScond
+    if parameters.TMScond == 1
+        d1_dur = 4;
+    elseif parameters.TMScond == 2 % early TMS
+        d1_dur = 0;
+    elseif parameters.TMScond == 3 % middle TMS
+        d1_dur = 2;
+    elseif parameters.TMScond == 4 % late TMS
+        d1_dur = 3;
+    end
+    d2_dur = parameters.delayDuration - d1_dur;
+
+
     timeReport = struct; % Hold time flags
     respReport = struct; % Hold subject responses
     parameters.block = num2str(block, "%02d");
 
     % Create folders for the block and read taskMap for current block
-%     datapath = [ori_data_path '/sess_' sessContainer(parameters.TMScond)];
     datapath = [ori_data_path '/day' num2str(day, '%02d')];
     if prac_status == 1
         parameters = initFiles(parameters, screen, datapath, kbx, block);
@@ -413,7 +421,6 @@ for block = start_block:end_block
             ori_holder = [ori_holder currOri];
             drawTextures(parameters, screen, 'Response', parameters.procolor, tMap, trial, currOri);
             Screen('Flip', screen.win);
-%             WaitSecs(0.01);
         end
         
         respReport(trial).oriArray = ori_holder; % Save the response vector
@@ -425,10 +432,6 @@ for block = start_block:end_block
         end
 
         clearvars respTime;
-%         respReport.RT(trial) =  % Figure out a way to get RT
-%         if GetSecs - respStartTime < parameters.respDuration
-%             WaitSecs(parameters.respDuration - (GetSecs - respStartTime));
-%         end
         timeReport(trial).respDuration = GetSecs - respStartTime;
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -520,15 +523,17 @@ for block = start_block:end_block
         [keyIsDown, keyCode] = KbQueueCheck(kbx);
         cmndKey = KbName(keyCode);
     end
+    
+    % Turn off TMS
+    if parameters.TMS == 1
+        TMS('Disable', s);
+        TMS('Close', s);
+    end
 
     if strcmp(cmndKey, parameters.space_key)
         continue;
     elseif strcmp(cmndKey, parameters.exit_key)
-        % end Teensy handshake
-        if parameters.TMS == 1
-            TMS('Disable', s);
-            TMS('Close', s);
-        end
+        
         % Close the powerMate if being used
         if parameters.powMate == 1
             PsychPowerMateMrugank('Close', parameters.powMate)
@@ -541,11 +546,11 @@ for block = start_block:end_block
     end
 end % end of block
 
-% Close TMS Port and End Experiment
-if parameters.TMS == 1
-    TMS('Disable', s);
-    TMS('Close', s);
-end
+% % Close TMS Port and End Experiment
+% if parameters.TMS == 1
+%     TMS('Disable', s);
+%     TMS('Close', s);
+% end
 % Close the powerMate if being used
 if parameters.powMate == 1
     PsychPowerMateMrugank('Close', parameters.powMate)

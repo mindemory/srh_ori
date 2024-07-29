@@ -1,4 +1,9 @@
 function varargout = PsychPowerMateMrugank(cmd, varargin)
+% This is PsychPowerMate from Psychtoolbox and the only edits I have
+% applied are removing IsLinux checks. Everything else in the code should
+% be as is from the original PsychPowerMate
+% Last Edited on: July 29 2024, by Mrugank
+
 % PsychPowerMate - A driver for the Griffin Technology PowerMate USB knob.
 %
 % Note:
