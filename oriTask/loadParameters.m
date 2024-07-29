@@ -3,7 +3,7 @@ function parameters = loadParameters(subjID)
 % program basic settings
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 parameters.eyeTrackerOn = 0;
-parameters.transparency = 0.8; % transparency for debug mode
+parameters.transparency = 0.85; % transparency for debug mode
 parameters.viewingDistance = 55; % viewDist (in cm)
 parameters.waitBeforePulse = 3.00; % seconds
 parameters.apertureSize = 28; % in degrees of visual angle
@@ -39,9 +39,13 @@ parameters.pulseDuration = (parameters.pulseNum-1)/parameters.pulseFrequency; % 
 parameters.initDuration = 1;
 parameters.sampleDuration = 0.25; %0.5;
 parameters.delayDuration = 4;
-parameters.delay1Duration = parameters.delayDuration/2;
-parameters.delay2Duration = parameters.delayDuration/2;%-parameters.delay1Duration-parameters.pulseDuration;
+% parameters.delay1Duration = parameters.delayDuration/2;
+% parameters.delay2Duration = parameters.delayDuration/2;%-parameters.delay1Duration-parameters.pulseDuration;
 parameters.respDuration = 2;
 parameters.feedbackDuration = 1;
 parameters.itiDuration = [1.5,2.5];
 end
+
+
+
+

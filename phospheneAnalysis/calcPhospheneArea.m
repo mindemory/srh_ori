@@ -75,7 +75,7 @@ for coilInd = LocInds %1:length(LocInds)
             for block = 1:parameters.numBlocks
                 % Holder for orientations of target category and actual
                 % target
-                ori_target = repelem(parameters.valOris, parameters.numRepeatsPerBlock);
+                ori_target = repelem(parameters.valOris, parameters.numRepeatsPerBlock * 2);
                 ori_target = ori_target(randperm(length(ori_target')));
 
                 % actual target obtained by shuffling from a unfiorm distribution
@@ -109,7 +109,7 @@ for coilInd = LocInds %1:length(LocInds)
         for blockPractice = 1:parameters.numBlocksPractice
             % Holder for orientations of target category and actual
             % target
-            ori_targetPractice = repelem(parameters.valOris, parameters.numRepeatsPerBlock);
+            ori_targetPractice = repelem(parameters.valOris, parameters.numRepeatsPerBlock * 2);
             ori_targetPractice = ori_targetPractice(randperm(length(ori_targetPractice')));
 
             % actual target obtained by shuffling from a unfiorm distribution

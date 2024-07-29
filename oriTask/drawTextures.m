@@ -103,7 +103,7 @@ switch texture_name
         %boxSize = stimSize * 1.3;
         %segmentSize = boxSize/5;
         %lineWidth = 5;
-        ori_target = tMap.targOri(trial);
+        ori_target = tMap.targOri_(trial);
         %ori_nontarget = tMap.nontargOri(trial);
         targX = tMap.targX(trial);
         targY = tMap.targY(trial);
@@ -154,7 +154,7 @@ switch texture_name
     case 'GratingFeedback'
         stimSize = tMap.stimSize;
         gaussWidth = 0.8 * stimSize/4;
-        ori_target = tMap.targOri(trial);
+        ori_target = tMap.targOri_(trial);
         targX = tMap.targX(trial);
         targY = tMap.targY(trial);
         

@@ -26,15 +26,21 @@ else % If running on World's best MacBook
     direct.datd = '/Users/mrugankdake/Documents/Clayspace/EEG_TMS/datd/TMS_ori';
 end
 
+sessContainer = containers.Map('KeyType', 'int64', 'ValueType', 'char');
+sessContainer(1) = 'notms';
+sessContainer(2) = 'early';
+sessContainer(3) = 'middle';
+sessContainer(4) = 'late';
+
 % Initialize all the paths
 direct.data = [direct.datd '/data'];
 direct.phosphene = [direct.data '/phosphene_data/sub' subjID];
 if prac_status == 1
     direct.analysis = [direct.datd '/analysis/practice/sub' subjID];
-    direct.mgs = [direct.data '/ori_practice_data/sub' subjID];
+    direct.ori = [direct.data '/ori_practice_data/sub' subjID];
 else
     direct.analysis = [direct.datd '/analysis/sub' subjID];
-    direct.mgs = [direct.data '/ori_data/sub' subjID];
+    direct.ori = [direct.data '/ori_data/sub' subjID];
 end
 addpath(genpath(direct.data));
 
@@ -55,13 +61,13 @@ if exist(direct.figures_fig, 'dir') ~= 7
 end
 
 % List directories
-sess_dir_list = dir(direct.mgs);
+sess_dir_list = dir(direct.ori);
 sess_dir_names = {sess_dir_list([sess_dir_list.isdir]).name};
 sess_dirs = sess_dir_names(startsWith(sess_dir_names, 'sess'));
 sesss = length(sess_dirs);
 end_blocks = [];
 for d = 1:sesss
-    bl_dir_list = dir([direct.mgs filesep sess_dirs{d}]);
+    bl_dir_list = dir([direct.ori filesep sess_dirs{d}]);
     bl_dir_names = {bl_dir_list([bl_dir_list.isdir]).name};
     block_dirs = bl_dir_names(startsWith(bl_dir_names, 'block'));
     end_blocks = [end_blocks, length(block_dirs)];
@@ -76,7 +82,7 @@ flag_sess = [];
 flag_block = [];
 flag_trl = [];
 for sess = 1:sesss
-    direct.sess = [direct.mgs '/sess' num2str(sess, "%02d")];
+    direct.sess = [direct.ori '/sess_' sessContainer(sess)];
     end_block = end_blocks(sess);
     for block = start_block:end_block
         block_path = [direct.sess '/block' num2str(block, "%02d")];
@@ -91,7 +97,7 @@ for sess = 1:sesss
         if sess == 1 && block == start_block
             dur_vars = fieldnames(timeReport);
             for ii = 1:length(dur_vars)
-                timeStruct.(dur_vars{ii}) = NaN(sesss, max_end_block, 40);
+                timeStruct.(dur_vars{ii}) = NaN(sesss, max_end_block, length(timeReport));
             end
         end
         % Extract all variables from timeReport for each sess and block into
@@ -100,7 +106,11 @@ for sess = 1:sesss
             timeStruct.(dur_vars{ii})(sess, block, :) = timeReport.(dur_vars{ii});
             % Check for trials with issues
             if ii < length(dur_vars) - 1 % there is no trialDuration parameter for parameters
-                check_error = find(timeReport.(dur_vars{ii}) > parameters.(dur_vars{ii})*1.005 == 1);
+                if strcmp(dur_vars{ii}, 'delay1Duration') || strcmp(dur_vars{ii}, 'delay2Duration')
+                    check_error = find(timeReport.(dur_vars{ii}) > );
+                else
+                    check_error = find(timeReport.(dur_vars{ii}) > parameters.(dur_vars{ii})*1.005);% == 1);
+                end
                 if ~isempty(check_error)
                     for e = 1:length(check_error)
                         flag_sess = [flag_sess, sess];

@@ -1,5 +1,5 @@
-function ori_task(subjID, sess, start_block, TMSamp, powerMate, prac_status, aperture)
-clearvars -except subjID sess start_block TMSamp powerMate prac_status aperture;
+function ori_task(subjID, day, start_block, TMSamp, prac_status, powerMate, aperture)
+clearvars -except subjID day start_block TMSamp powerMate prac_status aperture;
 close all; clc;
 % Created by Mrugank Dake, Curtis Lab, NYU (03/26/2024)
 % Eyelink flags:
@@ -21,10 +21,10 @@ if nargin < 4
     TMSamp = 30; % default TMS amplitude of 30% MSO
 end
 if nargin < 5
-    powerMate = 0;
+    prac_status = 0; % 0: actual session, 1: practice session
 end
 if nargin < 6
-    prac_status = 0; % 0: actual session, 1: practice session
+    powerMate = 1;
 end
 if nargin < 7
     aperture = 0; % 0: full screen mode, 1: stimulus drawn on aperture
@@ -38,11 +38,11 @@ end
 hostname = strtrim(hostname);
 
 % Create a container mapping session number to session type
-sessContainer = containers.Map('KeyType', 'int64', 'ValueType', 'char');
-sessContainer(1) = 'notms';
-sessContainer(2) = 'early';
-sessContainer(3) = 'middle';
-sessContainer(4) = 'late';
+% sessContainer = containers.Map('KeyType', 'int64', 'ValueType', 'char');
+% sessContainer(1) = 'notms';
+% sessContainer(2) = 'early';
+% sessContainer(3) = 'middle';
+% sessContainer(4) = 'late';
 
 % Initialize PTB and TMS/Eyetracking parameters
 if strcmp(hostname, 'syndrome') || strcmp(hostname, 'zod') || strcmp(hostname, 'zod.psych.nyu.edu') % Lab iMac is meant for debugging
@@ -53,10 +53,8 @@ if strcmp(hostname, 'syndrome') || strcmp(hostname, 'zod') || strcmp(hostname, '
     parameters.eyetracker = 0; % set to 0 if there is no eyetracker
     Screen('Preference','SkipSyncTests', 1)
     if prac_status == 1
-        end_block = 5; % 2 blocks for practice session
         ori_data_path = ['/d/DATD/datd/TMS_ori/data/ori_practice_data/sub' subjID];
     else
-        end_block = 10; % 10 blocks for main sessions
         ori_data_path = ['/d/DATD/datd/TMS_ori/data/ori_data/sub' subjID];
     end
 elseif strcmp(hostname, 'tmsubuntu') % Running stimulus code for testing
@@ -72,10 +70,8 @@ elseif strcmp(hostname, 'tmsubuntu') % Running stimulus code for testing
     trigger_path = [master_dir '/Mrugank/EEG_TMS_triggers'];
     addpath(genpath(trigger_path));
     if prac_status == 1
-        end_block = 5; % 6 blocks for practice session
         ori_data_path = [master_dir '/md_data/TMS_ori/data/mgs_practice_data/sub' subjID];
     else
-        end_block = 10; % 10 blocks for main sessions
         ori_data_path = [master_dir '/md_data/TMS_ori/data/mgs_data/sub' subjID];
     end
     parameters.eyetracker = 1;
@@ -90,21 +86,26 @@ addpath(genpath(phosphene_data_path));
 addpath(genpath(ori_data_path));
 
 % Added temporarily
-powerMate = 0;
+% powerMate = 1;
 % Load taskMap
 if prac_status == 1
     load([phosphene_data_path '/taskMapPractice_sub' subjID])
     parameters.TMS = 0;
+    parameters.TMScond = 1; % 1 corresponds to No TMS
+    end_block = length(taskMapPractice);
 else
-    load([phosphene_data_path '/taskMap_sub' subjID, '_sess_' sessContainer(sess)])
-    if taskMap(1).TMScond == 1% determine if this is a TMS task
+%     load([phosphene_data_path '/taskMap_sub' subjID, '_sess_' sessContainer(sess)])
+    load([phosphene_data_path '/taskMap_sub' subjID '_day' num2str(day, '%02d')])
+    parameters.TMScond = taskMap(1).TMScond;
+    if parameters.TMScond > 1 % determine if this is a TMS task (for early, middle or late TMS)
         parameters.TMS = 1;
-    elseif taskMap(1).TMScond == 0
+    elseif parameters.TMScond == 0
         parameters.TMS = 0;
     end
+    end_block = length(taskMap);
 end
-end_block = 25;
 
+parameters.TMS = 0;
 % Initialize screen and peripherals
 screen = initScreen(parameters);
 parameters.powerMate = powerMate;
@@ -114,21 +115,21 @@ parameters.powerMate = powerMate;
 % Open TMS Port
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % detect the MagVenture and perform handshake.
-if parameters.TMS > 1
+if parameters.TMS == 1
     s = TMS('Open');
     TMS('Enable', s);
     TMS('Timing', s);
     TMS('Amplitude', s, TMSamp);
 end
 
-% Delay duration based on sess
-if sess == 1
-    d1_dur = 2;
-elseif sess == 2 % early TMS
+% Delay duration based on TMScond
+if parameters.TMScond == 1
+    d1_dur = 4;
+elseif parameters.TMScond == 2 % early TMS
     d1_dur = 0;
-elseif sess == 3 % middle TMS
+elseif parameters.TMScond == 3 % middle TMS
     d1_dur = 2;
-elseif sess == 4 % late TMS
+elseif parameters.TMScond == 4 % late TMS
     d1_dur = 3;
 end
 d2_dur = parameters.delayDuration - d1_dur;
@@ -143,12 +144,12 @@ for block = start_block:end_block
     parameters.block = num2str(block, "%02d");
 
     % Create folders for the block and read taskMap for current block
+%     datapath = [ori_data_path '/sess_' sessContainer(parameters.TMScond)];
+    datapath = [ori_data_path '/day' num2str(day, '%02d')];
     if prac_status == 1
-        datapath = [ori_data_path '/sess_notms'];
         parameters = initFiles(parameters, screen, datapath, kbx, block);
         tMap = taskMapPractice(1, block);
     else
-        datapath = [ori_data_path '/sess_' sessContainer(sess)];
         parameters = initFiles(parameters, screen, datapath, kbx, block);
         tMap = taskMap(1, block);
     end
@@ -224,7 +225,6 @@ for block = start_block:end_block
         if trial == 1 % for first trial, pause for 2 seconds
             WaitSecs(2);
         end
-%         trial_start = GetSecs;
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % initial fixation window
@@ -291,8 +291,7 @@ for block = start_block:end_block
             end
             drawTextures(parameters, screen, 'FixationCross');
 
-            if GetSecs - delay1StartTime < d1_dur%parameters.delay1Duration
-%                 WaitSecs(parameters.delay1Duration - (GetSecs-delay1StartTime));
+            if GetSecs - delay1StartTime < d1_dur
                 WaitSecs(d1_dur - (GetSecs-delay1StartTime));
             end
         end
@@ -302,8 +301,8 @@ for block = start_block:end_block
         % Delay2 window
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         delay2StartTime = GetSecs;
-
-        if parameters.TMS > 1
+        
+        if parameters.TMS == 1
             TMS('Train', s); % Train of TMS pulses, set pulse protocol on MagVenture Timing page
         end
 
@@ -313,15 +312,16 @@ for block = start_block:end_block
             Eyelink('Message', 'XDAT %i ', 4);
         end
 
-        % Draw fixation cross
-        if aperture == 1
-            drawTextures(parameters, screen, 'Aperture');
-        end
-        drawTextures(parameters, screen, 'FixationCross');
+        if d2_dur > 0
+            % Draw fixation cross
+            if aperture == 1
+                drawTextures(parameters, screen, 'Aperture');
+            end
+            drawTextures(parameters, screen, 'FixationCross');
 
-        if GetSecs - delay2StartTime < d2_dur %parameters.delay2Duration
-%             WaitSecs(parameters.delay2Duration - (GetSecs - delay2StartTime));
-            WaitSecs(d2_dur - (GetSecs - delay2StartTime));
+            if GetSecs - delay2StartTime < d2_dur
+                WaitSecs(d2_dur - (GetSecs - delay2StartTime));
+            end
         end
         timeReport(trial).delay2Duration = GetSecs - delay2StartTime;
 
@@ -341,28 +341,56 @@ for block = start_block:end_block
             drawTextures(parameters, screen, 'Aperture');
         end
         
+        % Initialize the response cue to some orientation
         initOri = rand*180;
         currOri = initOri;
         respReport(trial).initOri = initOri;
         ori_holder = [];
+
+        % Initialize the powerMate or the keyboard depending on which one
+        % is being used for response
         if parameters.powerMate == 1
             [button, dialPosOrig] = PsychPowerMateMrugank('Get', parameters.powMate);
         else
             KbQueueCreate();
             KbQueueStart();
         end
-       
-        while GetSecs-respStartTime < parameters.respDuration * 0.95
+        
+        while GetSecs-respStartTime < parameters.respDuration 
             
             if parameters.powerMate == 1
+                % if the device recording the response is Powermate
                 [button, dialPos] = PsychPowerMateMrugank('Get', parameters.powMate);
                 deltaDial = dialPos - dialPosOrig;
                 currOri = rem(initOri - parameters.rotStep * deltaDial, 180);
-                % Check when the subject made the response
+
+                % Check when the subject made the response (the button
+                % press on PowerMate)
+%                 [fake_holder] = PsychPowerMateMrugank('WaitButton', parameters.powMate);
+                if button > 0
+                    respTime = GetSecs - respStartTime;
+                    if currOri < 0 || currOri > 179
+                        currOri = currOri+sign(currOri)*(-1)*180;
+                    end
+                    ori_holder = [ori_holder currOri];
+                    drawTextures(parameters, screen, 'Response', parameters.procolor, tMap, trial, currOri);
+                    Screen('Flip', screen.win);
+                    break;
+                end
+
+                % Check when the subject made the response (the spacebar
+                % press)
                 [keyIsDown, s, keyCode] = KbCheck;
                 if keyIsDown
                     if keyCode(KbName(parameters.space_key))
                         respTime = GetSecs - respStartTime;
+                        if currOri < 0 || currOri > 179
+                            currOri = currOri+sign(currOri)*(-1)*180;
+                        end
+                        ori_holder = [ori_holder currOri];
+                        drawTextures(parameters, screen, 'Response', parameters.procolor, tMap, trial, currOri);
+                        Screen('Flip', screen.win);
+                        break;
                     end
                 end
             else
@@ -385,7 +413,7 @@ for block = start_block:end_block
             ori_holder = [ori_holder currOri];
             drawTextures(parameters, screen, 'Response', parameters.procolor, tMap, trial, currOri);
             Screen('Flip', screen.win);
-            WaitSecs(0.01);
+%             WaitSecs(0.01);
         end
         
         respReport(trial).oriArray = ori_holder; % Save the response vector
@@ -395,10 +423,12 @@ for block = start_block:end_block
         else
             respReport(trial).RT = respTime;
         end
+
+        clearvars respTime;
 %         respReport.RT(trial) =  % Figure out a way to get RT
-        if GetSecs - respStartTime < parameters.respDuration
-            WaitSecs(parameters.respDuration - (GetSecs - respStartTime));
-        end
+%         if GetSecs - respStartTime < parameters.respDuration
+%             WaitSecs(parameters.respDuration - (GetSecs - respStartTime));
+%         end
         timeReport(trial).respDuration = GetSecs - respStartTime;
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -413,7 +443,7 @@ for block = start_block:end_block
         end
 
         % Get the error made by the subject
-        errorOri = tMap.targOri(trial) - mod(currOri, 180);
+        errorOri = tMap.targOri_(trial) - mod(currOri, 180);
         
         % Render stimulus
         if aperture == 1
@@ -495,7 +525,7 @@ for block = start_block:end_block
         continue;
     elseif strcmp(cmndKey, parameters.exit_key)
         % end Teensy handshake
-        if parameters.TMS > 1
+        if parameters.TMS == 1
             TMS('Disable', s);
             TMS('Close', s);
         end
@@ -512,7 +542,7 @@ for block = start_block:end_block
 end % end of block
 
 % Close TMS Port and End Experiment
-if parameters.TMS > 1
+if parameters.TMS == 1
     TMS('Disable', s);
     TMS('Close', s);
 end

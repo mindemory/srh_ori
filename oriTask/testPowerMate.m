@@ -4,12 +4,19 @@ addpath(genpath('/usr/share/psychtoolbox-3'));
 
 devId = PsychPowerMateMrugank('Open');
 [button, dialPosOrig] = PsychPowerMateMrugank('Get', devId);
-
+start_time = GetSecs();
 while true
-    
-    [button, dialPos] = PsychPowerMateMrugank('Get', devId);
-    deltaDial = dialPos - dialPosOrig;
-    currOri = rem(0 + 1 * deltaDial, 180)
+    [t] = PsychPowerMateMrugank('WaitButton', devId);
+    if t>0
+        timeRespond = GetSecs() - start_time;
+        break;
+    end
 end
+% while true
+%     
+%     [button, dialPos] = PsychPowerMateMrugank('Get', devId);
+%     deltaDial = dialPos - dialPosOrig;
+%     currOri = rem(0 + 1 * deltaDial, 180)
+% end
 
 PsychPowerMateMrugank('Close', devId);
