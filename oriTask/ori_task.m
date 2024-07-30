@@ -123,7 +123,8 @@ for block = start_block:end_block
             parameters.TMS = 0;
         end
     end
-
+    
+    parameters.TMS = 0;
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Open TMS Port
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -425,6 +426,7 @@ for block = start_block:end_block
         
         respReport(trial).oriArray = ori_holder; % Save the response vector
         respReport(trial).finalOri = currOri; % The final response subject selected
+        
         if ~exist('respTime', 'var')
             respReport(trial).RT = parameters.respDuration;
         else
@@ -447,6 +449,7 @@ for block = start_block:end_block
 
         % Get the error made by the subject
         errorOri = tMap.targOri_(trial) - mod(currOri, 180);
+        respReport(trial).errorOri = errorOri;
         
         % Render stimulus
         if aperture == 1
