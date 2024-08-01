@@ -50,6 +50,7 @@ if strcmp(hostname, 'syndrome') || strcmp(hostname, 'zod') || strcmp(hostname, '
     phosphene_data_path = ['/d/DATD/datd/TMS_ori/data/phosphene_data/sub' subjID];
     parameters.isDemoMode = true; % set to true if you want the screen to be transparent
     parameters.TMS = 0; % set to 0 if there is no TMS stimulation
+    parameters.EEG = 0; % set to 0 if there is no EEG recording
     parameters.eyetracker = 0; % set to 0 if there is no eyetracker
     Screen('Preference','SkipSyncTests', 1)
     if prac_status == 1
@@ -69,9 +70,12 @@ elseif strcmp(hostname, 'tmsubuntu') % Running stimulus code for testing
     % Path to MarkStim
     trigger_path = [master_dir '/Mrugank/EEG_TMS_triggers'];
     addpath(genpath(trigger_path));
+    trigger_path_EEG = [trigger_path '/EEG'];
     if prac_status == 1
+        parameters.EEG = 0;
         ori_data_path = [master_dir '/md_data/TMS_ori/data/mgs_practice_data/sub' subjID];
     else
+        parameters.EEG = 1;
         ori_data_path = [master_dir '/md_data/TMS_ori/data/mgs_data/sub' subjID];
     end
     parameters.eyetracker = 1;
@@ -151,6 +155,16 @@ for block = start_block:end_block
 
     timeReport = struct; % Hold time flags
     respReport = struct; % Hold subject responses
+    if parameters.EEG
+        EEGtimeReport = struct;
+        trig_counter = 1;
+        % EEG marker --> block begins
+        fname = ['sudo python3 ' trigger_path_EEG '/eegflag0.py'];
+        system(fname);
+        EEGtimeReport.blockstart = GetSecs;
+        trigReport(trig_counter) = 0;
+        trig_counter = trig_counter + 1;
+    end
     parameters.block = num2str(block, "%02d");
 
     % Create folders for the block and read taskMap for current block
@@ -240,6 +254,15 @@ for block = start_block:end_block
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         initStartTime = GetSecs;
 
+        % EEG marker --> Fixation
+        if parameters.EEG
+            fname = ['sudo python3 ' trigger_path_EEG '/eegflag1.py'];
+            system(fname);
+            EEGtimeReport.init(trial) = GetSecs;
+            trigReport(trig_counter) = 1;
+            trig_counter = trig_counter + 1;
+        end
+
         %record to the edf file that sample is started
         if parameters.eyetracker %&& Eyelink('NewFloatSampleAvailable') > 0
             Eyelink('command', 'record_status_message "TRIAL %i/%i /fixation"', trial, trialNum);
@@ -264,10 +287,30 @@ for block = start_block:end_block
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         sampleStartTime = GetSecs;
 
+        % EEG marker --> sample begins
+        if parameters.EEG
+            if tMap.stimVF(trial) == 0
+                % stimulus is outPF
+                trigger_code = 10;
+            elseif tMap.stimVF(trial) == 1
+                % stimulus is inPF
+                trigger_code = 11;
+            end
+            fname = ['sudo python3 ' trigger_path_EEG '/eegflag' num2str(trigger_code) '.py'];
+            system(fname);
+            EEGtimeReport.sample(trial) = GetSecs;
+            trigReport(trig_counter) = trigger_code;
+            trig_counter = trig_counter + 1;
+        end
+
         %record to the edf file that sample is started
         if parameters.eyetracker %&& Eyelink('NewFloatSampleAvailable') > 0
             Eyelink('command', 'record_status_message "TRIAL %i/%i /sample"', trial, trialNum);
-            Eyelink('Message', 'XDAT %i ', 2);
+            if tMap.stimVF(trial) == 0
+                Eyelink('Message', 'XDAT %i ', 10);
+            elseif tMap.stimVF(trial) == 1
+                Eyelink('Message', 'XDAT %i ', 11);
+            end
             Eyelink('Message', 'TarX %s ', num2str(screen.xCenter));
             Eyelink('Message', 'TarY %s ', num2str(screen.yCenter));
         end
@@ -287,10 +330,20 @@ for block = start_block:end_block
         % Delay1 window
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         delay1StartTime = GetSecs;
+
+        % EEG marker --> Delay 1 begins
+        if parameters.EEG
+            fname = ['sudo python3 ' trigger_path_EEG '/eegflag2.py'];
+            system(fname);
+            EEGtimeReport.delay1(trial) = GetSecs;
+            trigReport(trig_counter) = 2;
+            trig_counter = trig_counter + 1;
+        end
+
         %record to the edf file that delay1 is started
         if parameters.eyetracker %&& Eyelink('NewFloatSampleAvailable') > 0
             Eyelink('command', 'record_status_message "TRIAL %i/%i /delay1"', trial, trialNum);
-            Eyelink('Message', 'XDAT %i ', 3);
+            Eyelink('Message', 'XDAT %i ', 2);
         end
         
         if d1_dur > 0
@@ -311,6 +364,15 @@ for block = start_block:end_block
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         delay2StartTime = GetSecs;
         
+        % EEG marker --> Delay 2 begins
+        if parameters.EEG
+            fname = ['sudo python3 ' trigger_path_EEG '/eegflag3.py'];
+            system(fname);
+            EEGtimeReport.delay2(trial) = GetSecs;
+            trigReport(trig_counter) = 3;
+            trig_counter = trig_counter + 1;
+        end
+
         if parameters.TMS == 1
             TMS('Train', s); % Train of TMS pulses, set pulse protocol on MagVenture Timing page
         end
@@ -318,7 +380,7 @@ for block = start_block:end_block
         %record to the edf file that noise mask is started
         if parameters.eyetracker
             Eyelink('command', 'record_status_message "TRIAL %i/%i /delay2"', trial, trialNum);
-            Eyelink('Message', 'XDAT %i ', 4);
+            Eyelink('Message', 'XDAT %i ', 3);
         end
 
         if d2_dur > 0
@@ -338,10 +400,20 @@ for block = start_block:end_block
         % Response window
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         respStartTime = GetSecs;
+
+        % EEG marker --> Response begins
+        if parameters.EEG
+            fname = ['sudo python3 ' trigger_path_EEG '/eegflag4.py'];
+            system(fname);
+            EEGtimeReport.response(trial) = GetSecs;
+            trigReport(trig_counter) = 4;
+            trig_counter = trig_counter + 1;
+        end
+
         %record to the edf file that response cue is started
         if parameters.eyetracker
             Eyelink('command', 'record_status_message "TRIAL %i/%i /response"', trial, trialNum);
-            Eyelink('Message', 'XDAT %i ', 5);
+            Eyelink('Message', 'XDAT %i ', 4);
             Eyelink('Message', 'TarX %s ', num2str(screen.xCenter));
             Eyelink('Message', 'TarY %s ', num2str(screen.yCenter));
         end
@@ -375,7 +447,6 @@ for block = start_block:end_block
 
                 % Check when the subject made the response (the button
                 % press on PowerMate)
-%                 [fake_holder] = PsychPowerMateMrugank('WaitButton', parameters.powMate);
                 if button > 0
                     respTime = GetSecs - respStartTime;
                     if currOri < 0 || currOri > 179
@@ -440,11 +511,20 @@ for block = start_block:end_block
         % Feedback window
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         feedbackStartTime = GetSecs;
+
+        % EEG marker --> Feedback begins
+        if parameters.EEG
+            fname = ['sudo python3 ' trigger_path_EEG '/eegflag5.py'];
+            system(fname);
+            EEGtimeReport.feedback(trial) = GetSecs;
+            trigReport(trig_counter) = 5;
+            trig_counter = trig_counter + 1;
+        end
         
         %record to the edf file that feedback is started
         if parameters.eyetracker
             Eyelink('command', 'record_status_message "TRIAL %i/%i /feedback"', trial, trialNum);
-            Eyelink('Message', 'XDAT %i ', 6);
+            Eyelink('Message', 'XDAT %i ', 5);
         end
 
         % Get the error made by the subject
@@ -476,10 +556,19 @@ for block = start_block:end_block
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         itiStartTime = GetSecs;
 
+        % EEG marker --> ITI begins
+        if parameters.EEG
+            fname = ['sudo python3 ' trigger_path_EEG '/eegflag6.py'];
+            system(fname);
+            EEGtimeReport.iti(trial) = GetSecs;
+            trigReport(trig_counter) = 6;
+            trig_counter = trig_counter + 1;
+        end
+
         %record to the edf file that iti is started
         if parameters.eyetracker
             Eyelink('command', 'record_status_message "TRIAL %i/%i /iti"', trial, trialNum);
-            Eyelink('Message', 'XDAT %i ', 7);
+            Eyelink('Message', 'XDAT %i ', 6);
             Eyelink('Message', 'TarX %s ', num2str(screen.xCenter));
             Eyelink('Message', 'TarY %s ', num2str(screen.yCenter));
         end
@@ -511,12 +600,29 @@ for block = start_block:end_block
         disp(['Eyedata recieve for ' num2str(block,"%02d") ' OK!']);
     end
 
+    % EEG marker --> Block ends
+    if parameters.EEG
+        fname = ['sudo python3 ' trigger_path_EEG '/eegflag7.py'];
+        system(fname);
+        EEGtimeReport.blockend = GetSecs;
+        trigReport(trig_counter) = 7;
+        trig_counter = trig_counter + 1;
+    end
+
     % save timeReport
     matFile.parameters = parameters;
     matFile.screen = screen;
     matFile.timeReport = timeReport;
     matFile.respReport = respReport;
     save([parameters.block_dir filesep parameters.matFile],'matFile')
+
+    % Save EEG flags
+    if parameters.EEG == 1
+        trigReport = trigReport(~isnan(trigReport));
+        EEGsummary.timeReport = EEGtimeReport;
+        EEGsummary.trigReport = trigReport;
+        save([parameters.block_dir filesep parameters.EEGreportFile], 'EEGsummary')
+    end
 
     % check for end of block
     KbQueueFlush(kbx);
