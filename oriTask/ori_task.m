@@ -16,6 +16,11 @@ close all; clc;
 % Initialize parameters
 subjID = num2str(subjID, "%02d"); % convert subjID to string
 
+% for ii = 1:length(taskMap)
+%     taskMap(ii).TMScond = 0;
+% end
+% save('/home/curtislab/Desktop/md_data/TMS_ori/data/phosphene_data/sub99/taskMap_sub99_day03.mat', 'taskMap);
+
 parameters = loadParameters(subjID);
 if nargin < 4
     TMSamp = 30; % default TMS amplitude of 30% MSO
@@ -30,6 +35,7 @@ if nargin < 7
     aperture = 0; % 0: full screen mode, 1: stimulus drawn on aperture
 end
 
+flicker = 1;
 % Check the system running on: currently accepted: syndrome, tmsubuntu
 [ret, hostname] = system('hostname');
 if ret ~= 0
@@ -49,7 +55,7 @@ if strcmp(hostname, 'syndrome') || strcmp(hostname, 'zod') || strcmp(hostname, '
     addpath(genpath('/Applications/Psychtoolbox')) %% mrugank (01/28/2022): load PTB
     phosphene_data_path = ['/d/DATD/datd/TMS_ori/data/phosphene_data/sub' subjID];
     parameters.isDemoMode = true; % set to true if you want the screen to be transparent
-    parameters.TMS = 0; % set to 0 if there is no TMS stimulation
+%     parameters.TMS = 0; % set to 0 if there is no TMS stimulation
     parameters.EEG = 0; % set to 0 if there is no EEG recording
     parameters.eyetracker = 0; % set to 0 if there is no eyetracker
     Screen('Preference','SkipSyncTests', 1)
@@ -62,7 +68,7 @@ elseif strcmp(hostname, 'tmsubuntu') % Running stimulus code for testing
 %     powerMate = 1;
     addpath(genpath('/usr/share/psychtoolbox-3'))
     parameters.isDemoMode = false; %set to true if you want the screen to be transparent
-    parameters.TMS = 0; % set to 0 if there is no TMS stimulation
+%     parameters.TMS = 0; % set to 0 if there is no TMS stimulation
     % Relative paths for tmsubuntu
     curr_dir = pwd; filesepinds = strfind(curr_dir,filesep);
     master_dir = curr_dir(1:(filesepinds(end-2)-1));
@@ -73,10 +79,10 @@ elseif strcmp(hostname, 'tmsubuntu') % Running stimulus code for testing
     trigger_path_EEG = [trigger_path '/EEG'];
     if prac_status == 1
         parameters.EEG = 0;
-        ori_data_path = [master_dir '/md_data/TMS_ori/data/mgs_practice_data/sub' subjID];
+        ori_data_path = [master_dir '/md_data/TMS_ori/data/ori_practice_data/sub' subjID];
     else
-        parameters.EEG = 1;
-        ori_data_path = [master_dir '/md_data/TMS_ori/data/mgs_data/sub' subjID];
+        parameters.EEG = 0;
+        ori_data_path = [master_dir '/md_data/TMS_ori/data/ori_data/sub' subjID];
     end
     parameters.eyetracker = 1;
     PsychDefaultSetup(1);
@@ -128,7 +134,7 @@ for block = start_block:end_block
         end
     end
     
-    parameters.TMS = 0;
+%     parameters.TMS = 0;
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Open TMS Port
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -318,8 +324,20 @@ for block = start_block:end_block
         if aperture == 1
             drawTextures(parameters, screen, 'Aperture');
         end
-        drawTextures(parameters, screen, 'Grating', screen.white, tMap, trial);
-        drawTextures(parameters, screen, 'FixationCross');
+        phase_val = 0;
+        if flicker
+            while GetSecs - sampleStartTime < parameters.sampleDuration * 0.99
+                drawTextures(parameters, screen, 'Grating', screen.white, tMap, trial, phase_val);
+                drawTextures(parameters, screen, 'FixationCross');
+                phase_val = phase_val + 90;
+                WaitSecs(0.1);
+                drawTextures(parameters, screen, 'FixationCross');
+            end
+        else
+            drawTextures(parameters, screen, 'Grating', screen.white, tMap, trial);
+            drawTextures(parameters, screen, 'FixationCross');
+        end
+        
 
         if GetSecs - sampleStartTime < parameters.sampleDuration
             WaitSecs(parameters.sampleDuration - (GetSecs-sampleStartTime));
@@ -460,7 +478,7 @@ for block = start_block:end_block
 
                 % Check when the subject made the response (the spacebar
                 % press)
-                [keyIsDown, s, keyCode] = KbCheck;
+                [keyIsDown, ~, keyCode] = KbCheck;
                 if keyIsDown
                     if keyCode(KbName(parameters.space_key))
                         respTime = GetSecs - respStartTime;
@@ -475,7 +493,7 @@ for block = start_block:end_block
                 end
             else
                 % Use keyboard if powerMate is off
-                [keyIsDown, s, keyCode] = KbCheck; %KbQueueCheck(kbx);
+                [keyIsDown, ~, keyCode] = KbCheck; %KbQueueCheck(kbx);
                 if keyIsDown
                     if keyCode(KbName(parameters.leftarrow_key))
                         currOri = currOri + parameters.rotStep;
