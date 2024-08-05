@@ -349,22 +349,22 @@ for block = start_block:end_block
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         delay1StartTime = GetSecs;
 
-        % EEG marker --> Delay 1 begins
-        if parameters.EEG
-            fname = ['sudo python3 ' trigger_path_EEG '/eegflag2.py'];
-            system(fname);
-            EEGtimeReport.delay1(trial) = GetSecs;
-            trigReport(trig_counter) = 2;
-            trig_counter = trig_counter + 1;
-        end
-
-        %record to the edf file that delay1 is started
-        if parameters.eyetracker %&& Eyelink('NewFloatSampleAvailable') > 0
-            Eyelink('command', 'record_status_message "TRIAL %i/%i /delay1"', trial, trialNum);
-            Eyelink('Message', 'XDAT %i ', 2);
-        end
-        
         if d1_dur > 0
+            % EEG marker --> Delay 1 begins
+            if parameters.EEG
+                fname = ['sudo python3 ' trigger_path_EEG '/eegflag2.py'];
+                system(fname);
+                EEGtimeReport.delay1(trial) = GetSecs;
+                trigReport(trig_counter) = 2;
+                trig_counter = trig_counter + 1;
+            end
+    
+            %record to the edf file that delay1 is started
+            if parameters.eyetracker %&& Eyelink('NewFloatSampleAvailable') > 0
+                Eyelink('command', 'record_status_message "TRIAL %i/%i /delay1"', trial, trialNum);
+                Eyelink('Message', 'XDAT %i ', 2);
+            end
+
             % Draw fixation cross
             if aperture == 1
                 drawTextures(parameters, screen, 'Aperture');

@@ -56,16 +56,22 @@ else
             ~ismember({block_dirs.name}, {'.', '..'}));
 
         % Load taskMap for this day
-        taskMap = load([p.phosphene '/taskMap_sub00_day' num2str(didx, '%02d') '.mat']);
+        taskMap = load([p.phosphene '/taskMap_sub' p.subjID '_day' num2str(didx, '%02d') '.mat']);
         taskMap = taskMap.taskMap;
 
         for bidx = 1:length(block_dirs)
+            disp(bidx)
             data_dir = [p.ori '/' day_dirs(didx).name '/' block_dirs(bidx).name];
             data_files = dir([data_dir '/*.mat']);
-            data_file = [data_dir '/' data_files(1).name];
+            relev_fidx = find(arrayfun(@(x) startsWith(data_files(x).name, 'matFile'), 1:length(data_files)));
+            data_file = [data_dir '/' data_files(relev_fidx).name];
             matFile = load(data_file);
-            matFile = matFile.matFile;
-
+%             if isfield(matFile, 'matFile')
+                matFile = matFile.matFile;
+%             else
+%                 meh = 0;
+%             end
+               
             % Extract screen coordinates
             xCenter = matFile.screen.xCenter;
             yCenter = matFile.screen.yCenter;

@@ -80,6 +80,7 @@ nbinss = 50;
 
 flag_day = [];
 flag_block = [];
+flag_sess = [];
 flag_trl = [];
 for day = 1:days
     direct.sess = [direct.ori '/day' num2str(day, '%02d')];
@@ -93,9 +94,12 @@ for day = 1:days
         % Load timeReport for this sess and block
         parameters = matFile.parameters;
         timeReport = matFile.timeReport;
+        TMScond = parameters.TMScond;
         % Get a list of all duration variables and initialize timeStruct
         if day == 1 && block == start_block
-            dur_vars = fieldnames(timeReport);
+%             dur_vars = fieldnames(timeReport);
+            dur_vars = {'initDuration', 'sampleDuration', 'delay1Duration', 'delay2Duration', 'feedbackDuration'};
+
             for ii = 1:length(dur_vars)
                 timeStruct.(dur_vars{ii}) = NaN(days, max_end_block, length(timeReport));
             end
@@ -105,16 +109,20 @@ for day = 1:days
         for ii = 1:length(dur_vars)
             timeStruct.(dur_vars{ii})(day, block, :) = timeReport.(dur_vars{ii});
             % Check for trials with issues
-            if ii < length(dur_vars) - 1 % there is no trialDuration parameter for parameters
+            if ii < length(dur_vars) %- 1 % there is no trialDuration parameter for parameters
                 % Also let's ignore flagging trials based on respDuration
                 % because that does not make sense here
                 if ~strcmp(dur_vars{ii}, 'respDuration')
                     if strcmp(dur_vars{ii}, 'delay1Duration') || strcmp(dur_vars{ii}, 'delay2Duration')
-    %                     check_error = find(timeReport.(dur_vars{ii}) > median(timeReport.(dur_vars{ii}))*1.005);
                         this_dur = arrayfun(@(x) timeReport(x).(dur_vars{ii}), 1:length(timeReport));
-                        check_error = arrayfun(@(x) (timeReport(x).(dur_vars{ii}) > median(this_dur) * 1.005), 1:length(timeReport));
+                        if median(this_dur) < 5*1e-1
+                            check_error = arrayfun(@(x) (timeReport(x).(dur_vars{ii}) > 5*1e-2), 1:length(timeReport));
+                        else
+                            check_error = arrayfun(@(x) (timeReport(x).(dur_vars{ii}) > median(this_dur) * 1.005), 1:length(timeReport));
+                        end
+                    elseif strcmp(dur_vars{ii}, 'sampleDuration')
+                        check_error = arrayfun(@(x) (timeReport(x).(dur_vars{ii}) > 0.4), 1:length(timeReport));
                     else
-    %                     check_error = find(timeReport.(dur_vars{ii}) > parameters.(dur_vars{ii})*1.005);% == 1);
                         check_error = arrayfun(@(x) (timeReport(x).(dur_vars{ii}) > parameters.(dur_vars{ii}) * 1.005), 1:length(timeReport));
                     end
                     if sum(check_error) > 0 %~isempty(check_error)
@@ -122,7 +130,8 @@ for day = 1:days
                             if check_error(e) > 0
                                 flag_day = [flag_day, day];
                                 flag_block = [flag_block, block];
-                                flag_trl = [flag_trl, check_error(e)];
+                                flag_sess = [flag_sess, TMScond];
+                                flag_trl = [flag_trl, e];
                             end
                         end
                     end
@@ -133,24 +142,25 @@ for day = 1:days
     end
     % Generate a figure of time stamps
     fig = figure('visible', 'off');
-    h = sgtitle(['sub' subjID '_ sess' num2str(day, "%02d") ]);
-    %set(h, 'Position', [0.5, -0.03, 0]);
+    h = sgtitle(['sub' subjID '_ day' num2str(day, "%02d") ]);
+    ncols = 3;
+    nrows = ceil(length(dur_vars)/ncols);
     for ii = 1:length(dur_vars)
-        subplot(3, 3, ii)
+        subplot(nrows, ncols, ii)
         histogram(rmmissing(timeStruct.(dur_vars{ii})(day,:)), 'BinWidth', 0.005);
         title(dur_vars{ii});
         xlabel('Time (s)')
         ylabel('# of Trials')
     end
-    fig_fname_png = [direct.figures_png '/timeStruct_sub' subjID '_sess' num2str(day, "%02d") '.png'];
+    fig_fname_png = [direct.figures_png '/timeStruct_sub' subjID '_day' num2str(day, "%02d") '.png'];
     saveas(fig, fig_fname_png);
-    fig_fname_fig = [direct.figures_fig '/timeStruct_sub' subjID '_sess' num2str(day, "%02d") '.fig'];
+    fig_fname_fig = [direct.figures_fig '/timeStruct_sub' subjID '_day' num2str(day, "%02d") '.fig'];
     saveas(fig, fig_fname_fig);
 end
 
 % Create a structure to save flagged trials
 flg = struct;
-flg.day = flag_day; flg.block = flag_block; flg.trls = flag_trl;
+flg.day = flag_day; flg.block = flag_block; flg.sess = flag_sess; flg.trls = flag_trl;
 flg_fname = [direct.analysis '/flagged_trls.mat'];
 save(flg_fname, 'flg');
 

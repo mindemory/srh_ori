@@ -37,7 +37,7 @@ else:
     print('Creating a new dataframe...')
     # Find subjects and days that have been run so far
     sub_dirs = [d for d in os.listdir(os.path.join(p['analysis'])) if d.startswith('sub')]
-    sub_dirs = ['sub00']
+    sub_dirs = ['sub99']
     subjIDs = sorted([int(ss[-2:]) for ss in sub_dirs])
     
     print(f"We have {len(subjIDs)} subjects so far: {subjIDs}")
