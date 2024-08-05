@@ -17,9 +17,9 @@ close all; clc;
 subjID = num2str(subjID, "%02d"); % convert subjID to string
 
 % for ii = 1:length(taskMap)
-%     taskMap(ii).TMScond = 0;
+%     taskMap(ii).TMScond = 1;
 % end
-% save('/home/curtislab/Desktop/md_data/TMS_ori/data/phosphene_data/sub99/taskMap_sub99_day03.mat', 'taskMap);
+% save('/home/curtislab/Desktop/md_data/TMS_ori/data/phosphene_data/sub99/taskMap_sub99_day03.mat', 'taskMap');
 
 parameters = loadParameters(subjID);
 if nargin < 4
@@ -35,7 +35,7 @@ if nargin < 7
     aperture = 0; % 0: full screen mode, 1: stimulus drawn on aperture
 end
 
-flicker = 1;
+flicker = 0;
 % Check the system running on: currently accepted: syndrome, tmsubuntu
 [ret, hostname] = system('hostname');
 if ret ~= 0
@@ -129,7 +129,7 @@ for block = start_block:end_block
         parameters.TMScond = taskMap(block).TMScond;
         if parameters.TMScond > 1 % determine if this is a TMS task (for early, middle or late TMS)
             parameters.TMS = 1;
-        elseif parameters.TMScond == 0
+        else
             parameters.TMS = 0;
         end
     end
