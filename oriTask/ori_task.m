@@ -81,7 +81,7 @@ elseif strcmp(hostname, 'tmsubuntu') % Running stimulus code for testing
         parameters.EEG = 0;
         ori_data_path = [master_dir '/md_data/TMS_ori/data/ori_practice_data/sub' subjID];
     else
-        parameters.EEG = 0;
+        parameters.EEG = 1;
         ori_data_path = [master_dir '/md_data/TMS_ori/data/ori_data/sub' subjID];
     end
     parameters.eyetracker = 1;
