@@ -60,6 +60,7 @@ if strcmp(analysis_type, 'eye')
     p.iEye = [root_dir '/iEye'];
     addpath(genpath(p.iEye));    
 elseif strcmp(analysis_type, 'eeg')
+    p.EEGData = [p.datd '/EEGData/sub' p.subjID '/day' num2str(p.day,'%02d')];
     p.saveEEG = [p.datd '/EEGfiles'];
     addpath(p.fieldtrip);
     ft_defaults;
