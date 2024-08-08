@@ -27,10 +27,12 @@ parameters = loadParameters(tmsRtnTpy);
 % randomization now happens on the end of the experimenter
 tms_timings = [1, 2, 3, 4]; 
 VAs = zeros(length(LocInds), 1);
+Targs = zeros(length(LocInds), 2);
 more_drops = [];
 
 %% Calculate border and area of each phosphene report
 for coilInd = LocInds %1:length(LocInds)
+    disp(['Testing coil Location: ' num2str(coilInd)])
     % list of trials for given CoilLocation with detections
     phsphTrials = find(tmsRtnTpy.Response.CoilLocation == coilInd & tmsRtnTpy.Response.Detection == 1);
     PhosphReport(coilInd).trialInd = phsphTrials;
@@ -45,10 +47,12 @@ for coilInd = LocInds %1:length(LocInds)
     % calculate the overlapping area across all phosphenes for this coilLocation
     overlap_polyshape = PhosphReport(coilInd).polyshape{1};
     for trial = 2:length(PhosphReport(coilInd).polyshape)
-        overlap_polyshape = intersect(overlap_polyshape, PhosphReport(coilInd).polyshape{trial});
+%         overlap_polyshape = intersect(overlap_polyshape, PhosphReport(coilInd).polyshape{trial});
+          overlap_polyshape = union(overlap_polyshape, PhosphReport(coilInd).polyshape{trial});
     end
     overlap_polyshape = rmholes(overlap_polyshape);
     PhosphReport(coilInd).overlapPolyshape = overlap_polyshape;
+    
     
     %% Calculate Target Sample-space
     [X_mean, Y_mean] = centroid(overlap_polyshape);
@@ -59,9 +63,18 @@ for coilInd = LocInds %1:length(LocInds)
         more_drops = [more_drops, coilInd];
     else
         PhosphReport(coilInd).polyshape_centroid = [X_mean, Y_mean];
+        % Get Radial limits of phosphenes    
+        OverlapRadial_px = sqrt((overlap_polyshape.Vertices(:,1)-tmsRtnTpy.Params.screen.xCenter).^2 + ...
+                           (overlap_polyshape.Vertices(:,2)-tmsRtnTpy.Params.screen.yCenter).^2);
+        OverlapRadial_cm = OverlapRadial_px * tmsRtnTpy.Params.screen.pixSize;
+        OverlapRadial_dva = atan2d(OverlapRadial_cm, tmsRtnTpy.Params.taskParams.viewingDistance);
+        Radial_dva_quantiles = quantile(OverlapRadial_dva, 5);
+
         % compute buffer of r and polar angle of mean.
-        [va, stimSize_px, targX, targY, nontargX, nontargY] = get_visang(X_mean, Y_mean, parameters);
+        [va, stimSize_px, targX, targY, nontargX, nontargY] = ...
+            get_visang(X_mean, Y_mean, Radial_dva_quantiles, parameters);
         VAs(coilInd) = va;
+        Targs(coilInd, :) = [targX, targY];
 
         % Store coilHemifield
         if X_mean > parameters.xCenter
@@ -145,6 +158,7 @@ if ~isempty(more_drops)
     for tt = 1:length(more_drops)
         disp(['New coil location ' num2str(more_drops(tt)) ' has no overlapping phosphenes and has been eliminated.']);
         VAs(more_drops(tt)) = []; % removing the idx from VAs
+        Targs(more_drops(tt), :) = []; % Removing the idx from targs
         PhosphReport(more_drops(tt)) = []; % removing the idx from PhosphReport
         LocInds(more_drops(tt)) = []; % removing the idx from the LocInds
         LocInds(more_drops(tt):end) = LocInds(more_drops(tt):end) - 1;
@@ -181,10 +195,15 @@ for coilInd = 1:N
     ax.FontSize = 16;
     ax.XAxis.FontSize = 16;
     ax.YAxis.FontSize = 16;
+    % Plot the centroid of phosphene
     plot([parameters.xCenter, PhosphReport(coilInd).polyshape_centroid(1)], ...
-        [parameters.yCenter, PhosphReport(coilInd).polyshape_centroid(2)], 'm--', 'MarkerSize', 10, 'linewidth', 1.5);
-    
-    plot(PhosphReport(coilInd).polyshape_centroid(1), PhosphReport(coilInd).polyshape_centroid(2), 'g*', 'MarkerSize', 10, 'linewidth', 1.5);
+        [parameters.yCenter, PhosphReport(coilInd).polyshape_centroid(2)], 'm--', ...
+        'MarkerSize', 10, 'linewidth', 1.5);
+    plot(PhosphReport(coilInd).polyshape_centroid(1), PhosphReport(coilInd).polyshape_centroid(2), ...
+        'g*', 'MarkerSize', 10, 'linewidth', 1.5);
+    % Plot the target location chosen
+    plot(Targs(coilInd, 1), Targs(coilInd, 2), 'r*', ...
+        'MarkerSize', 10, 'linewidth', 1.5);
     xlim([0 parameters.screenXpixels]);
     ylim([0 parameters.screenYpixels]);
     xticks(parameters.screenXpixels * [0 1/4 1/2 3/4 1]);
@@ -201,11 +220,10 @@ fig2.Position = [1000 1000 1000 1000];
 
 for coilInd = 1:N
     subplot(n1,n2,coilInd);
-    plotGrating(parameters, PhosphReport(coilInd).polyshape_centroid(1), ...
-        PhosphReport(coilInd).polyshape_centroid(2));
-
+    plotGrating(parameters, Targs(coilInd, 1), Targs(coilInd, 2));
     hold on;
-    plot(PhosphReport(coilInd).polyshape_centroid(1), PhosphReport(coilInd).polyshape_centroid(2), 'g*', 'MarkerSize', 10, 'linewidth', 1.5);
+    plot(PhosphReport(coilInd).polyshape_centroid(1), PhosphReport(coilInd).polyshape_centroid(2), ...
+        'g*', 'MarkerSize', 10, 'linewidth', 1.5);
     plot(parameters.xCenter, parameters.yCenter,'+k', 'MarkerSize', 10, 'linewidth', 1.5);
     ax = gca; ax.YDir = 'reverse';
     ax.FontSize = 16;

@@ -3,8 +3,8 @@ function parameters = loadParameters(tmsRtnTpy)
 % program basic settings
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 parameters.boundSize = 8; % degrees of visual angle
-parameters.stimSize = 4; % degrees of visual angle
-parameters.maxRadius = 16; % degrees of visual angle
+parameters.stimSize = 5; % degrees of visual angle
+parameters.maxRadius = 12; % degrees of visual angle
 parameters.minRadius = 6; % degrees of visual angle
 parameters.valOris = [30, 60, 120, 150];
 parameters.jitterOris = 10; % degress of jitter allowed (uniform jitter)
