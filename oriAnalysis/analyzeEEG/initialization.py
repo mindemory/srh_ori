@@ -19,7 +19,7 @@ def load_paths(subjID, day):
     
     p['data'] = os.path.join(p['datd'], 'data')
     p['analysis'] = os.path.join(p['datd'], 'analysis')
-    p['meta'] = os.path.join(p['analysis'], 'meta')
+    p['meta'] = os.path.join(p['analysis'], 'meta_analysis')
     p['EEGData'] = f"{p['datd']}/EEGData/sub{subjID:02d}/day{day:02d}"
     p['EEGfiles'] = f"{p['datd']}/EEGfiles/sub{subjID:02d}/day{day:02d}"
     # if not os.path.exists(p['EEGfiles']):

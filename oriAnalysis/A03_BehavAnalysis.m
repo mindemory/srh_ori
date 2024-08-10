@@ -50,6 +50,8 @@ else
     day_dirs = day_dirs([day_dirs.isdir] & startsWith({day_dirs.name}, 'day') & ...
         ~ismember({day_dirs.name}, {'.', '..'}));
 
+    day_dirs = day_dirs(3);
+
     for didx = 1:length(day_dirs)
         block_dirs = dir([p.ori '/' day_dirs(didx).name]);
         block_dirs = block_dirs([block_dirs.isdir] & startsWith({block_dirs.name}, 'block') & ...
