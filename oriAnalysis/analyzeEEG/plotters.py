@@ -64,7 +64,7 @@ def plotPower(leftBandPower, rightBandPower, twindow_power, behav_df, band, cond
     plt.show()
 
 
-def plotRSA(bandPower, twindow_power, behav_df, conds_RSA, leftOccElecsIdx, rightOccElecsIdx):
+def plotRSAOld(bandPower, twindow_power, behav_df, conds_RSA, leftOccElecsIdx, rightOccElecsIdx):
     correct_baseline = 1
     if correct_baseline:
         baseline_time = np.where((twindow_power[0] >= 1) & (twindow_power[0] < 2))[0]
@@ -135,3 +135,43 @@ def plotRSA(bandPower, twindow_power, behav_df, conds_RSA, leftOccElecsIdx, righ
         #     axs[start//tslice].set_title('Occipital RSA')
         #     axs[start//tslice].legend()
 
+def plotRSA(data, tarray, dim=0):
+    print(tarray[0], tarray[-1])
+    plt.figure(figsize=(8, 8))
+    if dim == 0:
+        RSA_data = np.corrcoef(data)
+    else:
+        RSA_data = np.corrcoef(data.T)
+    qt_thresh = 0.2
+    low_qt = np.quantile(RSA_data[RSA_data != 0], qt_thresh)
+    high_qt = np.quantile(RSA_data[RSA_data != 0], 1-qt_thresh)
+    print(low_qt, high_qt)
+    plt.imshow(RSA_data, cmap='RdBu_r', vmin=low_qt, vmax=high_qt)
+    if dim == 1:
+        tick_vals = np.arange(int(tarray[0]), int(tarray[-1]+1))
+        tick_idx = [int(np.where(tarray == val)[0]) for val in tick_vals]
+        tick_labels = [str(val) for val in tick_vals]
+        plt.xticks(tick_idx, tick_labels)
+        plt.yticks(tick_idx, tick_labels)
+
+    plt.colorbar()
+    plt.gca().invert_yaxis()
+    plt.show()
+
+def plotDiffRSA(data1, data2, dim=0):
+    if dim == 0:
+        RSA_inPF = np.corrcoef(data1)
+        RSA_outPF = np.corrcoef(data2)
+    else:
+        RSA_inPF = np.corrcoef(data1.T)
+        RSA_outPF = np.corrcoef(data2.T)
+    RSA_diff = RSA_inPF - RSA_outPF
+    qt_thresh = 0.15
+    low_qt = np.quantile(RSA_diff, qt_thresh)
+    high_qt = np.quantile(RSA_diff, 1-qt_thresh)
+    print(low_qt, high_qt)
+    plt.figure(figsize=(8, 8))
+    plt.imshow(RSA_diff, cmap='RdBu_r', vmin=low_qt, vmax=high_qt)
+    plt.colorbar()
+    plt.gca().invert_yaxis()
+    plt.show()
