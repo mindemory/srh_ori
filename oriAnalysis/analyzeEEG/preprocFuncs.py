@@ -169,3 +169,71 @@ def getPower(trials_list, window_size, overlap, freq_band):
                 temporalPower[trlIdx, chIdx, start:end] += power#(temporalPower[trlIdx, chIdx, start:end] + power) / 2
     # temporalPower /= int(window_size/overlap) - 1
     return temporalPower, twindow_power
+
+
+def RunRSA(data, behav_df, freqband, cond, typeElecs, trange=[0,4.5], baseCorr=True):
+    if freqband == 'alpha':
+        freqs = np.arange(8, 13, 0.5)
+    elif freqband == 'beta':
+        freqs = np.arange(14, 25, 0.5)
+    n_cycles = freqs / 2
+
+    if cond == 'byPF':
+        cond1_trials = behav_df[behav_df['stimPF'] == 1].index
+        cond2_trials = behav_df[behav_df['stimPF'] == 0].index
+        condDict = {'inPF': cond1_trials, 'outPF': cond2_trials}
+    elif cond == 'byOri':
+        cond1_trials = behav_df[behav_df['oriCategory'] == 30].index
+        cond2_trials = behav_df[behav_df['oriCategory'] == 60].index
+        cond3_trials = behav_df[behav_df['oriCategory'] == 120].index
+        cond4_trials = behav_df[behav_df['oriCategory'] == 150].index
+        condDict = {'30': cond1_trials, '60': cond2_trials, '120': cond3_trials, '150': cond4_trials}
+    elif cond == 'byOriandPF':
+        cond1_trials = behav_df[(behav_df['oriCategory'] == 30) & (behav_df['stimPF'] == 1)].index
+        cond2_trials = behav_df[(behav_df['oriCategory'] == 60) & (behav_df['stimPF'] == 1)].index
+        cond3_trials = behav_df[(behav_df['oriCategory'] == 120) & (behav_df['stimPF'] == 1)].index
+        cond4_trials = behav_df[(behav_df['oriCategory'] == 150) & (behav_df['stimPF'] == 1)].index
+        cond5_trials = behav_df[(behav_df['oriCategory'] == 30) & (behav_df['stimPF'] == 0)].index
+        cond6_trials = behav_df[(behav_df['oriCategory'] == 60) & (behav_df['stimPF'] == 0)].index
+        cond7_trials = behav_df[(behav_df['oriCategory'] == 120) & (behav_df['stimPF'] == 0)].index
+        cond8_trials = behav_df[(behav_df['oriCategory'] == 150) & (behav_df['stimPF'] == 0)].index
+        condDict = {'30 inPF': cond1_trials, '60 inPF': cond2_trials, '120 inPF': cond3_trials, '150 inPF': cond4_trials,
+                    '30 outPF': cond5_trials, '60 outPF': cond6_trials, '120 outPF': cond7_trials, '150 outPF': cond8_trials}
+    elif cond == 'byOri_broad':
+        cond1_trials = behav_df[(behav_df['oriCategory'] == 30) | (behav_df['oriCategory'] == 60)].index
+        cond2_trials = behav_df[(behav_df['oriCategory'] == 120) | (behav_df['oriCategory'] == 150)].index
+        condDict = {'30-60': cond1_trials, '120-150': cond2_trials}
+
+    if typeElecs == 'occ_hemi':
+        leftElecs = ['O1', 'PO3', 'PO7', 'P1', 'P3', 'P7']
+        rightElecs = ['O2', 'PO4', 'PO8', 'P2', 'P4', 'P8']
+    elif typeElecs == 'par_hemi':
+        leftElecs = ['CP1', 'CP3', 'CP5', 'P1', 'P3', 'P5']
+        rightElecs = ['CP2', 'CP4', 'CP6', 'P2', 'P4', 'P6']
+    elif typeElecs == 'occ':
+        Elecs = ['O1', 'PO3', 'PO7', 'P1', 'P3', 'P7', 'O2', 'PO4', 'PO8', 'P2', 'P4', 'P8']
+    elif typeElecs == 'par':
+        Elecs = ['CP1', 'CP3', 'CP5', 'P1', 'P3', 'P5', 'CP2', 'CP4', 'CP6', 'P2', 'P4', 'P6']
+
+    data = {}
+
+    if 'hemi' in typeElecs:
+        for condIdx in range(len(condDict)):
+            leftBandPower = mne.time_frequency.tfr_morlet(data[condDict[condIdx]],
+                                                    freqs=freqs, n_cycles=n_cycles, use_fft=True, return_itc=False, average=False, picks=leftElecs, decim=3, n_jobs=7)
+            rightBandPower = mne.time_frequency.tfr_morlet(data[condDict[condIdx]],
+                                                    freqs=freqs, n_cycles=n_cycles, use_fft=True, return_itc=False, average=False, picks=rightElecs, decim=3, n_jobs=7)
+            dataLeft = leftBandPower.data.mean(axis=(1, 2))  # Mean across freqs and channels
+            dataRight = rightBandPower.data.mean(axis=(1, 2))  # Mean across freqs and channels
+            if baseCorr:
+                base_tstart = leftBandPower.time_as_index(-1)[0]
+                base_tend = leftBandPower.time_as_index(0)[0]
+                dataLeft_baseline = dataLeft[:, base_tstart:base_tend].mean(axis=1)
+                dataRight_baseline = dataRight[:, base_tstart:base_tend].mean(axis=1)
+                dataLeft = 10 * np.log10(dataLeft[:, trange[0]:trange[1]] / dataLeft_baseline[:, np.newaxis])
+                dataRight = 10 * np.log10(dataRight[:, trange[0]:trange[1]] / dataRight_baseline[:, np.newaxis])
+            else:
+                dataLeft = 10 * np.log10(dataLeft[:, trange[0]:trange[1]])
+                dataRight = 10 * np.log10(dataRight[:, trange[0]:trange[1]])
+            # data{}
+
