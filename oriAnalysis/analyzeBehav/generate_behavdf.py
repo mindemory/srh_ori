@@ -30,26 +30,44 @@ mdf_fname = 'master_df.csv'
 df_name = 'df_fname'
 p[df_name] = os.path.join(p['meta'], mdf_fname)
 
-if os.path.exists(p[df_name]):
-    print('Loading existing dataframe! If this is not desired, delete the current master_df.csv')
-    master_df = pd.read_csv(p[df_name]) 
-else:
-    print('Creating a new dataframe...')
-    # Find subjects and days that have been run so far
-    sub_dirs = [d for d in os.listdir(os.path.join(p['analysis'])) if d.startswith('sub')]
-    sub_dirs = ['sub99']
-    subjIDs = sorted([int(ss[-2:]) for ss in sub_dirs])
-    
-    print(f"We have {len(subjIDs)} subjects so far: {subjIDs}")
-    print()
 
-    master_df = pd.DataFrame()
-    # Create a master dataframe
-    for ss in subjIDs:
-        temp_df = pd.read_csv(os.path.join(p['analysis'], f'sub{ss:02}', f'sub{ss:02}_behav.csv'))
+print('Creating a new dataframe...')
+# Find subjects and days that have been run so far
+sub_dirs = [d for d in os.listdir(os.path.join(p['analysis'])) if d.startswith('sub')]
+sub_dirs = ['sub02']
+subjIDs = sorted([int(ss[-2:]) for ss in sub_dirs])
+
+print(f"We have {len(subjIDs)} subjects so far: {subjIDs}")
+print()
+
+master_df = pd.DataFrame()
+# Create a master dataframe
+for ss in subjIDs:
+    temp_df = pd.read_csv(os.path.join(p['analysis'], f'sub{ss:02}', f'sub{ss:02}_behav.csv'))
+    
+
+    master_df = pd.concat([master_df, temp_df])
+
+# if os.path.exists(p[df_name]):
+#     print('Loading existing dataframe! If this is not desired, delete the current master_df.csv')
+#     master_df = pd.read_csv(p[df_name]) 
+# else:
+    # print('Creating a new dataframe...')
+    # # Find subjects and days that have been run so far
+    # sub_dirs = [d for d in os.listdir(os.path.join(p['analysis'])) if d.startswith('sub')]
+    # sub_dirs = ['sub99']
+    # subjIDs = sorted([int(ss[-2:]) for ss in sub_dirs])
+    
+    # print(f"We have {len(subjIDs)} subjects so far: {subjIDs}")
+    # print()
+
+    # master_df = pd.DataFrame()
+    # # Create a master dataframe
+    # for ss in subjIDs:
+    #     temp_df = pd.read_csv(os.path.join(p['analysis'], f'sub{ss:02}', f'sub{ss:02}_behav.csv'))
         
 
-        master_df = pd.concat([master_df, temp_df])
+    #     master_df = pd.concat([master_df, temp_df])
         # master_df.append(temp_df)
         # Extract meta-data for this subject
         # metadata = All_metadata[ss]
@@ -84,5 +102,5 @@ else:
 
     # Save the master dataframe
     # master_df = pd.concat(master_df)
-    master_df.to_csv(p[df_name], index=False)
+    # master_df.to_csv(p[df_name], index=False)
 

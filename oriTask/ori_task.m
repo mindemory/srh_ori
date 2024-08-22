@@ -4,12 +4,12 @@ close all; clc;
 % Created by Mrugank Dake, Curtis Lab, NYU (03/26/2024)
 % Eyelink flags:
 %               Fixation: XDAT 1
-%               Sample:   XDAT 2
-%               Delay 1:  XDAT 3
-%               Delay 2:  XDAT 4
-%               Response: XDAT 5
-%               Feedback: XDAT 6
-%               ITI:      XDAT 7
+%               Sample:   XDAT 10/11
+%               Delay 1:  XDAT 2
+%               Delay 2:  XDAT 3
+%               Response: XDAT 4
+%               Feedback: XDAT 5
+%               ITI:      XDAT 6
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Initialization
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -81,7 +81,7 @@ elseif strcmp(hostname, 'tmsubuntu') % Running stimulus code for testing
         parameters.EEG = 0;
         ori_data_path = [master_dir '/md_data/TMS_ori/data/ori_practice_data/sub' subjID];
     else
-        parameters.EEG = 1;
+        parameters.EEG = 0;
         ori_data_path = [master_dir '/md_data/TMS_ori/data/ori_data/sub' subjID];
     end
     parameters.eyetracker = 1;
@@ -382,26 +382,27 @@ for block = start_block:end_block
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         delay2StartTime = GetSecs;
         
-        % EEG marker --> Delay 2 begins
-        if parameters.EEG
-            fname = ['sudo python3 ' trigger_path_EEG '/eegflag3.py'];
-            system(fname);
-            EEGtimeReport.delay2(trial) = GetSecs;
-            trigReport(trig_counter) = 3;
-            trig_counter = trig_counter + 1;
-        end
-
-        if parameters.TMS == 1
-            TMS('Train', s); % Train of TMS pulses, set pulse protocol on MagVenture Timing page
-        end
-
-        %record to the edf file that noise mask is started
-        if parameters.eyetracker
-            Eyelink('command', 'record_status_message "TRIAL %i/%i /delay2"', trial, trialNum);
-            Eyelink('Message', 'XDAT %i ', 3);
-        end
-
         if d2_dur > 0
+            % EEG marker --> Delay 2 begins
+            if parameters.EEG
+                fname = ['sudo python3 ' trigger_path_EEG '/eegflag3.py'];
+                system(fname);
+                EEGtimeReport.delay2(trial) = GetSecs;
+                trigReport(trig_counter) = 3;
+                trig_counter = trig_counter + 1;
+            end
+    
+            if parameters.TMS == 1
+                TMS('Train', s); % Train of TMS pulses, set pulse protocol on MagVenture Timing page
+            end
+    
+            %record to the edf file that noise mask is started
+            if parameters.eyetracker
+                Eyelink('command', 'record_status_message "TRIAL %i/%i /delay2"', trial, trialNum);
+                Eyelink('Message', 'XDAT %i ', 3);
+            end
+    
+            
             % Draw fixation cross
             if aperture == 1
                 drawTextures(parameters, screen, 'Aperture');
@@ -411,6 +412,7 @@ for block = start_block:end_block
             if GetSecs - delay2StartTime < d2_dur
                 WaitSecs(d2_dur - (GetSecs - delay2StartTime));
             end
+
         end
         timeReport(trial).delay2Duration = GetSecs - delay2StartTime;
 
@@ -601,7 +603,7 @@ for block = start_block:end_block
         end
 
         timeReport(trial).itiDuration = GetSecs - itiStartTime;
-        timeReport(trial).trialDuration = GetSecs - sampleStartTime;
+        timeReport(trial).trialDuration = GetSecs - initStartTime;
     end
 
     %% Saving Data and Closing everything
