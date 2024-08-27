@@ -556,7 +556,7 @@ for block = start_block:end_block
             drawTextures(parameters, screen, 'Aperture');
         end
         drawTextures(parameters, screen, 'GratingFeedback', screen.white, tMap, trial);
-        if respReport(trial).RT >= 3
+        if respReport(trial).RT >= parameters.respDuration
             drawTextures(parameters, screen, 'Response', parameters.TimeOutcolor, tMap, trial, currOri);
         elseif abs(errorOri) < 10
             drawTextures(parameters, screen, 'Response', parameters.feebackcolor, tMap, trial, currOri);

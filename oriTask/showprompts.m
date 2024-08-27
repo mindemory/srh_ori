@@ -26,6 +26,8 @@ switch prompt_name
     case 'FeedbackErr'
         if num > 88
             text = ['Great job! ' num2str(round(num), "%i") ' points'];
+        elseif num > 70
+            text = ['Not bad! ' num2str(round(num), "%i") ' points'];
         else
             text = ['Can do better! ' num2str(round(num), "%i") ' points'];
         end
