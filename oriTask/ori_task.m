@@ -520,10 +520,9 @@ for block = start_block:end_block
         respReport(trial).finalOri = currOri; % The final response subject selected
         
         if ~exist('respTime', 'var')
-            respReport(trial).RT = parameters.respDuration;
-        else
-            respReport(trial).RT = respTime;
+            respTime = parameters.respDuration;
         end
+        respReport(trial).RT = respTime;
 
         clearvars respTime;
         timeReport(trial).respDuration = GetSecs - respStartTime;
@@ -557,7 +556,7 @@ for block = start_block:end_block
             drawTextures(parameters, screen, 'Aperture');
         end
         drawTextures(parameters, screen, 'GratingFeedback', screen.white, tMap, trial);
-        if respTime >= 3
+        if respReport(trial).RT >= 3
             drawTextures(parameters, screen, 'Response', parameters.TimeOutcolor, tMap, trial, currOri);
         elseif abs(errorOri) < 10
             drawTextures(parameters, screen, 'Response', parameters.feebackcolor, tMap, trial, currOri);
