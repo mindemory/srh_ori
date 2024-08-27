@@ -184,6 +184,7 @@ for block = start_block:end_block
     end
 
     trialNum = length(tMap.stimVF);
+    pointsBlock = [];
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Initialize eyetracker
@@ -556,12 +557,17 @@ for block = start_block:end_block
             drawTextures(parameters, screen, 'Aperture');
         end
         drawTextures(parameters, screen, 'GratingFeedback', screen.white, tMap, trial);
-        if abs(errorOri) < 10
+        if respTime >= 3
+            drawTextures(parameters, screen, 'Response', parameters.TimeOutcolor, tMap, trial, currOri);
+        elseif abs(errorOri) < 10
             drawTextures(parameters, screen, 'Response', parameters.feebackcolor, tMap, trial, currOri);
         else
             drawTextures(parameters, screen, 'Response', parameters.procolor, tMap, trial, currOri);
         end
-        showprompts(screen, 'FeedbackErr', errorOri, 1)
+        pointsThisTrial = errorToPoints(abs(errorOri));
+%         showprompts(screen, 'FeedbackErr', errorOri, 1)
+        showprompts(screen, 'FeedbackErr', pointsThisTrial, 1)
+        pointsBlock = [pointsBlock pointsThisTrial];
 
         if GetSecs - feedbackStartTime < parameters.feedbackDuration
             WaitSecs(parameters.feedbackDuration - (GetSecs - feedbackStartTime));
@@ -608,7 +614,8 @@ for block = start_block:end_block
 
     %% Saving Data and Closing everything
     % stop eyelink and save eyelink data
-    showprompts(screen, 'BlockEnd', block)
+%     showprompts(screen, 'BlockEnd', block)
+    showprompts(screen, 'BlockEnd', mean(pointsBlock));
     Beeper('med',0.5,0.1)
     
     % Close Eyelink

@@ -194,8 +194,6 @@ switch texture_name
         currOri = lastVal;
         targX = tMap.targX(trial);
         targY = tMap.targY(trial);
-        
-        
 
         x1 = targX - cosd(currOri) * stimSize / 2;
         x2 = targX + cosd(currOri) * stimSize / 2;

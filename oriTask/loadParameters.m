@@ -21,6 +21,7 @@ parameters.procolor = [255 0 0]; % red
 parameters.anticolor = [255 0 0]; % red
 parameters.cuecolor = [0 255 0]; % green
 parameters.feebackcolor = [0 255 0]; % green
+parameters.TimeOutcolor = [255 191 0]; % amber
 parameters.fixationSizeDeg = 0.6; % degrees of visual angle
 parameters.boxColor = [0 0 0]; % black
 parameters.fixbreakthresh = 1; % degrees of visual angle

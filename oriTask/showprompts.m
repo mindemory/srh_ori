@@ -15,11 +15,20 @@ switch prompt_name
     case 'BlockStart'
         text = ['Block = ' num2str(num)];
     case 'BlockEnd'
-        text = ['End of block ' num2str(num) '. Please wait ...'];
+%         text = ['End of block ' num2str(num) '. Please wait ...'];
+        if num > 88
+            text = ['End of block! Total points = ' num2str(round(num), "%i") ' . Amazing!!!'];
+        else
+            text = ['End of block! Total points = ' num2str(round(num), "%i")];
+        end
     case 'ContinueorEsc'
         text = ['End of block ' num2str(num) '. Please take a break. Press SPACE to continue.'];
     case 'FeedbackErr'
-        text = ['Error = ' num2str(round(num), "%i") 'º'];
+        if num > 88
+            text = ['Great job! ' num2str(round(num), "%i") ' points'];
+        else
+            text = ['Can do better! ' num2str(round(num), "%i") ' points'];
+        end
     case 'CurrOri'
         text = ['Current Orientation = ' num2str(round(num), '%i') 'º'];
     case 'EyeCalibStart'
