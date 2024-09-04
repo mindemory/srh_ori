@@ -331,7 +331,7 @@ for block = start_block:end_block
                 drawTextures(parameters, screen, 'Grating', screen.white, tMap, trial, phase_val);
                 drawTextures(parameters, screen, 'FixationCross');
                 phase_val = phase_val + 90;
-                WaitSecs(0.1);
+%                 WaitSecs(0.1);
                 drawTextures(parameters, screen, 'FixationCross');
             end
         else
