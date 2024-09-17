@@ -13,6 +13,7 @@ close all; clc;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Initialization
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+flicker = 1;
 % Initialize parameters
 subjID = num2str(subjID, "%02d"); % convert subjID to string
 
@@ -35,20 +36,13 @@ if nargin < 7
     aperture = 0; % 0: full screen mode, 1: stimulus drawn on aperture
 end
 
-flicker = 0;
+
 % Check the system running on: currently accepted: syndrome, tmsubuntu
 [ret, hostname] = system('hostname');
 if ret ~= 0
     hostname = getenv('HOSTNAME');
 end
 hostname = strtrim(hostname);
-
-% Create a container mapping session number to session type
-% sessContainer = containers.Map('KeyType', 'int64', 'ValueType', 'char');
-% sessContainer(1) = 'notms';
-% sessContainer(2) = 'early';
-% sessContainer(3) = 'middle';
-% sessContainer(4) = 'late';
 
 % Initialize PTB and TMS/Eyetracking parameters
 if strcmp(hostname, 'syndrome') || strcmp(hostname, 'zod') || strcmp(hostname, 'zod.psych.nyu.edu') % Lab iMac is meant for debugging
@@ -65,10 +59,8 @@ if strcmp(hostname, 'syndrome') || strcmp(hostname, 'zod') || strcmp(hostname, '
         ori_data_path = ['/d/DATD/datd/TMS_ori/data/ori_data/sub' subjID];
     end
 elseif strcmp(hostname, 'tmsubuntu') % Running stimulus code for testing
-%     powerMate = 1;
     addpath(genpath('/usr/share/psychtoolbox-3'))
     parameters.isDemoMode = false; %set to true if you want the screen to be transparent
-%     parameters.TMS = 0; % set to 0 if there is no TMS stimulation
     % Relative paths for tmsubuntu
     curr_dir = pwd; filesepinds = strfind(curr_dir,filesep);
     master_dir = curr_dir(1:(filesepinds(end-2)-1));
@@ -95,8 +87,6 @@ end
 addpath(genpath(phosphene_data_path));
 addpath(genpath(ori_data_path));
 
-% Added temporarily
-% powerMate = 1;
 % Load taskMap
 if prac_status == 1
     load([phosphene_data_path '/taskMapPractice_sub' subjID])
@@ -327,13 +317,21 @@ for block = start_block:end_block
         end
         phase_val = 0;
         if flicker
-            while GetSecs - sampleStartTime < parameters.sampleDuration * 0.99
+            while GetSecs - sampleStartTime < parameters.sampleDuration * 0.5
                 drawTextures(parameters, screen, 'Grating', screen.white, tMap, trial, phase_val);
                 drawTextures(parameters, screen, 'FixationCross');
-                phase_val = phase_val + 90;
-%                 WaitSecs(0.1);
-                drawTextures(parameters, screen, 'FixationCross');
             end
+            drawTextures(parameters, screen, 'Grating', screen.white, tMap, trial, phase_val+90);
+            drawTextures(parameters, screen, 'FixationCross');
+            
+                
+%             while GetSecs - sampleStartTime < parameters.sampleDuration * 0.99
+%                 drawTextures(parameters, screen, 'Grating', screen.white, tMap, trial, phase_val);
+%                 drawTextures(parameters, screen, 'FixationCross');
+%                 phase_val = phase_val + 90;
+% %                 WaitSecs(0.1);
+%                 drawTextures(parameters, screen, 'FixationCross');
+%             end
         else
             drawTextures(parameters, screen, 'Grating', screen.white, tMap, trial);
             drawTextures(parameters, screen, 'FixationCross');
