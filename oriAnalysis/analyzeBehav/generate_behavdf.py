@@ -34,7 +34,7 @@ p[df_name] = os.path.join(p['meta'], mdf_fname)
 print('Creating a new dataframe...')
 # Find subjects and days that have been run so far
 sub_dirs = [d for d in os.listdir(os.path.join(p['analysis'])) if d.startswith('sub')]
-sub_dirs = ['sub01', 'sub02', 'sub05','sub08', 'sub11', 'sub12']
+sub_dirs = ['sub01', 'sub02', 'sub05', 'sub07', 'sub08', 'sub11', 'sub12']
 subjIDs = sorted([int(ss[-2:]) for ss in sub_dirs])
 
 print(f"We have {len(subjIDs)} subjects so far: {subjIDs}")
@@ -44,8 +44,11 @@ master_df = pd.DataFrame()
 # Create a master dataframe
 for ss in subjIDs:
     temp_df = pd.read_csv(os.path.join(p['analysis'], f'sub{ss:02}', f'sub{ss:02}_behav.csv'))
-    
 
+    if ss == 7:
+        # Drop rows for day == 2 and block == 7, 8, 12, 13
+        temp_df = temp_df[~((temp_df['day'] == 2) & (temp_df['block'].isin([7, 8, 12, 13])))]
+    
     master_df = pd.concat([master_df, temp_df])
 
 # if os.path.exists(p[df_name]):
