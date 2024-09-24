@@ -5,11 +5,12 @@ if nargin < 4
 end
 switch prompt_name
     case 'WelcomeWindow'
-        if num == 1
-            text = 'Welcome to the task. This is a TMS session. \n Press SPACE to continue ...';
-        else
-            text = 'Welcome to the task. This is a no TMS session. \n Press SPACE to continue ...';
-        end
+        text = 'Welcome to the task. This is a TMS session. \n Press SPACE to continue ...';
+%         if num == 1
+%             text = 'Welcome to the task. This is a TMS session. \n Press SPACE to continue ...';
+%         else
+%             text = 'Welcome to the task. This is a no TMS session. \n Press SPACE to continue ...';
+%         end
     case 'BlockExists'
         text = ['Block ' num2str(num) ' already exists. Press SPACE if you still want to continue, or ESCAPE to quit.'];
     case 'BlockStart'
