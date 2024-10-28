@@ -2,9 +2,26 @@ import numpy as np
 from scipy.stats import circmean#, circstd, circvar
 from scipy.stats import vonmises, uniform
 from scipy.optimize import minimize
-
+import pycircstat
 
 def circ_stats(data, axis=None):
+    # data = np.mod(data+90)
+    data = data * 2
+    data_rad = np.radians(data)
+
+    mean_rad = pycircstat.mean(data_rad, axis=axis)
+    std_rad = pycircstat.std(data_rad, axis=axis)
+    var = pycircstat.var(data_rad, axis=axis)
+    skew = pycircstat.skew(data_rad, axis=axis)
+    kurt = pycircstat.kurtosis(data_rad, axis=axis)
+
+    mean = np.degrees(mean_rad) / 2
+    std = np.degrees(std_rad) #/ 2
+
+    return mean, std, var, skew, kurt
+
+
+def circ_stats_old(data, axis=None):
     """
     Compute circular statistics for a given data array in degrees.
     
@@ -32,23 +49,24 @@ def circ_stats(data, axis=None):
         data = np.ravel(data)
         axis = 0
 
-    data = (data * 2) 
+    data = data * 2
     data_rad = np.radians(data)
     low, high = -np.pi, np.pi
 
     # Compute mean
-    mean_rad = circmean(data, low=low, high=high, axis=axis)
+    mean_rad = circmean(data_rad, low=low, high=high, axis=axis)
 
     # Compute resultant vector length
     n = data_rad.shape[axis]
-    R = np.abs(np.sum(np.exp(1j * data), axis=axis)) / n
+    R = np.abs(np.sum(np.exp(1j * data_rad), axis=axis)) / n
 
     # Circular standard deviation
+    # std_rad = np.sqrt(-2 * np.log(R))
     std_rad = 0.5 * np.sqrt(-2 * np.log(R))
 
     # Convert mean and std back to degrees
     mean = np.degrees(mean_rad) / 2
-    std = np.degrees(std_rad) / 2
+    std = np.degrees(std_rad) #/ 2
 
     # Circular variance
     var = 1 - R
@@ -79,7 +97,7 @@ def pure_vonmises_pdf(x, K):
     """
     return vonmises.pdf(x, K, loc=0)
 
-def mixture_model_pdf(x, g, K):
+def mixture_model_pdf(x, g, K, bias=0):
     """
     Compute the probability density function of a mixture model of von Mises and uniform distributions.
 
@@ -97,7 +115,7 @@ def mixture_model_pdf(x, g, K):
     pdf : ndarray
         Probability density function of the mixture model.
     """
-    vonmisses_part = (1-g) * vonmises.pdf(x, K, loc=0)
+    vonmisses_part = (1-g) * vonmises.pdf(x, K, loc=bias)
     uniform_part = g * uniform.pdf(x, loc=-np.pi, scale=2*np.pi)
     return vonmisses_part + uniform_part
 
@@ -123,7 +141,9 @@ def negative_log_likelihood(params, modelName, x):
     elif modelName == 'mixtureModel':
         g, K = params
         pdf = mixture_model_pdf(x, g, K)
-        
+    elif modelName == 'mixtureModelwithBias':
+        g, K, bias = params
+        pdf = mixture_model_pdf(x, g, K, bias)        
     nll = -np.sum(np.log(pdf) + 1e-10) # Add a small number to avoid log(0)
     return nll
 
@@ -137,6 +157,8 @@ def fit_model(x, modelName, max_trials=1000, tol=1e-6):
         bounds = [(0, None)]
     elif modelName == 'mixtureModel':
         bounds = [(0, 1), (0, None)]
+    elif modelName == 'mixtureModelwithBias':
+        bounds = [(0, 1), (0, None), (-np.pi, np.pi)]
     else:
         raise ValueError(f"Invalid model name: {modelName}")
     
@@ -145,10 +167,18 @@ def fit_model(x, modelName, max_trials=1000, tol=1e-6):
     no_improvement_iters = 0
 
     for trial in range(max_trials):
-        init_g = np.random.uniform(0, 1)
-        init_K = np.exp(np.random.uniform(np.log(1), np.log(100))) # Log-uniform in range [1, 100]
-        init_params = [init_g, init_K]
-
+        if modelName == 'vonMises':
+            init_K = np.exp(np.random.uniform(np.log(1), np.log(100)))
+            init_params = [init_K]
+        elif modelName == 'mixtureModel':
+            init_g = np.random.uniform(0, 1)
+            init_K = np.exp(np.random.uniform(np.log(1), np.log(100))) # Log-uniform in range [1, 100]
+            init_params = [init_g, init_K]
+        elif modelName == 'mixtureModelwithBias':
+            init_g = np.random.uniform(0, 1)
+            init_K = np.exp(np.random.uniform(np.log(1), np.log(100)))
+            init_bias = np.random.uniform(-np.pi, np.pi)
+            init_params = [init_g, init_K, init_bias]
         # Optimize the negative log-likelihood function
         result = minimize(negative_log_likelihood, init_params, args=(modelName, x), bounds=bounds)
 
