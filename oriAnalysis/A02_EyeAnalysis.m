@@ -7,7 +7,7 @@ close all; clc;
 % Initialization
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if nargin < 3
-    end_block = 20; % default number of blocks on any given day
+    end_block = 13; % default number of blocks on any given day
 end
 if nargin < 4
     prac_status = 0; % default is no practice aka actual run

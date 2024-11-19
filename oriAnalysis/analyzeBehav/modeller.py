@@ -4,7 +4,7 @@ from scipy.stats import vonmises, uniform
 from scipy.optimize import minimize
 import pycircstat
 
-def circ_stats(data, axis=None):
+def circ_stats_old(data, axis=None):
     # data = np.mod(data+90)
     data = data * 2
     data_rad = np.radians(data)
@@ -12,16 +12,16 @@ def circ_stats(data, axis=None):
     mean_rad = pycircstat.mean(data_rad, axis=axis)
     std_rad = pycircstat.std(data_rad, axis=axis)
     var = pycircstat.var(data_rad, axis=axis)
-    skew = pycircstat.skew(data_rad, axis=axis)
-    kurt = pycircstat.kurtosis(data_rad, axis=axis)
+    skew = 0#pycircstat.skew(data_rad, axis=axis)
+    kurt = 0#pycircstat.kurtosis(data_rad, axis=axis)
 
     mean = np.degrees(mean_rad) / 2
-    std = np.degrees(std_rad) #/ 2
+    # std = np.degrees(std_rad) #/ 2
 
-    return mean, std, var, skew, kurt
+    return mean, std_rad, var, skew, kurt
 
 
-def circ_stats_old(data, axis=None):
+def circ_stats(data, axis=None):
     """
     Compute circular statistics for a given data array in degrees.
     
@@ -61,12 +61,12 @@ def circ_stats_old(data, axis=None):
     R = np.abs(np.sum(np.exp(1j * data_rad), axis=axis)) / n
 
     # Circular standard deviation
-    # std_rad = np.sqrt(-2 * np.log(R))
-    std_rad = 0.5 * np.sqrt(-2 * np.log(R))
+    std_rad = np.sqrt(-2 * np.log(R))
+    # std_rad = 0.5 * np.sqrt(-2 * np.log(R))
 
     # Convert mean and std back to degrees
     mean = np.degrees(mean_rad) / 2
-    std = np.degrees(std_rad) #/ 2
+    # std = np.degrees(std_rad) #/ 2
 
     # Circular variance
     var = 1 - R
@@ -77,7 +77,7 @@ def circ_stats_old(data, axis=None):
     # Compute kurtosis
     kurt = np.mean(np.cos(2 * (data_rad - mean_rad)), axis=axis)
     
-    return mean, std, var, skew, kurt
+    return mean, std_rad, var, skew, kurt
 
 def pure_vonmises_pdf(x, K):
     """

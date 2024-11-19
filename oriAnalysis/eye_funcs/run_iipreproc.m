@@ -1,4 +1,4 @@
-function [ii_data,ii_cfg,ii_sacc] = run_iipreproc(p, edf_fn,cfg_fn,preproc_fn,ii_params,trialinfo,skip_steps)
+function [ii_data,ii_cfg,ii_sacc] = run_iipreproc(edf_fn,cfg_fn,preproc_fn,ii_params,trialinfo,skip_steps)
 % ii_preproc Performs default pre-processing stream
 %
 % For preprocessing saccade data (specifically, memory-guided saccade
@@ -51,7 +51,7 @@ function [ii_data,ii_cfg,ii_sacc] = run_iipreproc(p, edf_fn,cfg_fn,preproc_fn,ii
 ii_init;
 
 
-if nargin < 5 || isempty(ii_params)
+if nargin < 4 || isempty(ii_params)
     ii_params = ii_loadparams;
 end
 
@@ -60,7 +60,7 @@ if ischar(ii_params)
     ii_params = ii_loadparams(ii_params);
 end
 
-if nargin < 7 || isempty(skip_steps)
+if nargin < 6 || isempty(skip_steps)
     skip_steps = {}; % don't skip anything!
 end
 
@@ -76,14 +76,14 @@ else
 end
 %imported_plot = plot_data(ii_data,{'X','Y', 'TarX', 'TarY'})
 
-% Adding this to fix the Brokem Eyelink recording for sub04, day02, block07
-if strcmp(p.subjID, '04')
-    if p.day == 2
-        if strcmp(p.block(end-1:end), '07')
-            add_missing_trialholders;
-        end
-    end
-end
+% % Adding this to fix the Brokem Eyelink recording for sub04, day02, block07
+% if strcmp(p.subjID, '04')
+%     if p.day == 2
+%         if strcmp(p.block(end-1:end), '07')
+%             add_missing_trialholders;
+%         end
+%     end
+% end
 
 % truncate data to relevant XDATs
 [ii_data,ii_cfg] = ii_trim(ii_data,ii_cfg,ii_params.valid_epochs,ii_params.epoch_chan);
@@ -112,6 +112,10 @@ end
       ii_params.blink_thresh,ii_params.blink_window(1),ii_params.blink_window(2),'prctile'); 
 
 %blink_plot = plot_data(ii_data,{'X','Y', 'TarX', 'TarY'})
+
+% Interpolate all the blinks
+% [ii_data, ii_cfg] = ii_interpolate(ii_data,ii_cfg, {'X','Y'}, 'pchip');
+
 % split into individual trials (so that individual-trial corrections can be
 % applied)
 [ii_data,ii_cfg] = ii_definetrial(ii_data,ii_cfg,...
@@ -227,7 +231,6 @@ saveas(f_ts,sprintf('%s_timeseries.fig',preproc_fn),'fig');
 ii_cfg.params = ii_params;
 
 % save this script?
-
 % save ii_data,ii_cfg in _preproc.mat file
 ii_savedata(ii_data,ii_cfg,preproc_fn);
 
