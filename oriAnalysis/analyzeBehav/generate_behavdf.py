@@ -37,6 +37,9 @@ sub_dirs = [d for d in os.listdir(os.path.join(p['analysis'])) if d.startswith('
 # sub_dirs = ['sub01', 'sub02', 'sub05', 'sub07', 'sub08', 'sub11', 'sub12']
 subjIDs = sorted([int(ss[-2:]) for ss in sub_dirs])
 
+# Exclude subject 27
+subjIDs = [ss for ss in subjIDs if ss != 27]
+
 print(f"We have {len(subjIDs)} subjects so far: {subjIDs}")
 print()
 
@@ -53,4 +56,27 @@ for ss in subjIDs:
         temp_df = temp_df[~((temp_df['day'] == 2) & (temp_df['block'].isin([7, 8, 12, 13])))]
     
     master_df = pd.concat([master_df, temp_df])
+
+oriArrayCols = [col for col in master_df.columns if col.startswith('oriArray_')]
+oriSteps = master_df[oriArrayCols].notna().sum(axis=1)
+master_df = pd.concat([master_df, oriSteps.rename('oriSteps')], axis=1)
+initOffset = master_df['initOri'] - master_df['targOriActual']
+master_df['initOffset'] = (initOffset + 90) % 180 - 90
+errTemp = master_df['finalOri'] - master_df['targOriActual']
+master_df['errOri_scaled'] = (errTemp + 90) % 180 - 90
+master_df['abserrorOri'] = np.abs(master_df['errOri_scaled'])
+master_df['stimPF_label'] = master_df['stimPF'].apply(lambda x: 'outPF' if x == 0 else 'inPF')
+master_df['TMScond_label'] = master_df['TMScond'].apply(lambda x: 'No TMS' if x == 1 else 'Early TMS' if x == 2 else 'Middle TMS')
+master_df['TMSstatus'] = master_df['TMScond'].apply(lambda x: 'TMS' if x != 1 else 'No TMS')
+
+# Create the oriArray sequence 
+ori_columns = [col for col in master_df.columns if col.startswith('oriArray_')]
+
+# Combine these columns into a single column as arrays
+master_df['oriArray'] = master_df[ori_columns].apply(
+    lambda row: row.dropna().to_numpy(), axis=1
+)
+
+# Optionally drop the original columns if no longer needed
+master_df = master_df.drop(columns=ori_columns)
 

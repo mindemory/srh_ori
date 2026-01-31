@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.stats import circmean#, circstd, circvar
+from scipy.stats import circmean, circstd, circvar
 from scipy.stats import vonmises, uniform
 from scipy.optimize import minimize
 import pycircstat
@@ -49,35 +49,59 @@ def circ_stats(data, axis=None):
         data = np.ravel(data)
         axis = 0
 
-    data = data * 2
-    data_rad = np.radians(data)
-    low, high = -np.pi, np.pi
+    data = data #* 2
+    data_rad = data#np.radians(data)
+    low, high = -np.pi/2, np.pi/2
 
     # Compute mean
-    mean_rad = circmean(data_rad, low=low, high=high, axis=axis)
+    mean = circmean(data_rad, low=low, high=high, axis=axis)
+    std = circstd(data_rad, low=low, high=high, axis=axis)
+    var = circvar(data_rad, low=low, high=high, axis=axis)
+    return mean, std, var#, 0, 0
 
     # Compute resultant vector length
-    n = data_rad.shape[axis]
-    R = np.abs(np.sum(np.exp(1j * data_rad), axis=axis)) / n
+    # n = data_rad.shape[axis]
+    # R = np.abs(np.sum(np.exp(1j * data_rad), axis=axis)) / n
 
-    # Circular standard deviation
-    std_rad = np.sqrt(-2 * np.log(R))
-    # std_rad = 0.5 * np.sqrt(-2 * np.log(R))
+    # # Circular standard deviation
+    # std_rad = np.sqrt(-2 * np.log(R))
+    # # std_rad = 0.5 * np.sqrt(-2 * np.log(R))
 
-    # Convert mean and std back to degrees
-    mean = np.degrees(mean_rad) / 2
-    # std = np.degrees(std_rad) #/ 2
+    # # Convert mean and std back to degrees
+    # mean = np.degrees(mean_rad) / 2
+    # # std = np.degrees(std_rad) #/ 2
 
-    # Circular variance
-    var = 1 - R
+    # # Circular variance
+    # var = 1 - R
 
-    # Compute skewness
-    skew = np.mean(np.sin(2 * (data_rad - mean_rad)), axis=axis)
+    # # Compute skewness
+    # skew = np.mean(np.sin(2 * (data_rad - mean_rad)), axis=axis)
 
-    # Compute kurtosis
-    kurt = np.mean(np.cos(2 * (data_rad - mean_rad)), axis=axis)
+    # # Compute kurtosis
+    # kurt = np.mean(np.cos(2 * (data_rad - mean_rad)), axis=axis)
     
-    return mean, std_rad, var, skew, kurt
+    # return mean, std_rad, var, skew, kurt
+
+def fit_vonmises(data):
+    """
+    Fit a von Mises distribution to the data.
+
+    Parameters
+    ----------
+    data : array_like
+        Array of angles in radians.
+
+    Returns
+    -------
+    K : float
+        Concentration parameter of the von Mises distribution.
+    """
+    # data = 2*data # Convert to radians and between -pi and pi
+    params = vonmises.fit(data)
+    # print(params)
+    kappa, mu, scale = params
+    # print(f"mu = {mu}, kappa = {kappa}")
+    return mu, kappa
 
 def pure_vonmises_pdf(x, K):
     """
