@@ -1,0 +1,68 @@
+# Deep Dive into oriAnalysis Task List
+
+- [/] Refactor EEG folders
+  - [x] Rename `old` to `deprecated`
+  - [x] Move `analyzeEEG`, `eeg_funcs`, `tms_efield` to `deprecated`
+- [ ] Analyze Behavioral Analysis
+  - [ ] Analyze `A03_BehavAnalysis.m`
+  - [ ] Analyze `analyzeBehav` directory
+  - [ ] Analyze `A01_GetTimeReport.m`
+- [ ] Analyze Eye Tracking Analysis
+  - [ ] Analyze `A02_EyeAnalysis.m`
+  - [ ] Analyze `analysisEye` directory
+  - [ ] Analyze `eye_funcs` directory
+- [ ] Analyze Final/Combined Analysis
+  - [ ] Analyze `A04_FinalAnalysis.m`
+- [ ] Create Deep Dive Report
+- [x] Setup `srh` Environment
+  - [x] Create conda environment `srh` (Python 3.10)
+  - [x] Install dependencies (numpy<2, pandas, matplotlib, seaborn, scipy, statsmodels, pingouin, plotly)
+  - [x] Install `pycircstat` and `nose`
+- [x] Implement Error Distribution Plotting (No Fit)
+  - [x] Split by Orientations (30, 60, 120, 150)
+  - [x] Plot In vs Out PF for each condition
+- [x] Generate plot using `srh` env
+- [x] Exploratory Data Analysis (EDA)
+  - [x] Plot Distributions (`initOri`, `finalOri`, `targOriActual`)
+  - [x] Plot Scatterplots (`initOri` vs `finalOri`, `finalOri` vs `targOriActual`)
+- [x] Implement `V01_initialOffsetImpact.py` (Revised)
+  - [x] Scatter: Adjustment Cost (`AbsError` vs `initOffset`)
+  - [x] Use Signed `initOffset` (not Abs)
+  - [x] Add Figure 2: Same grid but Hue = `OriCat`
+  - [x] Switch to **Quadratic Fit** (Order 2) & update stats annotations
+  - [x] Use 4 Distinct Colors for OriCat
+  - [x] Always show $R^2$ Labels (on ALL subplots)
+  - [x] Set specific Y-axis limits (0-20, -20-20, 0.5-3)
+  - [x] Add Binned Bar Plots (6 bins of signed offset)
+  - [x] Fig 3: Binned Bars (Hue: Hemifield)
+  - [x] Fig 4: Binned Bars (Hue: OriCat)
+  - [x] Custom Axes for Bar Plots (0-12, -7-7, 1.0-2.5, -2-8)
+- [x] Implement `V02_tmsImpactOnBehav.py`
+  - [x] Bar Plot: Diagonal Attraction (TMS x Hemi)
+  - [x] Tuning Curves: Bias, AbsErr, RT (TMS x Hemi)
+- [x] Save all figures to `TMS_ori/Figures/exploratory/` LMM
+  - [x] Print summaries
+- [x] Save Statistical Output to `B02_statistical_results.txt`
+- [x] Implement `B03_targetedPlots.py`
+  - [x] Plot 1: Bias Interaction (TMS x Hemifield)
+  - [x] Plot 2: Serial Dependence (PrevError vs Error)
+  - [x] Plot 3: Orientation Bias (Cardinal Repulsion)
+  - [x] Show plots
+- [x] Implement `B02_statisticalAnalysis.py` (Aggregate Models)
+  - [x] Revert to trial-level data
+  - [x] Run Model Comparsion on 4 specific models
+  - [x] Add `errOri_scaled` (Bias) and `RT` to analysis
+- [x] Implement `B02_statisticalAnalysis.py` (Mixture Modeling)
+- [x] Implement `B02_statisticalAnalysis.py` (Mechanism Analysis)
+- [x] Implement `B02_statisticalAnalysis.py` (Final Refinement)
+  - [x] Switch to Aggregate Data (Mean per Condition)
+  - [x] Fit Von Mises Mixture Model (`Kappa`, `GuessRate`) - Keep Aggregate
+  - [x] Revert `AbsError`, `Bias`, `RT`, `DiagBias` to **Trial-Level**
+  - [x] Add `initOffset` as Independent Variable to Trial-Level models
+  - [x] Run Model Comparsion
+  - [x] Save results to `B02_statistical_results.txt`
+- [x] Implement `B03_targetedPlots.py`
+  - [x] Plot 1: Bias Interaction (TMS x Hemifield)
+  - [x] Plot 2: Serial Dependence (PrevError vs Error)
+  - [x] Plot 3: Orientation Bias (Cardinal Repulsion)
+  - [x] Show plots
