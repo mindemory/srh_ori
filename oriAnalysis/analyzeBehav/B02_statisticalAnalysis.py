@@ -1,186 +1,276 @@
-
 import numpy as np
 import pandas as pd
 import statsmodels.formula.api as smf
+import statsmodels.api as sm
+from scipy import stats
 import generate_behavdf as gm
 import modeller as md
+import os
+import sys
 import warnings
+import datetime
+import socket
 
 warnings.filterwarnings('ignore')
 pd.set_option("display.max.columns", None)
 pd.set_option("display.width", 1000)
-pd.set_option("display.precision", 2)
+pd.set_option("display.precision", 3)
+
+import sys
+import os
+import io
+
+# ... Imports ...
+
+# Simple Logger to write to both stdout and file
+class Logger(object):
+    def __init__(self, filename):
+        self.terminal = sys.stdout
+        self.log = open(filename, "w")
+    
+    def write(self, message):
+        self.terminal.write(message)
+        self.log.write(message)
+        
+    def flush(self):
+        self.terminal.flush()
+        self.log.flush()
+
+# Define output path relative to script
+script_dir = os.path.dirname(os.path.abspath(__file__))
+log_file = os.path.join(script_dir, "B02_statistical_results.txt")
+sys.stdout = Logger(log_file)
+
+# Context manager to suppress stdout during noisy fitting
+# (Modified to work with Logger)
+class HiddenPrints:
+    def __enter__(self):
+        self._original_stdout = sys.stdout
+        # Store the actual logger object if needed, or just replace sys.stdout
+        sys.stdout = open(os.devnull, 'w')
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        sys.stdout.close()
+        sys.stdout = self._original_stdout
+
+print("="*80)
+print(f"Analysis Run: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+print(f"Device: {socket.gethostname()}")
+print(f"Output saved to: {log_file}")
+print("="*80 + "\n")
 
 print("Loading data...")
 df = gm.master_df.copy()
 
-# --- Data Preparation ---
-print("Preparing data features...")
+# --- Feature Engineering ---
+print("Preparing features...")
 
-# Factor conversions
+# Factor Renaming
 df.rename(columns={
     'TMScond_label': 'TMS',        
     'stimPF_label': 'Hemifield',   
     'targOriCategory': 'OriCat',
-    'hemisphereStimulated': 'HemiStim'
 }, inplace=True)
 
-# 1. InitOffset (Existing: signed difference)
-# We keep it as is. It's the "Independent Feature" requested.
+# 1. Absolute Init Offset and Bins
+# Bins: [0, 30, 60, 90]
+df['AbsInitOffset'] = np.abs(df['initOffset'])
+bins = [0, 30, 60, 90]
+labels = ["0:30", "30:60", "60:90"]
+df['AbsOffsetBin'] = pd.cut(df['AbsInitOffset'], bins=bins, labels=labels, include_lowest=True)
 
-# 2. Diagonal Attraction DV
+# 2. Bias Towards Diagonal (Signed)
+# Flip sign for 60 and 150
 df['BiasTowardsDiagonal'] = df['errOri_scaled']
 df.loc[df['OriCat'].isin([60, 150]), 'BiasTowardsDiagonal'] *= -1
 
-# RT Cleanup
+# 3. AbsError and RT
+df['AbsError'] = np.abs(df['errOri_scaled'])
 if 'respDuration' in df.columns:        
      df.rename(columns={'respDuration': 'RT'}, inplace=True)
-if isinstance(df['RT'], pd.DataFrame):
-     rt_series = df['RT'].iloc[:, 0].copy()
-     df = df.drop(columns=['RT'])
-     df['RT'] = rt_series
-df['RT'] = pd.to_numeric(df['RT'], errors='coerce')
-df['absError'] = np.abs(df['errOri_scaled'])
 
-# Type Conversion
-df['TMS'] = df['TMS'].astype('category')
-df['Hemifield'] = df['Hemifield'].astype('category')
-df['OriCat'] = df['OriCat'].astype('category')
-df['HemiStim'] = df['HemiStim'].astype('category')
-df['subjID'] = df['subjID'].astype('category')
+# Handle potential DataFrame wrapper for RT or duplicate columns
+# FAIL-SAFE RT EXTRACTION
+try:
+    rt_col = df['RT']
+    if isinstance(rt_col, pd.DataFrame):
+        rt_col = rt_col.iloc[:, 0]
+    
+    if hasattr(rt_col, "values"):
+        vals = rt_col.values
+    else:
+        vals = np.array(rt_col)
+        
+    vals = np.array(vals)
+    if vals.ndim > 1:
+        vals = vals.ravel()
+        if len(vals) != len(df): 
+             vals = np.array(df['RT'])
+             if vals.ndim > 1: vals = vals[:, 0]
+             
+    # Strict list conversion
+    df['RT'] = pd.to_numeric(vals.tolist(), errors='coerce')
+
+except Exception as e:
+    print(f"WARNING: Could not process RT column. Dropping RT. Error: {e}")
+    if 'RT' in df.columns: df.drop(columns=['RT'], inplace=True)
+    if 'respDuration' in df.columns: df.drop(columns=['respDuration'], inplace=True)
+
+# Type Conversions
+for col in ['TMS', 'Hemifield', 'AbsOffsetBin', 'subjID']:
+    df[col] = df[col].astype('category')
 
 # Reorder
 df['TMS'] = df['TMS'].cat.reorder_categories(['No TMS', 'Early TMS', 'Middle TMS'], ordered=True)
 df['Hemifield'] = df['Hemifield'].cat.reorder_categories(['outPF', 'inPF'], ordered=True)
 
+# --- Data Aggregation & Mixture Modelling ---
+print("Aggregating data and fitting Mixture Models (this may take a while)...")
+
+group_cols = ['subjID', 'TMS', 'Hemifield', 'AbsOffsetBin']
+agg_rows = []
+
+# Iterating manually to fit models
+tms_conds = df['TMS'].unique()
+hues = df['Hemifield'].unique() # inPF, outPF
+bins = df['AbsOffsetBin'].unique()
+subjects = df['subjID'].unique()
+
+for tms in tms_conds:
+    for h in hues:
+        for b in bins:
+            for subj in subjects:
+                subset = df[
+                    (df['TMS'] == tms) & 
+                    (df['Hemifield'] == h) & 
+                    (df['AbsOffsetBin'] == b) &
+                    (df['subjID'] == subj)
+                ]
+                
+                if len(subset) < 5: continue
+                
+                # Standard Means
+                mean_abs_err = subset['AbsError'].mean()
+                mean_bias_diag = subset['BiasTowardsDiagonal'].mean()
+                mean_rt = subset['RT'].mean()
+                
+                # Mixture Fit
+                angles = subset['errOri_scaled'].dropna().values
+                g, K = np.nan, np.nan
+                try:
+                    # Suppress fitting output
+                    with HiddenPrints():
+                        res = md.fit_model(angles, 'mixtureModel')
+                    g, K = res
+                    # Sanity bounds
+                    if g < 0 or g > 1 or K < 0 or K > 100:
+                        g, K = np.nan, np.nan
+                        
+                except Exception:
+                    g, K = np.nan, np.nan
+                
+                agg_rows.append({
+                    'subjID': subj,
+                    'TMS': tms,
+                    'Hemifield': h,
+                    'AbsOffsetBin': b,
+                    'AbsError': mean_abs_err,
+                    'BiasTowardsDiagonal': mean_bias_diag,
+                    'RT': mean_rt,
+                    'Precision': K,
+                    'GuessRate': g
+                })
+
+df_agg = pd.DataFrame(agg_rows)
+print(f"Aggregation Complete. Shape: {df_agg.shape}")
+
+# --- Statistical Analysis ---
+# Metrics and Transforms
+# 1. AbsError (Continuous)
+# 2. Precision (Log Normalized)
+# 3. DiagAttraction (Continuous)
+# 4. RT (Log Normalized)
+# 5. GuessRate (Arcsin Normalized)
+
+# Apply Transforms
+labels = {
+    'AbsError': 'Absolute Error (deg)',
+    'log_Precision': 'Log Precision (log K)',
+    'BiasTowardsDiagonal': 'Diagonal Attraction (deg)',
+    'log_RT': 'Log Reaction Time (log s)',
+    'asin_GuessRate': 'Transformed Guess Rate (arcsin sqrt g)'
+}
+
+df_agg['log_Precision'] = np.log(df_agg['Precision'] + 1e-6) # Avoid log(0)
+# Ensure RT is numeric float before log
+df_agg['RT'] = pd.to_numeric(df_agg['RT'], errors='coerce')
+df_agg['log_RT'] = np.log(df_agg['RT'])
+df_agg['asin_GuessRate'] = np.arcsin(np.sqrt(df_agg['GuessRate']))
+
+metrics = list(labels.keys())
+
+# --- LMM Framework ---
+
+for met in metrics:
+    print(f"\n\n{'='*100}")
+    print(f"ANALYSIS: {labels[met]} ({met})")
+    print(f"{'='*100}")
+    
+    # Drop NaNs for this metric
+    data_clean = df_agg.dropna(subset=[met, 'TMS', 'Hemifield', 'AbsOffsetBin', 'subjID']).copy()
+    
+    # 1. Omnibus LMM
+    # Formula: Metric ~ TMS * Hemifield * AbsOffsetBin
+    # Random: 1 | subjID
+    
+    formula = f"{met} ~ TMS * Hemifield * AbsOffsetBin"
+    print(f"\n[Omnibus Model] {formula} + (1|Subject)")
+    
+    try:
+        model = smf.mixedlm(formula, data_clean, groups=data_clean["subjID"])
+        result = model.fit()
+        print(result.summary())
+    except Exception as e:
+        print(f"LMM Convergence Failed: {e}")
+        # Fallback?
+        continue
+
+    # 2. Post-hoc Pairwise Comparisons (inPF vs outPF)
+    # Requested: "Find specific bins where TMS caused a significant shift"
+    # We compare In vs Out for each Cell (TMS x Bin).
+    
+    print(f"\n[Post-Hoc: Hemifield Effect (In vs Out) per Condition]")
+    print(f"{'TMS':<12} | {'Bin':<10} | {'t-stat':<8} | {'p-val':<8} | {'Mean_In':<8} | {'Mean_Out':<8} | {'Sig'}")
+    print("-" * 80)
+    
+    for tms in tms_conds:
+        for b in bins:
+            subset = data_clean[(data_clean['TMS'] == tms) & (data_clean['AbsOffsetBin'] == b)]
+            
+            # Pivot to get paired samples
+            try:
+                pivoted = subset.pivot(index='subjID', columns='Hemifield', values=met)
+                in_vals = pivoted['inPF'].dropna()
+                out_vals = pivoted['outPF'].dropna()
+                
+                # Ensure intersection of indices (paired)
+                common = in_vals.index.intersection(out_vals.index)
+                if len(common) < 3:
+                    continue
+                    
+                in_vec = in_vals.loc[common]
+                out_vec = out_vals.loc[common]
+                
+                t_stat, p_val = stats.ttest_rel(in_vec, out_vec)
+                
+                sig_symbol = "***" if p_val < 0.001 else "**" if p_val < 0.01 else "*" if p_val < 0.05 else "." if p_val < 0.1 else ""
+                
+                print(f"{tms:<12} | {b:<10} | {t_stat:8.3f} | {p_val:8.3f} | {in_vec.mean():8.3f} | {out_vec.mean():8.3f} | {sig_symbol}")
+                
+            except Exception as e:
+                # print(e)
+                pass
 
 print("\n" + "="*80)
-print("SECTION 1: TRIAL-LEVEL ANALYSIS (Standard DVs + InitOffset)")
-print("Including 'initOffset' as Independent Variable")
-print("="*80 + "\n")
-
-dvs_trial = {
-    "Accuracy (AbsError)": "absError",
-    "Bias (Signed)": "errOri_scaled",
-    "Reaction Time": "RT",
-    "Diagonal Attraction": "BiasTowardsDiagonal"
-}
-
-for dv_label, dv_name in dvs_trial.items():
-    print(f"\n\n{'='*100}")
-    print(f"ANALYSIS FOR: {dv_label} ({dv_name})")
-    print(f"{'='*100}\n")
-    
-    # Clean Data
-    df_clean = df.dropna(subset=[dv_name, 'initOffset', 'TMS', 'Hemifield', 'OriCat', 'HemiStim'])
-    
-    # Models: Trial-Level with Subject Fixed Effects + InitOffset
-    # Note: Adding initOffset as a main covariate.
-    base_fe = "C(subjID) +"
-    models = {
-         # Simple Main Effects
-         "M1": f"{dv_name} ~ {base_fe} TMS * Hemifield + initOffset",
-         # Add Ori (Oblique Effect)
-         "M2": f"{dv_name} ~ {base_fe} TMS * Hemifield + OriCat + initOffset",
-         # Add Lateralized Interaction (Hypothesis)
-         "M3": f"{dv_name} ~ {base_fe} TMS * Hemifield + OriCat * HemiStim + initOffset",
-         # Full 4-Way
-         "M4": f"{dv_name} ~ {base_fe} TMS * Hemifield * OriCat * HemiStim + initOffset"
-    }
-
-    results_list = []
-
-    print(f"{'Model':<10} | {'AIC':<10} | {'BIC':<10} | {'R-squared':<10} | {'Adj. R2':<10} | {'Formula'}")
-    print("-" * 120)
-
-    try:
-        for name, formula in models.items():
-            model = smf.ols(formula, data=df_clean)
-            res = model.fit()
-            
-            results_list.append({
-                "Model": name,
-                "Formula": formula,
-                "AIC": res.aic,
-                "BIC": res.bic,
-                "R2": res.rsquared,
-                "AdjR2": res.rsquared_adj,
-                "Object": res
-            })
-            
-            print(f"{name:<10} | {res.aic:<10.1f} | {res.bic:<10.1f} | {res.rsquared:<10.3f} | {res.rsquared_adj:<10.3f} | {formula}")
-
-        if results_list:
-            sorted_results = sorted(results_list, key=lambda x: x['AIC'])
-            best_model = sorted_results[0]
-            print(f"\n--- Best Model for {dv_label} ---")
-            print(f"Best Model: {best_model['Model']}")
-            print(f"Formula: {best_model['Formula']}")
-            # Print Coefs for initOffset specifically
-            print(best_model['Object'].summary())
-            
-    except Exception as e:
-        print(f"Error analyzing {dv_name}: {e}")
-
-
-print("\n\n" + "="*80)
-print("SECTION 2: AGGREGATE ANALYSIS (Mixture Models)")
-print("Note: initOffset cannot be used here (averages to ~0)")
-print("="*80 + "\n")
-
-# Grouping for Mixture
-group_cols = ['subjID', 'TMS', 'Hemifield', 'OriCat', 'HemiStim']
-fit_results = []
-grouped = df.groupby(group_cols, observed=True)
-
-for name, group in grouped:
-    if len(group) < 10: continue
-    data_deg = group['errOri_scaled'].dropna().values
-    try:
-        g, K = md.fit_model(data_deg, modelName='mixtureModel')
-    except:
-        g, K = np.nan, np.nan
-    
-    fit_results.append(list(name) + [g, K])
-
-cols = group_cols + ['GuessRate', 'Precision']
-df_agg = pd.DataFrame(fit_results, columns=cols)
-df_agg = df_agg.replace([np.inf, -np.inf], np.nan).dropna()
-
-dvs_agg = {
-    "Precision (Kappa)": "Precision",
-    "Guess Rate": "GuessRate"
-}
-
-for dv_label, dv_name in dvs_agg.items():
-    print(f"\n\n{'='*100}")
-    print(f"MIXTURE ANALYSIS FOR: {dv_label} ({dv_name})")
-    print(f"{'='*100}\n")
-    
-    # Models (No initOffset, No C(subjID) because it's aggregate)
-    # Correct. In aggregate analysis of Subject Means, we treat Subj as random/noise and just look at fixed effects of conditions.
-    models = {
-         "M1": f"{dv_name} ~ TMS * Hemifield",
-         "M2": f"{dv_name} ~ TMS * Hemifield + OriCat",
-         "M3": f"{dv_name} ~ TMS * Hemifield + OriCat * HemiStim",
-         "M4": f"{dv_name} ~ TMS * Hemifield * OriCat * HemiStim"
-    }
-    
-    results_list = []
-    print(f"{'Model':<10} | {'AIC':<10} | {'BIC':<10} | {'R-squared':<10} | {'Adj. R2':<10}")
-    print("-" * 100)
-    
-    try:
-        for name, formula in models.items():
-            model = smf.ols(formula, data=df_agg)
-            res = model.fit()
-            results_list.append({"Model":name, "AIC":res.aic, "Obj":res})
-            print(f"{name:<10} | {res.aic:<10.1f} | {res.bic:<10.1f} | {res.rsquared:<10.3f} | {res.rsquared_adj:<10.3f}")
-
-        best = sorted(results_list, key=lambda x: x['AIC'])[0]
-        print(f"\nBest Model: {best['Model']}")
-        print(best['Obj'].summary())
-    except Exception as e:
-        print(e)
-        
-print("\n\nAll Analyses Complete.")
+print("Analysis Complete.")
+print("="*80)

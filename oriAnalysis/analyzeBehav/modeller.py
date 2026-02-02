@@ -49,38 +49,29 @@ def circ_stats(data, axis=None):
         data = np.ravel(data)
         axis = 0
 
-    data = data #* 2
-    data_rad = data#np.radians(data)
-    low, high = -np.pi/2, np.pi/2
-
-    # Compute mean
-    mean = circmean(data_rad, low=low, high=high, axis=axis)
-    std = circstd(data_rad, low=low, high=high, axis=axis)
-    var = circvar(data_rad, low=low, high=high, axis=axis)
-    return mean, std, var#, 0, 0
-
-    # Compute resultant vector length
-    # n = data_rad.shape[axis]
-    # R = np.abs(np.sum(np.exp(1j * data_rad), axis=axis)) / n
-
-    # # Circular standard deviation
-    # std_rad = np.sqrt(-2 * np.log(R))
-    # # std_rad = 0.5 * np.sqrt(-2 * np.log(R))
-
-    # # Convert mean and std back to degrees
-    # mean = np.degrees(mean_rad) / 2
-    # # std = np.degrees(std_rad) #/ 2
-
-    # # Circular variance
-    # var = 1 - R
-
-    # # Compute skewness
-    # skew = np.mean(np.sin(2 * (data_rad - mean_rad)), axis=axis)
-
-    # # Compute kurtosis
-    # kurt = np.mean(np.cos(2 * (data_rad - mean_rad)), axis=axis)
+    # Orientation domain: multiply by 2 to span full circle
+    data = data * 2
+    data_rad = np.radians(data)
     
-    # return mean, std_rad, var, skew, kurt
+    # Compute resultant vector length
+    n = data_rad.shape[axis]
+    R = np.abs(np.sum(np.exp(1j * data_rad), axis=axis)) / n
+
+    # Circular mean
+    mean_rad = np.angle(np.sum(np.exp(1j * data_rad), axis=axis))
+    
+    # Circular standard deviation
+    std_rad = np.sqrt(-2 * np.log(R))
+    
+    # Circular variance
+    var = 1 - R
+
+    # Convert mean and std back to degrees (divide by 2 for orientation)
+    mean = np.degrees(mean_rad) / 2
+    std = np.degrees(std_rad) / 2
+    
+    # Return mean, std, var (in 0-1 range), and placeholders for skew/kurt
+    return mean, std, var
 
 def fit_vonmises(data):
     """
