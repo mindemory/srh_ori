@@ -14,7 +14,7 @@ p = {}
 if hostname == 'zod.psych.nyu.edu' or hostname == 'zod':
     p['datd'] = '/d/DATD/datd/TMS_ori'
 else:
-    p['datd'] = '/Users/mrugankdake/Documents/Clayspace/EEG_TMS/datd/TMS_ori'
+    p['datd'] = '/Users/mrugankdake/Documents/Clayspace/TMS_ori'
 
 p['data'] = os.path.join(p['datd'], 'data', 'ori_data')
 p['analysis'] = os.path.join(p['datd'], 'analysis')
