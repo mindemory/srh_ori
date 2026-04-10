@@ -37,8 +37,8 @@ sub_dirs = [d for d in os.listdir(os.path.join(p['analysis'])) if d.startswith('
 # sub_dirs = ['sub01', 'sub02', 'sub05', 'sub07', 'sub08', 'sub11', 'sub12']
 subjIDs = sorted([int(ss[-2:]) for ss in sub_dirs])
 
-# Exclude subject 27
-subjIDs = [ss for ss in subjIDs if ss != 27]
+# Exclude subject 27 (Commented out per request to re-include)
+# subjIDs = [ss for ss in subjIDs if ss != 27]
 
 print(f"We have {len(subjIDs)} subjects so far: {subjIDs}")
 print()
@@ -68,6 +68,19 @@ master_df['abserrorOri'] = np.abs(master_df['errOri_scaled'])
 master_df['stimPF_label'] = master_df['stimPF'].apply(lambda x: 'outPF' if x == 0 else 'inPF')
 master_df['TMScond_label'] = master_df['TMScond'].apply(lambda x: 'No TMS' if x == 1 else 'Early TMS' if x == 2 else 'Middle TMS')
 master_df['TMSstatus'] = master_df['TMScond'].apply(lambda x: 'TMS' if x != 1 else 'No TMS')
+
+# --- Outlier Detection (Global 3SD) ---
+# Added: 2026-02-05
+global_mean_err = master_df['errOri_scaled'].mean()
+global_sd_err = master_df['errOri_scaled'].std()
+lower_z = global_mean_err - 3 * global_sd_err
+upper_z = global_mean_err + 3 * global_sd_err
+
+master_df['LargeError'] = 0
+master_df.loc[(master_df['errOri_scaled'] < lower_z) | (master_df['errOri_scaled'] > upper_z), 'LargeError'] = 1
+
+print(f"Outlier Detection: Global Mean={global_mean_err:.2f}, SD={global_sd_err:.2f}, Bounds=[{lower_z:.2f}, {upper_z:.2f}]")
+print(f"Total LargeErrors: {master_df['LargeError'].sum()}/{len(master_df)} ({(master_df['LargeError'].sum()/len(master_df))*100:.1f}%)")
 
 # Create the oriArray sequence 
 ori_columns = [col for col in master_df.columns if col.startswith('oriArray_')]

@@ -1,28 +1,22 @@
 import numpy as np
 import pandas as pd
-import statsmodels.formula.api as smf
-import statsmodels.api as sm
+from statsmodels.stats.anova import AnovaRM
 from scipy import stats
 import generate_behavdf as gm
-import modeller as md
 import os
 import sys
 import warnings
 import datetime
 import socket
+import itertools
+import modeller as md
 
 warnings.filterwarnings('ignore')
 pd.set_option("display.max.columns", None)
 pd.set_option("display.width", 1000)
 pd.set_option("display.precision", 3)
 
-import sys
-import os
-import io
-
-# ... Imports ...
-
-# Simple Logger to write to both stdout and file
+# Simple Logger
 class Logger(object):
     def __init__(self, filename):
         self.terminal = sys.stdout
@@ -36,33 +30,19 @@ class Logger(object):
         self.terminal.flush()
         self.log.flush()
 
-# Define output path relative to script
 script_dir = os.path.dirname(os.path.abspath(__file__))
 log_file = os.path.join(script_dir, "B02_statistical_results.txt")
 sys.stdout = Logger(log_file)
 
-# Context manager to suppress stdout during noisy fitting
-# (Modified to work with Logger)
-class HiddenPrints:
-    def __enter__(self):
-        self._original_stdout = sys.stdout
-        # Store the actual logger object if needed, or just replace sys.stdout
-        sys.stdout = open(os.devnull, 'w')
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        sys.stdout.close()
-        sys.stdout = self._original_stdout
-
 print("="*80)
 print(f"Analysis Run: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-print(f"Device: {socket.gethostname()}")
-print(f"Output saved to: {log_file}")
+print(f"Analysis Focus: Multiple DVs | Factors: OffsetGroup x TMS_Condition x DiagType")
 print("="*80 + "\n")
 
 print("Loading data...")
 df = gm.master_df.copy()
 
-# --- Feature Engineering ---
+# --- Feature Engineering Match V03 ---
 print("Preparing features...")
 
 # Factor Renaming
@@ -70,207 +50,169 @@ df.rename(columns={
     'TMScond_label': 'TMS',        
     'stimPF_label': 'Hemifield',   
     'targOriCategory': 'OriCat',
+    'hemisphereStimulated': 'HemiStim'
 }, inplace=True)
 
-# 1. Absolute Init Offset and Bins
-# Bins: [0, 30, 60, 90]
-df['AbsInitOffset'] = np.abs(df['initOffset'])
-bins = [0, 30, 60, 90]
-labels = ["0:30", "30:60", "60:90"]
-df['AbsOffsetBin'] = pd.cut(df['AbsInitOffset'], bins=bins, labels=labels, include_lowest=True)
+df = df[df['LargeError'] == 0].copy()
 
-# 2. Bias Towards Diagonal (Signed)
-# Flip sign for 60 and 150
+# Metrics
+df['AbsError'] = np.abs(df['errOri_scaled'])
+df['AbsInitOffset'] = np.abs(df['initOffset'])
 df['BiasTowardsDiagonal'] = df['errOri_scaled']
 df.loc[df['OriCat'].isin([60, 150]), 'BiasTowardsDiagonal'] *= -1
 
-# 3. AbsError and RT
-df['AbsError'] = np.abs(df['errOri_scaled'])
-if 'respDuration' in df.columns:        
-     df.rename(columns={'respDuration': 'RT'}, inplace=True)
+# --- GROUPING LOGIC ---
+# TMS Group: No TMS vs TMS (Early/Middle combined)
+df['TMS_Group'] = df['TMS'].replace({'Early TMS': 'TMS', 'Middle TMS': 'TMS'})
+df['TMS_Group'] = pd.Categorical(df['TMS_Group'], categories=['No TMS', 'TMS'], ordered=True)
 
-# Handle potential DataFrame wrapper for RT or duplicate columns
-# FAIL-SAFE RT EXTRACTION
-try:
-    rt_col = df['RT']
-    if isinstance(rt_col, pd.DataFrame):
-        rt_col = rt_col.iloc[:, 0]
+# Offset Group: Small (0-45) vs Large (45-90)
+df['OffsetGroup'] = pd.cut(df['AbsInitOffset'], bins=[0, 45, 90], labels=['Small Offset', 'Large Offset'], include_lowest=True)
+
+df['Hemifield'] = pd.Categorical(df['Hemifield'], categories=['outPF', 'inPF'], ordered=True)
+df['OriCat'] = df['OriCat'].astype(int)
+
+# OriCat45: 30+60 (diagonal ~45°) vs 120+150 (diagonal ~135°)
+df['OriCat45'] = df['OriCat'].replace({
+    30: 'Acute (30+60)', 60: 'Acute (30+60)',
+    120: 'Obtuse (120+150)', 150: 'Obtuse (120+150)'
+})
+
+# DiagType: nearDiag vs offDiag
+def classify_diag(row):
+    hemi_stim = row['HemiStim']
+    in_pf = row['Hemifield'] == 'inPF'
+    is_acute = row['OriCat45'] == 'Acute (30+60)'
     
-    if hasattr(rt_col, "values"):
-        vals = rt_col.values
+    if hemi_stim == 'Left':
+        return 'nearDiag' if (in_pf and not is_acute) or (not in_pf and is_acute) else 'offDiag'
+    else: # Right TMS
+        return 'nearDiag' if (in_pf and is_acute) or (not in_pf and not is_acute) else 'offDiag'
+
+df['DiagType'] = df.apply(classify_diag, axis=1)
+
+# TMS Condition: NoTMS vs TMS_inPF vs TMS_outPF
+def make_tms_inpf_cat(row):
+    if row['TMS_Group'] == 'No TMS':
+        return 'NoTMS'
     else:
-        vals = np.array(rt_col)
+        return f"TMS_{row['Hemifield']}"
         
-    vals = np.array(vals)
-    if vals.ndim > 1:
-        vals = vals.ravel()
-        if len(vals) != len(df): 
-             vals = np.array(df['RT'])
-             if vals.ndim > 1: vals = vals[:, 0]
-             
-    # Strict list conversion
-    df['RT'] = pd.to_numeric(vals.tolist(), errors='coerce')
+df['TMS_Condition'] = df.apply(make_tms_inpf_cat, axis=1)
+x_order = ['NoTMS', 'TMS_inPF', 'TMS_outPF']
+df['TMS_Condition'] = pd.Categorical(df['TMS_Condition'], categories=x_order, ordered=True)
 
-except Exception as e:
-    print(f"WARNING: Could not process RT column. Dropping RT. Error: {e}")
-    if 'RT' in df.columns: df.drop(columns=['RT'], inplace=True)
-    if 'respDuration' in df.columns: df.drop(columns=['respDuration'], inplace=True)
+# Reorder Factors
+df['subjID'] = df['subjID'].astype('category')
+df['OffsetGroup'] = df['OffsetGroup'].astype('category')
+df['DiagType'] = df['DiagType'].astype('category')
 
-# Type Conversions
-for col in ['TMS', 'Hemifield', 'AbsOffsetBin', 'subjID']:
-    df[col] = df[col].astype('category')
 
-# Reorder
-df['TMS'] = df['TMS'].cat.reorder_categories(['No TMS', 'Early TMS', 'Middle TMS'], ordered=True)
-df['Hemifield'] = df['Hemifield'].cat.reorder_categories(['outPF', 'inPF'], ordered=True)
+# --- Aggregation ---
+print("\nAggregating Mean DVs per Subject x OffsetGroup x TMS_Condition x DiagType...")
+agg_means = df.groupby(['subjID', 'OffsetGroup', 'TMS_Condition', 'DiagType'], observed=True)[['AbsError', 'RT', 'BiasTowardsDiagonal']].mean().reset_index()
 
-# --- Data Aggregation & Mixture Modelling ---
-print("Aggregating data and fitting Mixture Models (this may take a while)...")
-
-group_cols = ['subjID', 'TMS', 'Hemifield', 'AbsOffsetBin']
-agg_rows = []
-
-# Iterating manually to fit models
-tms_conds = df['TMS'].unique()
-hues = df['Hemifield'].unique() # inPF, outPF
-bins = df['AbsOffsetBin'].unique()
+# Compute Precision
+mixture_stats = []
 subjects = df['subjID'].unique()
+offsets = df['OffsetGroup'].cat.categories
+tms_conds = df['TMS_Condition'].cat.categories
+diag_types = df['DiagType'].cat.categories
 
-for tms in tms_conds:
-    for h in hues:
-        for b in bins:
-            for subj in subjects:
+print("Fitting Mixture Models for Precision...")
+for subj in subjects:
+    for off in offsets:
+        for tms in tms_conds:
+            for diag in diag_types:
                 subset = df[
-                    (df['TMS'] == tms) & 
-                    (df['Hemifield'] == h) & 
-                    (df['AbsOffsetBin'] == b) &
-                    (df['subjID'] == subj)
+                    (df['subjID'] == subj) & 
+                    (df['OffsetGroup'] == off) & 
+                    (df['TMS_Condition'] == tms) & 
+                    (df['DiagType'] == diag)
                 ]
                 
-                if len(subset) < 5: continue
+                if len(subset) < 5:
+                    continue
                 
-                # Standard Means
-                mean_abs_err = subset['AbsError'].mean()
-                mean_bias_diag = subset['BiasTowardsDiagonal'].mean()
-                mean_rt = subset['RT'].mean()
-                
-                # Mixture Fit
                 angles = subset['errOri_scaled'].dropna().values
-                g, K = np.nan, np.nan
                 try:
-                    # Suppress fitting output
-                    with HiddenPrints():
-                        res = md.fit_model(angles, 'mixtureModel')
+                    res = md.fit_model(angles, 'mixtureModel')
                     g, K = res
-                    # Sanity bounds
-                    if g < 0 or g > 1 or K < 0 or K > 100:
-                        g, K = np.nan, np.nan
-                        
-                except Exception:
-                    g, K = np.nan, np.nan
+                    if g < 0 or g > 1 or K < 0 or K > 50: K = np.nan
+                except:
+                    K = np.nan
                 
-                agg_rows.append({
-                    'subjID': subj,
-                    'TMS': tms,
-                    'Hemifield': h,
-                    'AbsOffsetBin': b,
-                    'AbsError': mean_abs_err,
-                    'BiasTowardsDiagonal': mean_bias_diag,
-                    'RT': mean_rt,
-                    'Precision': K,
-                    'GuessRate': g
-                })
+                if not np.isnan(K):
+                    mixture_stats.append({
+                        'subjID': subj,
+                        'OffsetGroup': off,
+                        'TMS_Condition': tms,
+                        'DiagType': diag,
+                        'Precision': K
+                    })
 
-df_agg = pd.DataFrame(agg_rows)
-print(f"Aggregation Complete. Shape: {df_agg.shape}")
+df_prec = pd.DataFrame(mixture_stats)
 
-# --- Statistical Analysis ---
-# Metrics and Transforms
-# 1. AbsError (Continuous)
-# 2. Precision (Log Normalized)
-# 3. DiagAttraction (Continuous)
-# 4. RT (Log Normalized)
-# 5. GuessRate (Arcsin Normalized)
+if not df_prec.empty:
+    agg = pd.merge(agg_means, df_prec, on=['subjID', 'OffsetGroup', 'TMS_Condition', 'DiagType'], how='left')
+else:
+    agg = agg_means
+    agg['Precision'] = np.nan
 
-# Apply Transforms
-labels = {
-    'AbsError': 'Absolute Error (deg)',
-    'log_Precision': 'Log Precision (log K)',
-    'BiasTowardsDiagonal': 'Diagonal Attraction (deg)',
-    'log_RT': 'Log Reaction Time (log s)',
-    'asin_GuessRate': 'Transformed Guess Rate (arcsin sqrt g)'
-}
+dvs = ['AbsError', 'RT', 'BiasTowardsDiagonal', 'Precision']
 
-df_agg['log_Precision'] = np.log(df_agg['Precision'] + 1e-6) # Avoid log(0)
-# Ensure RT is numeric float before log
-df_agg['RT'] = pd.to_numeric(df_agg['RT'], errors='coerce')
-df_agg['log_RT'] = np.log(df_agg['RT'])
-df_agg['asin_GuessRate'] = np.arcsin(np.sqrt(df_agg['GuessRate']))
+for dv in dvs:
+    # --- Statistical Analysis: 3-Way RM-ANOVA ---
+    print("\n\n" + "="*80)
+    print(f"3-WAY RM-ANOVA: {dv} ~ OffsetGroup * TMS_Condition * DiagType")
+    print("="*80)
 
-metrics = list(labels.keys())
-
-# --- LMM Framework ---
-
-for met in metrics:
-    print(f"\n\n{'='*100}")
-    print(f"ANALYSIS: {labels[met]} ({met})")
-    print(f"{'='*100}")
-    
-    # Drop NaNs for this metric
-    data_clean = df_agg.dropna(subset=[met, 'TMS', 'Hemifield', 'AbsOffsetBin', 'subjID']).copy()
-    
-    # 1. Omnibus LMM
-    # Formula: Metric ~ TMS * Hemifield * AbsOffsetBin
-    # Random: 1 | subjID
-    
-    formula = f"{met} ~ TMS * Hemifield * AbsOffsetBin"
-    print(f"\n[Omnibus Model] {formula} + (1|Subject)")
-    
-    try:
-        model = smf.mixedlm(formula, data_clean, groups=data_clean["subjID"])
-        result = model.fit()
-        print(result.summary())
-    except Exception as e:
-        print(f"LMM Convergence Failed: {e}")
-        # Fallback?
+    # Check balance for this DV
+    valid_data = agg.dropna(subset=[dv])
+    if valid_data.empty:
+        print(f"No valid data for {dv}.")
         continue
 
-    # 2. Post-hoc Pairwise Comparisons (inPF vs outPF)
-    # Requested: "Find specific bins where TMS caused a significant shift"
-    # We compare In vs Out for each Cell (TMS x Bin).
-    
-    print(f"\n[Post-Hoc: Hemifield Effect (In vs Out) per Condition]")
-    print(f"{'TMS':<12} | {'Bin':<10} | {'t-stat':<8} | {'p-val':<8} | {'Mean_In':<8} | {'Mean_Out':<8} | {'Sig'}")
-    print("-" * 80)
-    
-    for tms in tms_conds:
-        for b in bins:
-            subset = data_clean[(data_clean['TMS'] == tms) & (data_clean['AbsOffsetBin'] == b)]
-            
-            # Pivot to get paired samples
-            try:
-                pivoted = subset.pivot(index='subjID', columns='Hemifield', values=met)
-                in_vals = pivoted['inPF'].dropna()
-                out_vals = pivoted['outPF'].dropna()
-                
-                # Ensure intersection of indices (paired)
-                common = in_vals.index.intersection(out_vals.index)
-                if len(common) < 3:
-                    continue
-                    
-                in_vec = in_vals.loc[common]
-                out_vec = out_vals.loc[common]
-                
-                t_stat, p_val = stats.ttest_rel(in_vec, out_vec)
-                
-                sig_symbol = "***" if p_val < 0.001 else "**" if p_val < 0.01 else "*" if p_val < 0.05 else "." if p_val < 0.1 else ""
-                
-                print(f"{tms:<12} | {b:<10} | {t_stat:8.3f} | {p_val:8.3f} | {in_vec.mean():8.3f} | {out_vec.mean():8.3f} | {sig_symbol}")
-                
-            except Exception as e:
-                # print(e)
-                pass
+    counts = valid_data.groupby('subjID')[dv].count()
+    # Expected groups per subject: 2 (Offset) * 3 (TMS_Condition) * 2 (DiagType) = 12
+    valid = counts[counts == 12].index 
 
-print("\n" + "="*80)
-print("Analysis Complete.")
-print("="*80)
+    data_aov = valid_data[valid_data['subjID'].isin(valid)]
+    n = len(valid)
+    print(f"N = {n} subjects with complete data in all 12 cells for {dv}.")
+
+    if n < 5:
+        print(f"Skipping {dv} (N too low).")
+        continue
+
+    try:
+        aov = AnovaRM(data_aov, depvar=dv, subject='subjID', within=['OffsetGroup', 'TMS_Condition', 'DiagType'])
+        res = aov.fit()
+        print(res)
+    except Exception as e:
+        print(f"ANOVA Failed for {dv}: {e}")
+
+    print(f"\nMean {dv} per Main Effect and Interaction:")
+
+    print("\n--- Main Effect: OffsetGroup ---")
+    print(data_aov.groupby('OffsetGroup', observed=True)[dv].mean())
+
+    print("\n--- Main Effect: TMS_Condition ---")
+    print(data_aov.groupby('TMS_Condition', observed=True)[dv].mean())
+
+    print("\n--- Main Effect: DiagType ---")
+    print(data_aov.groupby('DiagType', observed=True)[dv].mean())
+
+    print("\n--- Interaction: OffsetGroup x TMS_Condition ---")
+    print(data_aov.groupby(['OffsetGroup', 'TMS_Condition'], observed=True)[dv].mean().unstack())
+
+    print("\n--- Interaction: OffsetGroup x DiagType ---")
+    print(data_aov.groupby(['OffsetGroup', 'DiagType'], observed=True)[dv].mean().unstack())
+
+    print("\n--- Interaction: TMS_Condition x DiagType ---")
+    print(data_aov.groupby(['TMS_Condition', 'DiagType'], observed=True)[dv].mean().unstack())
+
+    print("\n--- 3-Way Interaction: OffsetGroup x TMS_Condition x DiagType ---")
+    # Reset index for better printing
+    summary_3way = data_aov.groupby(['OffsetGroup', 'TMS_Condition', 'DiagType'], observed=True)[dv].mean().reset_index()
+    print(summary_3way.to_string(index=False))

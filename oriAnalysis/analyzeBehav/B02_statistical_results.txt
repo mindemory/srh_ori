@@ -1,230 +1,594 @@
 ================================================================================
-Analysis Run: 2026-02-02 16:23:57
-Device: zod
-Output saved to: /System/Volumes/Data/d/DATD/hyper/experiments/Mrugank/TMS/srh_ori/oriAnalysis/analyzeBehav/B02_statistical_results.txt
+Analysis Run: 2026-03-12 14:52:47
+Analysis Focus: Multiple DVs | Factors: OffsetGroup x TMS_Condition x DiagType
 ================================================================================
 
 Loading data...
 Preparing features...
-Aggregating data and fitting Mixture Models (this may take a while)...
-Aggregation Complete. Shape: (414, 9)
 
+Aggregating Mean DVs per Subject x OffsetGroup x TMS_Condition x DiagType...
+Fitting Mixture Models for Precision...
+Optimization successful after 20 iterations, NLL = -2.828253376931486
+Optimization successful after 20 iterations, NLL = 7.219795993465974
+Optimization successful after 20 iterations, NLL = 11.931635471650791
+Optimization successful after 20 iterations, NLL = 5.565372431306911
+Optimization successful after 20 iterations, NLL = 14.013188642782158
+Optimization successful after 20 iterations, NLL = 10.549790769723801
+Optimization successful after 20 iterations, NLL = 5.921949524244469
+Optimization successful after 20 iterations, NLL = 17.577274494985115
+Optimization successful after 20 iterations, NLL = 1.6101497196929804
+Optimization successful after 20 iterations, NLL = 11.242988671177807
+Optimization successful after 20 iterations, NLL = 11.608002502135886
+Optimization successful after 20 iterations, NLL = 14.560188038120785
+Optimization successful after 20 iterations, NLL = -2.3153961828787146
+Optimization successful after 20 iterations, NLL = 18.26992681274784
+Optimization successful after 20 iterations, NLL = 16.834205210589758
+Optimization successful after 20 iterations, NLL = 30.248376514697977
+Optimization successful after 20 iterations, NLL = 18.285318778163383
+Optimization successful after 20 iterations, NLL = 19.331421514799864
+Optimization successful after 20 iterations, NLL = 18.1649215432159
+Optimization successful after 20 iterations, NLL = 17.77876620667503
+Optimization successful after 20 iterations, NLL = 17.14591643911181
+Optimization successful after 20 iterations, NLL = 19.252322067271425
+Optimization successful after 20 iterations, NLL = 42.51316347927449
+Optimization successful after 20 iterations, NLL = 22.766114597592495
+Optimization successful after 20 iterations, NLL = 4.655003365205909
+Optimization successful after 20 iterations, NLL = 8.629137830610194
+Optimization successful after 20 iterations, NLL = 29.95879747082187
+Optimization successful after 20 iterations, NLL = 13.842957839069385
+Optimization successful after 20 iterations, NLL = 12.848784856033765
+Optimization successful after 20 iterations, NLL = 33.093402857439244
+Optimization successful after 20 iterations, NLL = 16.286815983880096
+Optimization successful after 20 iterations, NLL = 14.803093357114149
+Optimization successful after 20 iterations, NLL = 19.088212193606612
+Optimization successful after 20 iterations, NLL = 24.032647439130475
+Optimization successful after 20 iterations, NLL = 4.49871851141755
+Optimization successful after 20 iterations, NLL = 24.108725458094668
+Optimization successful after 20 iterations, NLL = -6.072945790243011
+Optimization successful after 20 iterations, NLL = 0.3523138170970606
+Optimization successful after 20 iterations, NLL = 18.82925012056115
+Optimization successful after 20 iterations, NLL = 25.25662521185048
+Optimization successful after 20 iterations, NLL = 5.536578144098133
+Optimization successful after 20 iterations, NLL = 16.315322374209696
+Optimization successful after 20 iterations, NLL = 9.399283350106737
+Optimization successful after 20 iterations, NLL = 16.346483033018885
+Optimization successful after 20 iterations, NLL = 11.800692156187242
+Optimization successful after 20 iterations, NLL = 21.192978363971985
+Optimization successful after 20 iterations, NLL = -0.07359427070610508
+Optimization successful after 20 iterations, NLL = 29.06903416747073
+Optimization successful after 20 iterations, NLL = 9.982230558794743
+Optimization successful after 20 iterations, NLL = 13.775286839868915
+Optimization successful after 20 iterations, NLL = 32.50775043525925
+Optimization successful after 20 iterations, NLL = 27.52464045645346
+Optimization successful after 20 iterations, NLL = 31.48007181440849
+Optimization successful after 20 iterations, NLL = 30.459121136487123
+Optimization successful after 20 iterations, NLL = 23.15425271166774
+Optimization successful after 20 iterations, NLL = 34.85003581522619
+Optimization successful after 20 iterations, NLL = 30.837520226611023
+Optimization successful after 20 iterations, NLL = 37.074675099094584
+Optimization successful after 20 iterations, NLL = 39.162969040327575
+Optimization successful after 20 iterations, NLL = 37.4326679645128
+Optimization successful after 20 iterations, NLL = 5.2638839766033065
+Optimization successful after 20 iterations, NLL = 8.250979345304803
+Optimization successful after 20 iterations, NLL = 11.098588750087625
+Optimization successful after 20 iterations, NLL = 10.3970761924885
+Optimization successful after 20 iterations, NLL = 13.268203657754485
+Optimization successful after 20 iterations, NLL = 7.505438943190843
+Optimization successful after 20 iterations, NLL = 9.878411912327964
+Optimization successful after 20 iterations, NLL = 21.72986305945313
+Optimization successful after 20 iterations, NLL = 5.310282786738712
+Optimization successful after 20 iterations, NLL = 19.570482915398742
+Optimization successful after 20 iterations, NLL = 26.771217367741247
+Optimization successful after 20 iterations, NLL = 27.287330016341524
+Optimization successful after 20 iterations, NLL = -2.548505070987392
+Optimization successful after 20 iterations, NLL = 7.588548866578749
+Optimization successful after 20 iterations, NLL = 0.12378460717936596
+Optimization successful after 20 iterations, NLL = 21.528438252272604
+Optimization successful after 20 iterations, NLL = 2.015335771278206
+Optimization successful after 20 iterations, NLL = 14.660556397619885
+Optimization successful after 20 iterations, NLL = 10.847177680624748
+Optimization successful after 20 iterations, NLL = 8.767461286461096
+Optimization successful after 20 iterations, NLL = 17.018046360952706
+Optimization successful after 20 iterations, NLL = 20.700533999228
+Optimization successful after 20 iterations, NLL = 11.58109806355819
+Optimization successful after 20 iterations, NLL = 12.33751611593456
+Optimization successful after 20 iterations, NLL = 1.4529470417035848
+Optimization successful after 20 iterations, NLL = 14.38213974313828
+Optimization successful after 20 iterations, NLL = 2.661434915779064
+Optimization successful after 20 iterations, NLL = 12.938711108889878
+Optimization successful after 20 iterations, NLL = 33.11852128251839
+Optimization successful after 20 iterations, NLL = 19.0206009690434
+Optimization successful after 20 iterations, NLL = 9.991420214603924
+Optimization successful after 20 iterations, NLL = 23.28412545937744
+Optimization successful after 20 iterations, NLL = 12.444716867860466
+Optimization successful after 20 iterations, NLL = 30.602094060919047
+Optimization successful after 20 iterations, NLL = 24.901251673039077
+Optimization successful after 20 iterations, NLL = 21.301215059327248
+Optimization successful after 20 iterations, NLL = 10.67939228563988
+Optimization successful after 20 iterations, NLL = 11.773165188969818
+Optimization successful after 20 iterations, NLL = 32.68619882662604
+Optimization successful after 20 iterations, NLL = 5.919091702230229
+Optimization successful after 20 iterations, NLL = 10.923552723115089
+Optimization successful after 20 iterations, NLL = 24.34983985601932
+Optimization successful after 20 iterations, NLL = 17.047447824410007
+Optimization successful after 20 iterations, NLL = 7.268203390698443
+Optimization successful after 20 iterations, NLL = 39.451153792236404
+Optimization successful after 20 iterations, NLL = 24.345342225656744
+Optimization successful after 20 iterations, NLL = 35.53181692089495
+Optimization successful after 20 iterations, NLL = 33.47551502010693
+Optimization successful after 20 iterations, NLL = 7.462590757877678
+Optimization successful after 20 iterations, NLL = 0.46217999329850695
+Optimization successful after 20 iterations, NLL = 12.860806732283908
+Optimization successful after 20 iterations, NLL = 2.0874738082338133
+Optimization successful after 20 iterations, NLL = 4.37150584823863
+Optimization successful after 20 iterations, NLL = 18.79269887172845
+Optimization successful after 20 iterations, NLL = 6.720583951098128
+Optimization successful after 20 iterations, NLL = 6.554885999449856
+Optimization successful after 20 iterations, NLL = 14.604089431635485
+Optimization successful after 20 iterations, NLL = 11.619359754150322
+Optimization successful after 20 iterations, NLL = 7.900109039353022
+Optimization successful after 20 iterations, NLL = 10.812984053656152
+Optimization successful after 20 iterations, NLL = 23.849646859262112
+Optimization successful after 20 iterations, NLL = 10.212308009414375
+Optimization successful after 20 iterations, NLL = 15.207522535505309
+Optimization successful after 20 iterations, NLL = 13.616027355514875
+Optimization successful after 20 iterations, NLL = 0.8326590544527042
+Optimization successful after 20 iterations, NLL = 7.704638586410827
+Optimization successful after 20 iterations, NLL = 12.048773887137301
+Optimization successful after 20 iterations, NLL = 3.7333210414628875
+Optimization successful after 20 iterations, NLL = 1.625014333058442
+Optimization successful after 20 iterations, NLL = 13.82471032703557
+Optimization successful after 20 iterations, NLL = 22.333013270130625
+Optimization successful after 20 iterations, NLL = 21.6347305815502
+Optimization successful after 20 iterations, NLL = -9.171171349244995
+Optimization successful after 20 iterations, NLL = 5.058410952391357
+Optimization successful after 20 iterations, NLL = -3.00916594166779
+Optimization successful after 20 iterations, NLL = 1.8118378964990969
+Optimization successful after 20 iterations, NLL = 3.3691475479856243
+Optimization successful after 20 iterations, NLL = 9.447932580772864
+Optimization successful after 20 iterations, NLL = -0.33964622990220594
+Optimization successful after 20 iterations, NLL = 6.99135486034443
+Optimization successful after 20 iterations, NLL = 7.778657749950185
+Optimization successful after 20 iterations, NLL = 4.571165589951726
+Optimization successful after 20 iterations, NLL = 0.8221630330029434
+Optimization successful after 20 iterations, NLL = 9.741862767465486
+Optimization successful after 20 iterations, NLL = 0.346274638500382
+Optimization successful after 20 iterations, NLL = 12.346400739537001
+Optimization successful after 20 iterations, NLL = 15.82273534423618
+Optimization successful after 20 iterations, NLL = -1.4064417735727162
+Optimization successful after 20 iterations, NLL = 12.445051128007556
+Optimization successful after 20 iterations, NLL = 28.255318330907965
+Optimization successful after 20 iterations, NLL = 5.722146734676411
+Optimization successful after 20 iterations, NLL = 11.261444405497624
+Optimization successful after 20 iterations, NLL = 12.484343722473612
+Optimization successful after 20 iterations, NLL = 0.3670368067213477
+Optimization successful after 20 iterations, NLL = 15.24490156460172
+Optimization successful after 20 iterations, NLL = 20.683153665221468
+Optimization successful after 20 iterations, NLL = 11.738411803733563
+Optimization successful after 20 iterations, NLL = 19.49826911581605
+Optimization successful after 20 iterations, NLL = 12.30049458667307
+Optimization successful after 20 iterations, NLL = 21.560855271037514
+Optimization successful after 20 iterations, NLL = 18.145255837781104
+Optimization successful after 20 iterations, NLL = 24.434879699972033
+Optimization successful after 20 iterations, NLL = 25.935079296483362
+Optimization successful after 20 iterations, NLL = 21.81498753903034
+Optimization successful after 20 iterations, NLL = 39.758571466804426
+Optimization successful after 20 iterations, NLL = 29.267225365504185
+Optimization successful after 20 iterations, NLL = 32.858510373943844
+Optimization successful after 20 iterations, NLL = 32.43207344023515
+Optimization successful after 20 iterations, NLL = -6.513655421084713
+Optimization successful after 20 iterations, NLL = -1.5224065263405349
+Optimization successful after 20 iterations, NLL = -11.34068768645927
+Optimization successful after 20 iterations, NLL = 2.0390214260831776
+Optimization successful after 20 iterations, NLL = 4.739490731062169
+Optimization successful after 20 iterations, NLL = 0.7242758236626933
+Optimization successful after 20 iterations, NLL = 4.6892154754950655
+Optimization successful after 20 iterations, NLL = 3.3600455501181252
+Optimization successful after 20 iterations, NLL = -2.8578840968991877
+Optimization successful after 20 iterations, NLL = 7.388509146241507
+Optimization successful after 20 iterations, NLL = 3.5859724687117622
+Optimization successful after 20 iterations, NLL = 9.90413900826138
+Optimization successful after 20 iterations, NLL = -3.0140216451006308
+Optimization successful after 20 iterations, NLL = -0.9544042953263695
+Optimization successful after 20 iterations, NLL = 6.622039133479019
+Optimization successful after 20 iterations, NLL = 18.977802969080596
+Optimization successful after 20 iterations, NLL = -0.674820187838401
+Optimization successful after 20 iterations, NLL = 9.237944700731079
+Optimization successful after 20 iterations, NLL = 3.311311760459208
+Optimization successful after 20 iterations, NLL = 0.46218086961339433
+Optimization successful after 20 iterations, NLL = 3.7766436074721295
+Optimization successful after 20 iterations, NLL = 1.2896263339231127
+Optimization successful after 20 iterations, NLL = 22.620952462550722
+Optimization successful after 20 iterations, NLL = 20.293862037748124
+Optimization successful after 20 iterations, NLL = 11.651670028009871
+Optimization successful after 20 iterations, NLL = 4.916373320066231
+Optimization successful after 20 iterations, NLL = 3.5487497271516597
+Optimization successful after 20 iterations, NLL = 13.715408219272009
+Optimization successful after 20 iterations, NLL = 6.0722626013249785
+Optimization successful after 20 iterations, NLL = 2.034186161276727
+Optimization successful after 20 iterations, NLL = 3.447837172396238
+Optimization successful after 20 iterations, NLL = 14.792919745921568
+Optimization successful after 20 iterations, NLL = 12.152727760824884
+Optimization successful after 20 iterations, NLL = 12.099706907372155
+Optimization successful after 20 iterations, NLL = 26.426581803892894
+Optimization successful after 20 iterations, NLL = 11.928444573336968
+Optimization successful after 20 iterations, NLL = -0.6089851500386197
+Optimization successful after 20 iterations, NLL = 10.833309762591561
+Optimization successful after 20 iterations, NLL = -0.3617160885635096
+Optimization successful after 20 iterations, NLL = -2.0875152592173185
+Optimization successful after 20 iterations, NLL = 4.692103021163669
+Optimization successful after 20 iterations, NLL = 0.1688205715220622
+Optimization successful after 20 iterations, NLL = 5.677429815050007
+Optimization successful after 20 iterations, NLL = 10.909204439069892
+Optimization successful after 20 iterations, NLL = 8.480770052742784
+Optimization successful after 20 iterations, NLL = 12.26809811866794
+Optimization successful after 20 iterations, NLL = -8.893268530631557
+Optimization successful after 20 iterations, NLL = 17.42266080808098
+Optimization successful after 20 iterations, NLL = -4.949959143428239
+Optimization successful after 20 iterations, NLL = -4.801281526292374
+Optimization successful after 20 iterations, NLL = -20.937292060649103
+Optimization successful after 20 iterations, NLL = -10.565686639274672
+Optimization successful after 20 iterations, NLL = -19.3144487982531
+Optimization successful after 20 iterations, NLL = -16.70593606219407
+Optimization successful after 20 iterations, NLL = 2.9009902159994407
+Optimization successful after 20 iterations, NLL = -6.622624009691682
+Optimization successful after 20 iterations, NLL = -10.027357168470688
+Optimization successful after 20 iterations, NLL = 0.03529097340821841
+Optimization successful after 20 iterations, NLL = -1.9767019991898374
+Optimization successful after 20 iterations, NLL = -0.23850987822560588
+Optimization successful after 20 iterations, NLL = 15.135883247020812
+Optimization successful after 20 iterations, NLL = 7.696552595999609
+Optimization successful after 20 iterations, NLL = 4.7409671789660885
+Optimization successful after 20 iterations, NLL = 9.224528565056204
+Optimization successful after 20 iterations, NLL = 13.15597548134189
+Optimization successful after 20 iterations, NLL = 7.429476991617146
+Optimization successful after 20 iterations, NLL = 15.674881945390934
+Optimization successful after 20 iterations, NLL = 2.9077480784671725
+Optimization successful after 20 iterations, NLL = 27.580070813953636
+Optimization successful after 20 iterations, NLL = 29.9081394463004
+Optimization successful after 20 iterations, NLL = 6.510167049381393
+Optimization successful after 20 iterations, NLL = -1.697448586817591
+Optimization successful after 20 iterations, NLL = -0.8119236257975223
+Optimization successful after 20 iterations, NLL = 14.65824063074937
+Optimization successful after 20 iterations, NLL = 3.702944090307768
+Optimization successful after 20 iterations, NLL = 5.984548881076692
+Optimization successful after 20 iterations, NLL = -23.29880857464558
+Optimization successful after 20 iterations, NLL = -9.521744027958558
+Optimization successful after 20 iterations, NLL = -1.6780635050544133
+Optimization successful after 20 iterations, NLL = -4.818570231620629
+Optimization successful after 20 iterations, NLL = 5.729206942196833
+Optimization successful after 20 iterations, NLL = 0.9492335101036842
+Optimization successful after 20 iterations, NLL = -2.2229326067081434
+Optimization successful after 20 iterations, NLL = -7.080934062909524
+Optimization successful after 20 iterations, NLL = -0.30915065270819153
+Optimization successful after 20 iterations, NLL = 4.608951390116994
+Optimization successful after 20 iterations, NLL = 4.629940322863035
+Optimization successful after 20 iterations, NLL = -4.9442156557382555
+Optimization successful after 20 iterations, NLL = -11.363427177537899
+Optimization successful after 20 iterations, NLL = 5.575895441603557
+Optimization successful after 20 iterations, NLL = 2.346803948249689
+Optimization successful after 20 iterations, NLL = -1.8084711199949108
+Optimization successful after 20 iterations, NLL = 9.317171422625151
+Optimization successful after 20 iterations, NLL = -11.508782088445557
+Optimization successful after 20 iterations, NLL = 1.5888463054849553
+Optimization successful after 20 iterations, NLL = 4.678485239549293
+Optimization successful after 20 iterations, NLL = 17.201067634422966
+Optimization successful after 20 iterations, NLL = 29.160099487113744
+Optimization successful after 20 iterations, NLL = 18.815430008664997
+Optimization successful after 20 iterations, NLL = 34.56773860035074
+Optimization successful after 20 iterations, NLL = 43.022600661824875
+Optimization successful after 20 iterations, NLL = 30.91553852175996
+Optimization successful after 20 iterations, NLL = 21.670754819095272
+Optimization successful after 20 iterations, NLL = 31.12941831014802
+Optimization successful after 20 iterations, NLL = 38.5365076077557
+Optimization successful after 20 iterations, NLL = 28.541188158807834
+Optimization successful after 20 iterations, NLL = 34.196593334880234
+Optimization successful after 20 iterations, NLL = 32.94587723564575
+Optimization successful after 20 iterations, NLL = 3.5307666274214187
+Optimization successful after 20 iterations, NLL = 11.968636522532606
+Optimization successful after 20 iterations, NLL = -3.4760578761749454
+Optimization successful after 20 iterations, NLL = 20.40202645455339
+Optimization successful after 20 iterations, NLL = 11.934103501719036
+Optimization successful after 20 iterations, NLL = 10.746526765702356
+Optimization successful after 20 iterations, NLL = 7.282748573032727
+Optimization successful after 20 iterations, NLL = 11.615316313415676
+Optimization successful after 20 iterations, NLL = 18.61650939059492
+Optimization successful after 20 iterations, NLL = 14.481645960665723
+Optimization successful after 20 iterations, NLL = 12.230876174974519
+Optimization successful after 20 iterations, NLL = 19.988941421296428
 
-====================================================================================================
-ANALYSIS: Absolute Error (deg) (AbsError)
-====================================================================================================
-
-[Omnibus Model] AbsError ~ TMS * Hemifield * AbsOffsetBin + (1|Subject)
-                                Mixed Linear Model Regression Results
-=====================================================================================================
-Model:                            MixedLM                Dependent Variable:                AbsError 
-No. Observations:                 414                    Method:                            REML     
-No. Groups:                       23                     Scale:                             2.1789   
-Min. group size:                  18                     Log-Likelihood:                    -774.8452
-Max. group size:                  18                     Converged:                         Yes      
-Mean group size:                  18.0                                                               
------------------------------------------------------------------------------------------------------
-                                                           Coef.  Std.Err.   z    P>|z| [0.025 0.975]
------------------------------------------------------------------------------------------------------
-Intercept                                                   7.289    0.417 17.480 0.000  6.472  8.106
-TMS[T.Middle TMS]                                          -0.271    0.435 -0.623 0.533 -1.125  0.582
-TMS[T.No TMS]                                              -0.496    0.435 -1.140 0.254 -1.349  0.357
-Hemifield[T.outPF]                                         -0.505    0.435 -1.160 0.246 -1.358  0.348
-AbsOffsetBin[T.30:60]                                      -0.253    0.435 -0.581 0.561 -1.106  0.600
-AbsOffsetBin[T.60:90]                                       0.596    0.435  1.370 0.171 -0.257  1.450
-TMS[T.Middle TMS]:Hemifield[T.outPF]                        0.456    0.616  0.741 0.459 -0.750  1.663
-TMS[T.No TMS]:Hemifield[T.outPF]                            0.315    0.616  0.512 0.608 -0.891  1.522
-TMS[T.Middle TMS]:AbsOffsetBin[T.30:60]                     0.748    0.616  1.216 0.224 -0.458  1.955
-TMS[T.No TMS]:AbsOffsetBin[T.30:60]                         1.553    0.616  2.524 0.012  0.347  2.760
-TMS[T.Middle TMS]:AbsOffsetBin[T.60:90]                     0.142    0.616  0.230 0.818 -1.065  1.348
-TMS[T.No TMS]:AbsOffsetBin[T.60:90]                         1.266    0.616  2.056 0.040  0.059  2.472
-Hemifield[T.outPF]:AbsOffsetBin[T.30:60]                    0.853    0.616  1.385 0.166 -0.354  2.059
-Hemifield[T.outPF]:AbsOffsetBin[T.60:90]                    0.572    0.616  0.930 0.353 -0.634  1.779
-TMS[T.Middle TMS]:Hemifield[T.outPF]:AbsOffsetBin[T.30:60] -0.637    0.871 -0.732 0.464 -2.344  1.069
-TMS[T.No TMS]:Hemifield[T.outPF]:AbsOffsetBin[T.30:60]     -1.351    0.871 -1.551 0.121 -3.057  0.356
-TMS[T.Middle TMS]:Hemifield[T.outPF]:AbsOffsetBin[T.60:90] -0.647    0.871 -0.743 0.457 -2.353  1.059
-TMS[T.No TMS]:Hemifield[T.outPF]:AbsOffsetBin[T.60:90]     -0.605    0.871 -0.695 0.487 -2.311  1.101
-Group Var                                                   1.820    0.408                           
-=====================================================================================================
-
-
-[Post-Hoc: Hemifield Effect (In vs Out) per Condition]
-TMS          | Bin        | t-stat   | p-val    | Mean_In  | Mean_Out | Sig
---------------------------------------------------------------------------------
-Middle TMS   | 0:30       |    0.142 |    0.888 |    7.017 |    6.969 | 
-Middle TMS   | 30:60      |   -0.431 |    0.671 |    7.513 |    7.679 | 
-Middle TMS   | 60:90      |    0.295 |    0.771 |    7.756 |    7.632 | 
-Early TMS    | 0:30       |    1.218 |    0.236 |    7.289 |    6.784 | 
-Early TMS    | 30:60      |   -1.464 |    0.157 |    7.036 |    7.383 | 
-Early TMS    | 60:90      |   -0.183 |    0.857 |    7.885 |    7.953 | 
-No TMS       | 0:30       |    0.574 |    0.572 |    6.793 |    6.603 | 
-No TMS       | 30:60      |    2.170 |    0.041 |    8.093 |    7.405 | *
-No TMS       | 60:90      |    0.374 |    0.712 |    8.655 |    8.432 | 
-
-
-====================================================================================================
-ANALYSIS: Log Precision (log K) (log_Precision)
-====================================================================================================
-
-[Omnibus Model] log_Precision ~ TMS * Hemifield * AbsOffsetBin + (1|Subject)
-                                Mixed Linear Model Regression Results
-=====================================================================================================
-Model:                          MixedLM               Dependent Variable:               log_Precision
-No. Observations:               414                   Method:                           REML         
-No. Groups:                     23                    Scale:                            0.1086       
-Min. group size:                18                    Log-Likelihood:                   -182.1885    
-Max. group size:                18                    Converged:                        Yes          
-Mean group size:                18.0                                                                 
------------------------------------------------------------------------------------------------------
-                                                           Coef.  Std.Err.   z    P>|z| [0.025 0.975]
------------------------------------------------------------------------------------------------------
-Intercept                                                   2.634    0.096 27.569 0.000  2.446  2.821
-TMS[T.Middle TMS]                                          -0.064    0.097 -0.662 0.508 -0.255  0.126
-TMS[T.No TMS]                                               0.007    0.097  0.076 0.940 -0.183  0.198
-Hemifield[T.outPF]                                         -0.023    0.097 -0.236 0.813 -0.213  0.168
-AbsOffsetBin[T.30:60]                                      -0.108    0.097 -1.116 0.264 -0.299  0.082
-AbsOffsetBin[T.60:90]                                      -0.290    0.097 -2.979 0.003 -0.480 -0.099
-TMS[T.Middle TMS]:Hemifield[T.outPF]                        0.045    0.137  0.325 0.745 -0.225  0.314
-TMS[T.No TMS]:Hemifield[T.outPF]                            0.123    0.137  0.891 0.373 -0.147  0.392
-TMS[T.Middle TMS]:AbsOffsetBin[T.30:60]                     0.073    0.137  0.534 0.593 -0.196  0.343
-TMS[T.No TMS]:AbsOffsetBin[T.30:60]                        -0.158    0.137 -1.147 0.251 -0.427  0.112
-TMS[T.Middle TMS]:AbsOffsetBin[T.60:90]                     0.157    0.137  1.144 0.253 -0.112  0.426
-TMS[T.No TMS]:AbsOffsetBin[T.60:90]                        -0.057    0.137 -0.418 0.676 -0.327  0.212
-Hemifield[T.outPF]:AbsOffsetBin[T.30:60]                   -0.034    0.137 -0.247 0.805 -0.303  0.235
-Hemifield[T.outPF]:AbsOffsetBin[T.60:90]                    0.030    0.137  0.217 0.829 -0.240  0.299
-TMS[T.Middle TMS]:Hemifield[T.outPF]:AbsOffsetBin[T.30:60] -0.080    0.194 -0.411 0.681 -0.461  0.301
-TMS[T.No TMS]:Hemifield[T.outPF]:AbsOffsetBin[T.30:60]      0.046    0.194  0.237 0.813 -0.335  0.427
-TMS[T.Middle TMS]:Hemifield[T.outPF]:AbsOffsetBin[T.60:90] -0.058    0.194 -0.297 0.767 -0.439  0.323
-TMS[T.No TMS]:Hemifield[T.outPF]:AbsOffsetBin[T.60:90]     -0.060    0.194 -0.307 0.759 -0.441  0.321
-Group Var                                                   0.101    0.101                           
-=====================================================================================================
-
-
-[Post-Hoc: Hemifield Effect (In vs Out) per Condition]
-TMS          | Bin        | t-stat   | p-val    | Mean_In  | Mean_Out | Sig
---------------------------------------------------------------------------------
-Middle TMS   | 0:30       |   -0.252 |    0.803 |    2.569 |    2.591 | 
-Middle TMS   | 30:60      |    0.989 |    0.334 |    2.534 |    2.442 | 
-Middle TMS   | 60:90      |    0.088 |    0.931 |    2.437 |    2.431 | 
-Early TMS    | 0:30       |    0.288 |    0.776 |    2.634 |    2.611 | 
-Early TMS    | 30:60      |    0.628 |    0.536 |    2.525 |    2.468 | 
-Early TMS    | 60:90      |   -0.069 |    0.945 |    2.344 |    2.351 | 
-No TMS       | 0:30       |   -0.863 |    0.397 |    2.641 |    2.741 | 
-No TMS       | 30:60      |   -1.600 |    0.124 |    2.375 |    2.487 | 
-No TMS       | 60:90      |   -0.577 |    0.570 |    2.294 |    2.364 | 
-
-
-====================================================================================================
-ANALYSIS: Diagonal Attraction (deg) (BiasTowardsDiagonal)
-====================================================================================================
-
-[Omnibus Model] BiasTowardsDiagonal ~ TMS * Hemifield * AbsOffsetBin + (1|Subject)
-                                Mixed Linear Model Regression Results
-=====================================================================================================
-Model:                        MixedLM             Dependent Variable:             BiasTowardsDiagonal
-No. Observations:             414                 Method:                         REML               
-No. Groups:                   23                  Scale:                          4.0666             
-Min. group size:              18                  Log-Likelihood:                 -907.2294          
-Max. group size:              18                  Converged:                      Yes                
-Mean group size:              18.0                                                                   
------------------------------------------------------------------------------------------------------
-                                                           Coef.  Std.Err.   z    P>|z| [0.025 0.975]
------------------------------------------------------------------------------------------------------
-Intercept                                                   1.670    0.720  2.319 0.020  0.259  3.082
-TMS[T.Middle TMS]                                           0.241    0.595  0.405 0.686 -0.925  1.406
-TMS[T.No TMS]                                              -0.202    0.595 -0.340 0.734 -1.368  0.963
-Hemifield[T.outPF]                                          0.744    0.595  1.250 0.211 -0.422  1.909
-AbsOffsetBin[T.30:60]                                       0.485    0.595  0.816 0.414 -0.680  1.651
-AbsOffsetBin[T.60:90]                                       1.518    0.595  2.553 0.011  0.353  2.684
-TMS[T.Middle TMS]:Hemifield[T.outPF]                       -0.365    0.841 -0.434 0.664 -2.013  1.283
-TMS[T.No TMS]:Hemifield[T.outPF]                           -0.702    0.841 -0.835 0.404 -2.351  0.946
-TMS[T.Middle TMS]:AbsOffsetBin[T.30:60]                    -0.074    0.841 -0.088 0.930 -1.722  1.574
-TMS[T.No TMS]:AbsOffsetBin[T.30:60]                         0.362    0.841  0.430 0.667 -1.286  2.010
-TMS[T.Middle TMS]:AbsOffsetBin[T.60:90]                    -1.000    0.841 -1.189 0.235 -2.648  0.649
-TMS[T.No TMS]:AbsOffsetBin[T.60:90]                        -0.565    0.841 -0.672 0.501 -2.214  1.083
-Hemifield[T.outPF]:AbsOffsetBin[T.30:60]                   -0.644    0.841 -0.766 0.444 -2.292  1.004
-Hemifield[T.outPF]:AbsOffsetBin[T.60:90]                   -0.447    0.841 -0.532 0.595 -2.096  1.201
-TMS[T.Middle TMS]:Hemifield[T.outPF]:AbsOffsetBin[T.30:60]  0.685    1.189  0.576 0.564 -1.646  3.016
-TMS[T.No TMS]:Hemifield[T.outPF]:AbsOffsetBin[T.30:60]      0.704    1.189  0.592 0.554 -1.627  3.035
-TMS[T.Middle TMS]:Hemifield[T.outPF]:AbsOffsetBin[T.60:90]  1.037    1.189  0.872 0.383 -1.294  3.368
-TMS[T.No TMS]:Hemifield[T.outPF]:AbsOffsetBin[T.60:90]      1.442    1.189  1.213 0.225 -0.889  3.773
-Group Var                                                   7.861    1.244                           
-=====================================================================================================
-
-
-[Post-Hoc: Hemifield Effect (In vs Out) per Condition]
-TMS          | Bin        | t-stat   | p-val    | Mean_In  | Mean_Out | Sig
---------------------------------------------------------------------------------
-Middle TMS   | 0:30       |   -0.690 |    0.498 |    1.911 |    2.290 | 
-Middle TMS   | 30:60      |   -0.903 |    0.376 |    2.323 |    2.742 | 
-Middle TMS   | 60:90      |   -1.708 |    0.102 |    2.430 |    3.398 | 
-Early TMS    | 0:30       |   -1.145 |    0.265 |    1.670 |    2.414 | 
-Early TMS    | 30:60      |   -0.216 |    0.831 |    2.156 |    2.255 | 
-Early TMS    | 60:90      |   -0.411 |    0.685 |    3.189 |    3.485 | 
-No TMS       | 0:30       |   -0.088 |    0.931 |    1.468 |    1.509 | 
-No TMS       | 30:60      |   -0.243 |    0.810 |    2.315 |    2.416 | 
-No TMS       | 60:90      |   -1.392 |    0.178 |    2.421 |    3.457 | 
-
-
-====================================================================================================
-ANALYSIS: Log Reaction Time (log s) (log_RT)
-====================================================================================================
-
-[Omnibus Model] log_RT ~ TMS * Hemifield * AbsOffsetBin + (1|Subject)
-LMM Convergence Failed: negative dimensions are not allowed
-
-
-====================================================================================================
-ANALYSIS: Transformed Guess Rate (arcsin sqrt g) (asin_GuessRate)
-====================================================================================================
-
-[Omnibus Model] asin_GuessRate ~ TMS * Hemifield * AbsOffsetBin + (1|Subject)
-                                Mixed Linear Model Regression Results
-=====================================================================================================
-Model:                           MixedLM              Dependent Variable:              asin_GuessRate
-No. Observations:                414                  Method:                          REML          
-No. Groups:                      23                   Scale:                           0.0101        
-Min. group size:                 18                   Log-Likelihood:                  300.1588      
-Max. group size:                 18                   Converged:                       Yes           
-Mean group size:                 18.0                                                                
------------------------------------------------------------------------------------------------------
-                                                           Coef.  Std.Err.   z    P>|z| [0.025 0.975]
------------------------------------------------------------------------------------------------------
-Intercept                                                   0.079    0.024  3.327 0.001  0.032  0.125
-TMS[T.Middle TMS]                                          -0.040    0.030 -1.348 0.178 -0.098  0.018
-TMS[T.No TMS]                                              -0.039    0.030 -1.304 0.192 -0.097  0.019
-Hemifield[T.outPF]                                         -0.029    0.030 -0.988 0.323 -0.087  0.029
-AbsOffsetBin[T.30:60]                                      -0.043    0.030 -1.463 0.143 -0.101  0.015
-AbsOffsetBin[T.60:90]                                      -0.045    0.030 -1.517 0.129 -0.103  0.013
-TMS[T.Middle TMS]:Hemifield[T.outPF]                        0.042    0.042  1.009 0.313 -0.040  0.124
-TMS[T.No TMS]:Hemifield[T.outPF]                            0.052    0.042  1.238 0.216 -0.030  0.134
-TMS[T.Middle TMS]:AbsOffsetBin[T.30:60]                     0.088    0.042  2.096 0.036  0.006  0.170
-TMS[T.No TMS]:AbsOffsetBin[T.30:60]                         0.072    0.042  1.710 0.087 -0.010  0.154
-TMS[T.Middle TMS]:AbsOffsetBin[T.60:90]                     0.079    0.042  1.880 0.060 -0.003  0.161
-TMS[T.No TMS]:AbsOffsetBin[T.60:90]                         0.072    0.042  1.730 0.084 -0.010  0.155
-Hemifield[T.outPF]:AbsOffsetBin[T.30:60]                    0.046    0.042  1.101 0.271 -0.036  0.128
-Hemifield[T.outPF]:AbsOffsetBin[T.60:90]                    0.053    0.042  1.275 0.202 -0.029  0.136
-TMS[T.Middle TMS]:Hemifield[T.outPF]:AbsOffsetBin[T.30:60] -0.080    0.059 -1.356 0.175 -0.196  0.036
-TMS[T.No TMS]:Hemifield[T.outPF]:AbsOffsetBin[T.30:60]     -0.086    0.059 -1.445 0.149 -0.202  0.031
-TMS[T.Middle TMS]:Hemifield[T.outPF]:AbsOffsetBin[T.60:90] -0.077    0.059 -1.293 0.196 -0.193  0.040
-TMS[T.No TMS]:Hemifield[T.outPF]:AbsOffsetBin[T.60:90]     -0.082    0.059 -1.385 0.166 -0.198  0.034
-Group Var                                                   0.003    0.010                           
-=====================================================================================================
-
-
-[Post-Hoc: Hemifield Effect (In vs Out) per Condition]
-TMS          | Bin        | t-stat   | p-val    | Mean_In  | Mean_Out | Sig
---------------------------------------------------------------------------------
-Middle TMS   | 0:30       |   -0.437 |    0.667 |    0.039 |    0.052 | 
-Middle TMS   | 30:60      |    0.843 |    0.409 |    0.083 |    0.062 | 
-Middle TMS   | 60:90      |    0.335 |    0.741 |    0.073 |    0.063 | 
-Early TMS    | 0:30       |    1.128 |    0.271 |    0.079 |    0.050 | 
-Early TMS    | 30:60      |   -0.565 |    0.578 |    0.036 |    0.052 | 
-Early TMS    | 60:90      |   -0.880 |    0.388 |    0.034 |    0.058 | 
-No TMS       | 0:30       |   -0.855 |    0.402 |    0.040 |    0.063 | 
-No TMS       | 30:60      |    0.691 |    0.497 |    0.069 |    0.052 | 
-No TMS       | 60:90      |    0.184 |    0.856 |    0.068 |    0.062 | 
 
 ================================================================================
-Analysis Complete.
+3-WAY RM-ANOVA: AbsError ~ OffsetGroup * TMS_Condition * DiagType
 ================================================================================
+N = 24 subjects with complete data in all 12 cells for AbsError.
+                             Anova
+================================================================
+                                   F Value Num DF  Den DF Pr > F
+----------------------------------------------------------------
+OffsetGroup                        33.6145 1.0000 23.0000 0.0000
+TMS_Condition                       0.9841 2.0000 46.0000 0.3815
+DiagType                           12.8207 1.0000 23.0000 0.0016
+OffsetGroup:TMS_Condition           0.5418 2.0000 46.0000 0.5854
+OffsetGroup:DiagType                2.0144 1.0000 23.0000 0.1692
+TMS_Condition:DiagType              0.9634 2.0000 46.0000 0.3892
+OffsetGroup:TMS_Condition:DiagType  2.5886 2.0000 46.0000 0.0860
+================================================================
+
+
+Mean AbsError per Main Effect and Interaction:
+
+--- Main Effect: OffsetGroup ---
+OffsetGroup
+Large Offset    7.535
+Small Offset    6.754
+Name: AbsError, dtype: float64
+
+--- Main Effect: TMS_Condition ---
+TMS_Condition
+NoTMS        7.248
+TMS_inPF     7.034
+TMS_outPF    7.151
+Name: AbsError, dtype: float64
+
+--- Main Effect: DiagType ---
+DiagType
+nearDiag    6.922
+offDiag     7.366
+Name: AbsError, dtype: float64
+
+--- Interaction: OffsetGroup x TMS_Condition ---
+TMS_Condition  NoTMS  TMS_inPF  TMS_outPF
+OffsetGroup                              
+Large Offset   7.723     7.359      7.522
+Small Offset   6.772     6.709      6.780
+
+--- Interaction: OffsetGroup x DiagType ---
+DiagType      nearDiag  offDiag
+OffsetGroup                    
+Large Offset     7.385    7.684
+Small Offset     6.460    7.048
+
+--- Interaction: TMS_Condition x DiagType ---
+DiagType       nearDiag  offDiag
+TMS_Condition                   
+NoTMS             6.887    7.609
+TMS_inPF          6.886    7.182
+TMS_outPF         6.995    7.308
+
+--- 3-Way Interaction: OffsetGroup x TMS_Condition x DiagType ---
+ OffsetGroup TMS_Condition DiagType  AbsError
+Large Offset         NoTMS nearDiag     7.541
+Large Offset         NoTMS  offDiag     7.905
+Large Offset      TMS_inPF nearDiag     7.191
+Large Offset      TMS_inPF  offDiag     7.527
+Large Offset     TMS_outPF nearDiag     7.423
+Large Offset     TMS_outPF  offDiag     7.621
+Small Offset         NoTMS nearDiag     6.232
+Small Offset         NoTMS  offDiag     7.313
+Small Offset      TMS_inPF nearDiag     6.581
+Small Offset      TMS_inPF  offDiag     6.836
+Small Offset     TMS_outPF nearDiag     6.566
+Small Offset     TMS_outPF  offDiag     6.994
+
+
+================================================================================
+3-WAY RM-ANOVA: RT ~ OffsetGroup * TMS_Condition * DiagType
+================================================================================
+N = 24 subjects with complete data in all 12 cells for RT.
+                              Anova
+=================================================================
+                                   F Value  Num DF  Den DF Pr > F
+-----------------------------------------------------------------
+OffsetGroup                        399.7716 1.0000 23.0000 0.0000
+TMS_Condition                        1.8569 2.0000 46.0000 0.1677
+DiagType                             0.2767 1.0000 23.0000 0.6039
+OffsetGroup:TMS_Condition            0.9473 2.0000 46.0000 0.3952
+OffsetGroup:DiagType                 3.8759 1.0000 23.0000 0.0612
+TMS_Condition:DiagType               0.3556 2.0000 46.0000 0.7027
+OffsetGroup:TMS_Condition:DiagType   0.6155 2.0000 46.0000 0.5448
+=================================================================
+
+
+Mean RT per Main Effect and Interaction:
+
+--- Main Effect: OffsetGroup ---
+OffsetGroup
+Large Offset    2.042
+Small Offset    1.532
+Name: RT, dtype: float64
+
+--- Main Effect: TMS_Condition ---
+TMS_Condition
+NoTMS        1.810
+TMS_inPF     1.774
+TMS_outPF    1.777
+Name: RT, dtype: float64
+
+--- Main Effect: DiagType ---
+DiagType
+nearDiag    1.788
+offDiag     1.786
+Name: RT, dtype: float64
+
+--- Interaction: OffsetGroup x TMS_Condition ---
+TMS_Condition  NoTMS  TMS_inPF  TMS_outPF
+OffsetGroup                              
+Large Offset   2.071     2.025      2.028
+Small Offset   1.548     1.523      1.526
+
+--- Interaction: OffsetGroup x DiagType ---
+DiagType      nearDiag  offDiag
+OffsetGroup                    
+Large Offset     2.048    2.036
+Small Offset     1.529    1.536
+
+--- Interaction: TMS_Condition x DiagType ---
+DiagType       nearDiag  offDiag
+TMS_Condition                   
+NoTMS             1.811    1.809
+TMS_inPF          1.779    1.769
+TMS_outPF         1.776    1.779
+
+--- 3-Way Interaction: OffsetGroup x TMS_Condition x DiagType ---
+ OffsetGroup TMS_Condition DiagType    RT
+Large Offset         NoTMS nearDiag 2.077
+Large Offset         NoTMS  offDiag 2.066
+Large Offset      TMS_inPF nearDiag 2.039
+Large Offset      TMS_inPF  offDiag 2.011
+Large Offset     TMS_outPF nearDiag 2.028
+Large Offset     TMS_outPF  offDiag 2.029
+Small Offset         NoTMS nearDiag 1.545
+Small Offset         NoTMS  offDiag 1.551
+Small Offset      TMS_inPF nearDiag 1.519
+Small Offset      TMS_inPF  offDiag 1.527
+Small Offset     TMS_outPF nearDiag 1.524
+Small Offset     TMS_outPF  offDiag 1.528
+
+
+================================================================================
+3-WAY RM-ANOVA: BiasTowardsDiagonal ~ OffsetGroup * TMS_Condition * DiagType
+================================================================================
+N = 24 subjects with complete data in all 12 cells for BiasTowardsDiagonal.
+                             Anova
+================================================================
+                                   F Value Num DF  Den DF Pr > F
+----------------------------------------------------------------
+OffsetGroup                        22.7211 1.0000 23.0000 0.0001
+TMS_Condition                       1.9050 2.0000 46.0000 0.1604
+DiagType                            0.5598 1.0000 23.0000 0.4619
+OffsetGroup:TMS_Condition           0.7351 2.0000 46.0000 0.4850
+OffsetGroup:DiagType                4.2667 1.0000 23.0000 0.0503
+TMS_Condition:DiagType              0.5813 2.0000 46.0000 0.5632
+OffsetGroup:TMS_Condition:DiagType  3.9175 2.0000 46.0000 0.0268
+================================================================
+
+
+Mean BiasTowardsDiagonal per Main Effect and Interaction:
+
+--- Main Effect: OffsetGroup ---
+OffsetGroup
+Large Offset    3.473
+Small Offset    2.413
+Name: BiasTowardsDiagonal, dtype: float64
+
+--- Main Effect: TMS_Condition ---
+TMS_Condition
+NoTMS        2.828
+TMS_inPF     2.752
+TMS_outPF    3.250
+Name: BiasTowardsDiagonal, dtype: float64
+
+--- Main Effect: DiagType ---
+DiagType
+nearDiag    3.039
+offDiag     2.847
+Name: BiasTowardsDiagonal, dtype: float64
+
+--- Interaction: OffsetGroup x TMS_Condition ---
+TMS_Condition  NoTMS  TMS_inPF  TMS_outPF
+OffsetGroup                              
+Large Offset   3.453     3.150      3.817
+Small Offset   2.202     2.355      2.683
+
+--- Interaction: OffsetGroup x DiagType ---
+DiagType      nearDiag  offDiag
+OffsetGroup                    
+Large Offset     3.677    3.269
+Small Offset     2.402    2.425
+
+--- Interaction: TMS_Condition x DiagType ---
+DiagType       nearDiag  offDiag
+TMS_Condition                   
+NoTMS             3.008    2.647
+TMS_inPF          2.914    2.590
+TMS_outPF         3.196    3.304
+
+--- 3-Way Interaction: OffsetGroup x TMS_Condition x DiagType ---
+ OffsetGroup TMS_Condition DiagType  BiasTowardsDiagonal
+Large Offset         NoTMS nearDiag                4.085
+Large Offset         NoTMS  offDiag                2.822
+Large Offset      TMS_inPF nearDiag                3.158
+Large Offset      TMS_inPF  offDiag                3.142
+Large Offset     TMS_outPF nearDiag                3.789
+Large Offset     TMS_outPF  offDiag                3.845
+Small Offset         NoTMS nearDiag                1.931
+Small Offset         NoTMS  offDiag                2.472
+Small Offset      TMS_inPF nearDiag                2.671
+Small Offset      TMS_inPF  offDiag                2.038
+Small Offset     TMS_outPF nearDiag                2.603
+Small Offset     TMS_outPF  offDiag                2.763
+
+
+================================================================================
+3-WAY RM-ANOVA: Precision ~ OffsetGroup * TMS_Condition * DiagType
+================================================================================
+N = 24 subjects with complete data in all 12 cells for Precision.
+                             Anova
+================================================================
+                                   F Value Num DF  Den DF Pr > F
+----------------------------------------------------------------
+OffsetGroup                        47.5764 1.0000 23.0000 0.0000
+TMS_Condition                       0.0935 2.0000 46.0000 0.9109
+DiagType                           12.9923 1.0000 23.0000 0.0015
+OffsetGroup:TMS_Condition           0.5028 2.0000 46.0000 0.6081
+OffsetGroup:DiagType                6.9948 1.0000 23.0000 0.0145
+TMS_Condition:DiagType              0.4712 2.0000 46.0000 0.6272
+OffsetGroup:TMS_Condition:DiagType  5.0809 2.0000 46.0000 0.0101
+================================================================
+
+
+Mean Precision per Main Effect and Interaction:
+
+--- Main Effect: OffsetGroup ---
+OffsetGroup
+Large Offset    11.392
+Small Offset    14.025
+Name: Precision, dtype: float64
+
+--- Main Effect: TMS_Condition ---
+TMS_Condition
+NoTMS        12.574
+TMS_inPF     12.818
+TMS_outPF    12.732
+Name: Precision, dtype: float64
+
+--- Main Effect: DiagType ---
+DiagType
+nearDiag    13.547
+offDiag     11.869
+Name: Precision, dtype: float64
+
+--- Interaction: OffsetGroup x TMS_Condition ---
+TMS_Condition   NoTMS  TMS_inPF  TMS_outPF
+OffsetGroup                               
+Large Offset   10.979    11.815     11.381
+Small Offset   14.168    13.822     14.084
+
+--- Interaction: OffsetGroup x DiagType ---
+DiagType      nearDiag  offDiag
+OffsetGroup                    
+Large Offset    11.717   11.066
+Small Offset    15.378   12.672
+
+--- Interaction: TMS_Condition x DiagType ---
+DiagType       nearDiag  offDiag
+TMS_Condition                   
+NoTMS            13.722   11.425
+TMS_inPF         13.403   12.234
+TMS_outPF        13.517   11.948
+
+--- 3-Way Interaction: OffsetGroup x TMS_Condition x DiagType ---
+ OffsetGroup TMS_Condition DiagType  Precision
+Large Offset         NoTMS nearDiag     11.000
+Large Offset         NoTMS  offDiag     10.958
+Large Offset      TMS_inPF nearDiag     12.248
+Large Offset      TMS_inPF  offDiag     11.382
+Large Offset     TMS_outPF nearDiag     11.904
+Large Offset     TMS_outPF  offDiag     10.858
+Small Offset         NoTMS nearDiag     16.444
+Small Offset         NoTMS  offDiag     11.892
+Small Offset      TMS_inPF nearDiag     14.558
+Small Offset      TMS_inPF  offDiag     13.086
+Small Offset     TMS_outPF nearDiag     15.131
+Small Offset     TMS_outPF  offDiag     13.037

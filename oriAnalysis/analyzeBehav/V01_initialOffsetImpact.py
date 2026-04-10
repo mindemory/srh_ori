@@ -21,6 +21,11 @@ print("Loading data...")
 df = gm.master_df.copy()
 df.reset_index(drop=True, inplace=True)
 
+# User Request (V3 Refinement): Remove LargeError trials
+print(f"Total trials before filtering: {len(df)}")
+df = df[df['LargeError'] == 0].copy()
+print(f"Total trials after dropping LargeError=1: {len(df)}")
+
 # --- Feature Engineering ---
 df.rename(columns={
     'TMScond_label': 'TMS',        
