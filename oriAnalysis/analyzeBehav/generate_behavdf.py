@@ -37,8 +37,7 @@ sub_dirs = [d for d in os.listdir(os.path.join(p['analysis'])) if d.startswith('
 # sub_dirs = ['sub01', 'sub02', 'sub05', 'sub07', 'sub08', 'sub11', 'sub12']
 subjIDs = sorted([int(ss[-2:]) for ss in sub_dirs])
 
-# Exclude subject 27 (Commented out per request to re-include)
-# subjIDs = [ss for ss in subjIDs if ss != 27]
+subjIDs = [ss for ss in subjIDs if ss != 27]
 
 print(f"We have {len(subjIDs)} subjects so far: {subjIDs}")
 print()

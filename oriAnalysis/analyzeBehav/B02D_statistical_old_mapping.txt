@@ -1,0 +1,492 @@
+Creating a new dataframe...
+We have 24 subjects so far: [1, 2, 3, 5, 6, 7, 8, 9, 11, 12, 14, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28]
+
+Outlier Detection: Global Mean=-0.16, SD=11.34, Bounds=[-34.18, 33.86]
+Total LargeErrors: 205/14880 (1.4%)
+================================================================================
+Analysis Run: 2026-04-10 17:33:48
+Analysis: Fig 5 Differences (inPF - outPF)
+Factors : TMS_Group (TMS vs NoTMS) x OriMapped (30,60,120,150)
+================================================================================
+
+Fitting Mixture Models for Precision...
+Optimization successful after 20 iterations, NLL = 2.5123606038164104
+Optimization successful after 20 iterations, NLL = 13.63872757988847
+Optimization successful after 20 iterations, NLL = 11.819541716494161
+Optimization successful after 20 iterations, NLL = 12.518122431534053
+Optimization successful after 20 iterations, NLL = 7.096683669824882
+Optimization successful after 20 iterations, NLL = 13.95972286511058
+Optimization successful after 20 iterations, NLL = 9.937903289543078
+Optimization successful after 20 iterations, NLL = 10.774807398346281
+Optimization successful after 20 iterations, NLL = 7.903355568518596
+Optimization successful after 20 iterations, NLL = 4.141893176694163
+Optimization successful after 20 iterations, NLL = 8.126597257007699
+Optimization successful after 20 iterations, NLL = 0.6643655807874729
+Optimization successful after 20 iterations, NLL = 2.466752939513201
+Optimization successful after 20 iterations, NLL = -5.312860788028749
+Optimization successful after 20 iterations, NLL = -5.260718684293637
+Optimization successful after 20 iterations, NLL = 8.127628715154252
+Optimization successful after 20 iterations, NLL = 31.783709547129515
+Optimization successful after 20 iterations, NLL = 45.78587290895511
+Optimization successful after 20 iterations, NLL = 9.956106819316508
+Optimization successful after 20 iterations, NLL = 7.961216503605617
+Optimization successful after 20 iterations, NLL = 11.747129274934467
+Optimization successful after 21 iterations, NLL = 21.473936213275813
+Optimization successful after 20 iterations, NLL = 22.035651078704944
+Optimization successful after 20 iterations, NLL = 21.075522457279074
+Optimization successful after 20 iterations, NLL = 17.21484916346217
+Optimization successful after 20 iterations, NLL = 8.598589656951289
+Optimization successful after 20 iterations, NLL = 1.9206641915591312
+Optimization successful after 20 iterations, NLL = -2.922159178109619
+Optimization successful after 20 iterations, NLL = 4.799155469293925
+Optimization successful after 20 iterations, NLL = 8.609235284502988
+Optimization successful after 20 iterations, NLL = 3.969927356432364
+Optimization successful after 20 iterations, NLL = 1.7880902954255071
+Optimization successful after 20 iterations, NLL = 13.921551556597828
+Optimization successful after 20 iterations, NLL = 12.125071108155238
+Optimization successful after 20 iterations, NLL = 24.177970051215702
+Optimization successful after 20 iterations, NLL = 6.701504187215175
+Optimization successful after 20 iterations, NLL = 40.39948381595537
+Optimization successful after 20 iterations, NLL = 39.82876401161297
+Optimization successful after 20 iterations, NLL = -6.529633376468441
+Optimization successful after 20 iterations, NLL = 15.677028246246236
+Optimization successful after 20 iterations, NLL = 4.906038750914139
+Optimization successful after 20 iterations, NLL = -2.2970723537531965
+Optimization successful after 20 iterations, NLL = 5.209526177720533
+Optimization successful after 20 iterations, NLL = 4.255884045277844
+Optimization successful after 20 iterations, NLL = 13.369194357607888
+Optimization successful after 20 iterations, NLL = 6.586984045566437
+Optimization successful after 20 iterations, NLL = 2.6543119123442462
+Optimization successful after 20 iterations, NLL = 7.3067543010721225
+Optimization successful after 20 iterations, NLL = 25.51939461145605
+Optimization successful after 20 iterations, NLL = -5.624627001508231
+Optimization successful after 20 iterations, NLL = 17.495074383166855
+Optimization successful after 20 iterations, NLL = 10.814712176056297
+Optimization successful after 20 iterations, NLL = 25.026727351668992
+Optimization successful after 20 iterations, NLL = 32.56943521505057
+Optimization successful after 20 iterations, NLL = -2.365611046870948
+Optimization successful after 20 iterations, NLL = 4.904048596849324
+Optimization successful after 20 iterations, NLL = 6.205304410984674
+Optimization successful after 20 iterations, NLL = 2.197815973288527
+Optimization successful after 20 iterations, NLL = 3.917960697776716
+Optimization successful after 20 iterations, NLL = -7.34933630155315
+Optimization successful after 20 iterations, NLL = 7.788232918423056
+Optimization successful after 20 iterations, NLL = 4.806949717207488
+Optimization successful after 20 iterations, NLL = -2.427084347913527
+Optimization successful after 20 iterations, NLL = 0.7531269226704846
+Optimization successful after 20 iterations, NLL = 12.37738643133068
+Optimization successful after 20 iterations, NLL = 24.102369536404453
+Optimization successful after 20 iterations, NLL = 46.61755207990741
+Optimization successful after 20 iterations, NLL = 43.286304213155695
+Optimization successful after 20 iterations, NLL = 40.74126281410704
+Optimization successful after 20 iterations, NLL = 48.83206920035264
+Optimization successful after 20 iterations, NLL = 18.782047364822574
+Optimization successful after 20 iterations, NLL = 8.828549635931958
+Optimization successful after 20 iterations, NLL = 10.57504603117423
+Optimization successful after 20 iterations, NLL = 3.8423298320987813
+Optimization successful after 20 iterations, NLL = 14.587204558573655
+Optimization successful after 20 iterations, NLL = 11.212949702265842
+Optimization successful after 20 iterations, NLL = 15.746928836146195
+Optimization successful after 20 iterations, NLL = 11.277292705881163
+Optimization successful after 20 iterations, NLL = -1.4929772291822114
+Optimization successful after 20 iterations, NLL = 10.719604132155911
+Optimization successful after 20 iterations, NLL = 12.742904967504824
+Optimization successful after 20 iterations, NLL = 8.882224806891413
+Optimization successful after 20 iterations, NLL = 17.48687651623388
+Optimization successful after 20 iterations, NLL = 27.417750583093085
+Optimization successful after 20 iterations, NLL = 10.444878711729089
+Optimization successful after 20 iterations, NLL = 14.867833860193093
+Optimization successful after 20 iterations, NLL = 5.403727203000614
+Optimization successful after 20 iterations, NLL = 20.420384063547495
+Optimization successful after 20 iterations, NLL = 9.821607971544758
+Optimization successful after 20 iterations, NLL = 0.8063231136601225
+Optimization successful after 20 iterations, NLL = 3.47817748155951
+Optimization successful after 20 iterations, NLL = 6.184597149957989
+Optimization successful after 20 iterations, NLL = 4.369448090195035
+Optimization successful after 20 iterations, NLL = 4.828473057357696
+Optimization successful after 20 iterations, NLL = 3.207653731762818
+Optimization successful after 20 iterations, NLL = 12.779042995142667
+Optimization successful after 20 iterations, NLL = 25.385601582239566
+Optimization successful after 20 iterations, NLL = 12.500343885436592
+Optimization successful after 20 iterations, NLL = 18.145296937983513
+Optimization successful after 20 iterations, NLL = 0.5507849143258434
+Optimization successful after 20 iterations, NLL = -14.964967558232203
+Optimization successful after 20 iterations, NLL = 5.3614406881822765
+Optimization successful after 20 iterations, NLL = 20.719974471674295
+Optimization successful after 20 iterations, NLL = 19.13810106955383
+Optimization successful after 20 iterations, NLL = 4.931809394023617
+Optimization successful after 20 iterations, NLL = 4.3018765356586846
+Optimization successful after 20 iterations, NLL = -0.6929763813047374
+Optimization successful after 20 iterations, NLL = -2.112788818081344
+Optimization successful after 20 iterations, NLL = -0.9414427345412596
+Optimization successful after 20 iterations, NLL = 1.6468873060266551
+Optimization successful after 20 iterations, NLL = 5.681547156901952
+Optimization successful after 20 iterations, NLL = 7.560002618919925
+Optimization successful after 20 iterations, NLL = 16.87009853134012
+Optimization successful after 20 iterations, NLL = 18.378937500910695
+Optimization successful after 20 iterations, NLL = 27.51892396787584
+Optimization successful after 20 iterations, NLL = 36.3067889395665
+Optimization successful after 20 iterations, NLL = 11.16327618001616
+Optimization successful after 20 iterations, NLL = 32.555827760458364
+Optimization successful after 20 iterations, NLL = 2.366669880304909
+Optimization successful after 20 iterations, NLL = -7.142965442374446
+Optimization successful after 22 iterations, NLL = 9.55525618076048
+Optimization successful after 20 iterations, NLL = 4.932042640350034
+Optimization successful after 20 iterations, NLL = 11.301481201926823
+Optimization successful after 20 iterations, NLL = 5.104784379596437
+Optimization successful after 20 iterations, NLL = -1.5692203097683357
+Optimization successful after 20 iterations, NLL = 11.32291589058945
+Optimization successful after 20 iterations, NLL = 1.6294991992400083
+Optimization successful after 20 iterations, NLL = -0.8576563085845204
+Optimization successful after 20 iterations, NLL = 22.539115268849383
+Optimization successful after 20 iterations, NLL = 8.769226346116223
+Optimization successful after 20 iterations, NLL = 7.5372501325150845
+Optimization successful after 20 iterations, NLL = 33.06393752290572
+Optimization successful after 20 iterations, NLL = 43.55091434804135
+Optimization successful after 20 iterations, NLL = 32.70715923456572
+Optimization successful after 20 iterations, NLL = 31.33357342018502
+Optimization successful after 20 iterations, NLL = 25.993956533338306
+Optimization successful after 20 iterations, NLL = 4.027867590469228
+Optimization successful after 20 iterations, NLL = 6.333834048445415
+Optimization successful after 20 iterations, NLL = 5.926751689760988
+Optimization successful after 20 iterations, NLL = 8.432495986128796
+Optimization successful after 20 iterations, NLL = 6.51154101295604
+Optimization successful after 20 iterations, NLL = 1.6098506741085754
+Optimization successful after 20 iterations, NLL = 6.965505232245195
+Optimization successful after 20 iterations, NLL = 6.331587605720528
+Optimization successful after 20 iterations, NLL = 8.203084085299231
+Optimization successful after 20 iterations, NLL = 2.6912698790704597
+Optimization successful after 20 iterations, NLL = 6.124050857309372
+Optimization successful after 20 iterations, NLL = 9.360763731987914
+Optimization successful after 20 iterations, NLL = 15.59276397702769
+Optimization successful after 20 iterations, NLL = 18.807693933738324
+Optimization successful after 20 iterations, NLL = 10.961484501369966
+Optimization successful after 20 iterations, NLL = 10.756509121402186
+Optimization successful after 20 iterations, NLL = 4.8429308957563135
+Optimization successful after 20 iterations, NLL = 4.292619553349921
+Optimization successful after 20 iterations, NLL = 3.1154530227647865
+Optimization successful after 20 iterations, NLL = 3.5094651322759036
+Optimization successful after 20 iterations, NLL = 1.9848992163198662
+Optimization successful after 20 iterations, NLL = -0.5367624232074633
+Optimization successful after 20 iterations, NLL = 3.402620456599948
+Optimization successful after 20 iterations, NLL = -2.6676516019567647
+Optimization successful after 20 iterations, NLL = 17.59501484420313
+Optimization successful after 20 iterations, NLL = 10.987800639713694
+Optimization successful after 20 iterations, NLL = 8.72837372839042
+Optimization successful after 20 iterations, NLL = 14.260532443780232
+Optimization successful after 20 iterations, NLL = -5.798748717317934
+Optimization successful after 20 iterations, NLL = 7.4218803881261834
+Optimization successful after 20 iterations, NLL = 20.898056546936907
+Optimization successful after 20 iterations, NLL = 19.787498042697433
+Optimization successful after 20 iterations, NLL = 3.4941744720819403
+Optimization successful after 20 iterations, NLL = -3.325568386971945
+Optimization successful after 20 iterations, NLL = 5.741848159870941
+Optimization successful after 20 iterations, NLL = 11.462617349707388
+Optimization successful after 20 iterations, NLL = 6.3849869857122
+Optimization successful after 20 iterations, NLL = -2.308309997616639
+Optimization successful after 20 iterations, NLL = 12.782933152652754
+Optimization successful after 24 iterations, NLL = 3.9831435628063683
+Optimization successful after 20 iterations, NLL = 1.2573067543059129
+Optimization successful after 20 iterations, NLL = 0.20470473510394127
+Optimization successful after 20 iterations, NLL = 4.721696641389513
+Optimization successful after 20 iterations, NLL = 3.4115532825620054
+Optimization successful after 20 iterations, NLL = 9.201328083233257
+Optimization successful after 20 iterations, NLL = 19.64683720532027
+Optimization successful after 20 iterations, NLL = -6.063307780940139
+Optimization successful after 20 iterations, NLL = -5.712302258017698
+Optimization successful after 20 iterations, NLL = -1.876556701144874
+Optimization successful after 20 iterations, NLL = -5.3402404513596675
+Optimization successful after 20 iterations, NLL = 6.543706040629604
+Optimization successful after 20 iterations, NLL = -2.7747922966794136
+Optimization successful after 20 iterations, NLL = 2.2569213965927326
+Optimization successful after 20 iterations, NLL = 4.740755361199935
+Optimization successful after 20 iterations, NLL = -5.962581579778951
+Optimization successful after 20 iterations, NLL = -1.5101577163885453
+Optimization successful after 20 iterations, NLL = -3.598600325913577
+Optimization successful after 20 iterations, NLL = 7.276286719666022
+Optimization successful after 20 iterations, NLL = 0.9823087698629012
+Optimization successful after 20 iterations, NLL = 20.01888884012067
+Optimization successful after 20 iterations, NLL = 25.916890622094666
+Optimization successful after 20 iterations, NLL = 21.23250601791267
+Optimization successful after 20 iterations, NLL = -1.253671708918947
+Optimization successful after 20 iterations, NLL = 29.880566528723648
+Optimization successful after 20 iterations, NLL = 5.633864758300188
+Optimization successful after 20 iterations, NLL = 2.689139811167548
+Optimization successful after 20 iterations, NLL = 1.8835341335176399
+Optimization successful after 20 iterations, NLL = -0.05481230965784767
+Optimization successful after 20 iterations, NLL = 3.2597985507769653
+Optimization successful after 20 iterations, NLL = 10.194389511561823
+Optimization successful after 20 iterations, NLL = 0.833867084411284
+Optimization successful after 20 iterations, NLL = 1.8636462837632766
+Optimization successful after 20 iterations, NLL = 35.12362551694371
+Optimization successful after 20 iterations, NLL = 32.93693775857958
+Optimization successful after 20 iterations, NLL = 15.667490341193295
+Optimization successful after 20 iterations, NLL = 16.98225614267364
+Optimization successful after 20 iterations, NLL = 29.453788849411044
+Optimization successful after 20 iterations, NLL = 18.63720977830405
+Optimization successful after 20 iterations, NLL = 25.3199470310169
+Optimization successful after 20 iterations, NLL = 34.90787223583258
+Optimization successful after 20 iterations, NLL = 8.842486299543667
+Optimization successful after 20 iterations, NLL = 19.559793659898418
+Optimization successful after 20 iterations, NLL = 14.830862692818988
+Optimization successful after 20 iterations, NLL = 3.878704893518049
+Optimization successful after 20 iterations, NLL = 4.340887437354725
+Optimization successful after 20 iterations, NLL = 4.8479245261191775
+Optimization successful after 20 iterations, NLL = 6.782012847204685
+Optimization successful after 20 iterations, NLL = 10.936061142787699
+Optimization successful after 20 iterations, NLL = 0.6608323259460092
+Optimization successful after 20 iterations, NLL = 2.070296683312545
+Optimization successful after 20 iterations, NLL = 8.837284758562555
+Optimization successful after 20 iterations, NLL = 6.79004256598634
+Optimization successful after 20 iterations, NLL = -4.957550428666498
+Optimization successful after 20 iterations, NLL = 8.72884473631609
+Optimization successful after 20 iterations, NLL = -7.787982775883241
+Optimization successful after 20 iterations, NLL = 1.6450584219353819
+Optimization successful after 20 iterations, NLL = -1.786799363181377
+Optimization successful after 20 iterations, NLL = -4.549385911139071
+Optimization successful after 20 iterations, NLL = 1.6024595210865349
+Optimization successful after 20 iterations, NLL = -6.108223792203111
+Optimization successful after 20 iterations, NLL = 0.4794465104251814
+Optimization successful after 20 iterations, NLL = 2.9730398635115955
+Optimization successful after 20 iterations, NLL = 5.598897893234234
+Optimization successful after 20 iterations, NLL = -2.741015553433302
+Optimization successful after 20 iterations, NLL = 16.21707069275165
+Optimization successful after 20 iterations, NLL = 13.597937202782957
+Optimization successful after 20 iterations, NLL = 2.982260873432831
+Optimization successful after 20 iterations, NLL = 11.283378651286204
+Optimization successful after 20 iterations, NLL = 6.342329143716199
+Optimization successful after 20 iterations, NLL = 6.340309967168144
+Optimization successful after 20 iterations, NLL = 6.443575023827414
+Optimization successful after 20 iterations, NLL = 23.41552613515079
+Optimization successful after 20 iterations, NLL = -3.2233182751383893
+Optimization successful after 20 iterations, NLL = -0.989907369061223
+Optimization successful after 20 iterations, NLL = -5.05022876508494
+Optimization successful after 20 iterations, NLL = 3.2086330998256094
+Optimization successful after 20 iterations, NLL = -5.649354113875117
+Optimization successful after 20 iterations, NLL = -0.4439971125762395
+Optimization successful after 20 iterations, NLL = 2.116706991734577
+Optimization successful after 20 iterations, NLL = 5.077212084345672
+Optimization successful after 20 iterations, NLL = 7.038328541389095
+Optimization successful after 20 iterations, NLL = 24.492520849400282
+Optimization successful after 20 iterations, NLL = 17.52646766415543
+Optimization successful after 20 iterations, NLL = 8.6748381667727
+Optimization successful after 20 iterations, NLL = 14.988996932229455
+Optimization successful after 20 iterations, NLL = 11.079794795841439
+Optimization successful after 20 iterations, NLL = -5.3328698268714385
+Optimization successful after 20 iterations, NLL = 4.297209982463395
+Optimization successful after 20 iterations, NLL = 9.524797177796737
+Optimization successful after 20 iterations, NLL = 4.785064213052834
+Optimization successful after 20 iterations, NLL = 4.226080001265717
+Optimization successful after 20 iterations, NLL = 7.070765066048709
+Optimization successful after 20 iterations, NLL = 4.575564059186526
+Optimization successful after 20 iterations, NLL = 2.3440251865990263
+Optimization successful after 20 iterations, NLL = -4.29914556423344
+Optimization successful after 20 iterations, NLL = 2.5888176103810725
+Optimization successful after 20 iterations, NLL = 6.360892660800554
+Optimization successful after 20 iterations, NLL = -0.8148254659326231
+Optimization successful after 20 iterations, NLL = 5.91085424709884
+Optimization successful after 20 iterations, NLL = -0.11519028669643117
+Optimization successful after 20 iterations, NLL = 5.629987904222481
+Optimization successful after 20 iterations, NLL = 5.586377869888676
+Optimization successful after 20 iterations, NLL = 1.3100541997591693
+Optimization successful after 20 iterations, NLL = 14.149554585935135
+Optimization successful after 20 iterations, NLL = 0.3028744258680224
+Optimization successful after 20 iterations, NLL = 1.156007225844228
+Optimization successful after 20 iterations, NLL = 8.811904828759173
+Optimization successful after 20 iterations, NLL = 2.047162949460611
+Optimization successful after 20 iterations, NLL = 2.8338275278714895
+Optimization successful after 20 iterations, NLL = 5.776711041230248
+Optimization successful after 22 iterations, NLL = -0.10283011786447493
+Optimization successful after 20 iterations, NLL = 3.5624416300676156
+Optimization successful after 20 iterations, NLL = -3.0296404719529964
+Optimization successful after 20 iterations, NLL = -13.323836455521233
+Optimization successful after 20 iterations, NLL = -4.015336120067645
+Optimization successful after 20 iterations, NLL = -5.018096505685165
+Optimization successful after 20 iterations, NLL = -14.600945568842569
+Optimization successful after 20 iterations, NLL = -6.9632171716278615
+Optimization successful after 20 iterations, NLL = -13.36172855736472
+Optimization successful after 20 iterations, NLL = -6.294774371819001
+Optimization successful after 20 iterations, NLL = 0.11408100194071369
+Optimization successful after 20 iterations, NLL = 1.5711705420135573
+Optimization successful after 20 iterations, NLL = -6.678677091649195
+Optimization successful after 20 iterations, NLL = 2.81220416541727
+Optimization successful after 20 iterations, NLL = -5.089137765225528
+Optimization successful after 20 iterations, NLL = -0.8677097532978167
+Optimization successful after 20 iterations, NLL = -2.1736236121069212
+Optimization successful after 20 iterations, NLL = -4.938463076449423
+Optimization successful after 20 iterations, NLL = 13.89163172292329
+Optimization successful after 20 iterations, NLL = -11.47204291115565
+Optimization successful after 20 iterations, NLL = 28.618894443211758
+Optimization successful after 20 iterations, NLL = 23.87512754809944
+Optimization successful after 20 iterations, NLL = 25.24391288865209
+Optimization successful after 20 iterations, NLL = 13.895354501601874
+Optimization successful after 20 iterations, NLL = 6.198336614879657
+Optimization successful after 20 iterations, NLL = -12.364632414190009
+Optimization successful after 20 iterations, NLL = 2.4596416223456488
+Optimization successful after 20 iterations, NLL = 0.28997354849016144
+Optimization successful after 21 iterations, NLL = 4.509744923698546
+Optimization successful after 20 iterations, NLL = 12.241428913826082
+Optimization successful after 20 iterations, NLL = 10.724772717579558
+Optimization successful after 20 iterations, NLL = 4.958296946038497
+Optimization successful after 20 iterations, NLL = 6.335000555852722
+Optimization successful after 20 iterations, NLL = -4.124660469230507
+Optimization successful after 20 iterations, NLL = 4.8154634855016845
+Optimization successful after 20 iterations, NLL = -19.360791043303177
+Optimization successful after 20 iterations, NLL = 2.671997224599094
+Optimization successful after 20 iterations, NLL = -4.923104771629326
+Optimization successful after 20 iterations, NLL = 10.861513686503805
+Optimization successful after 20 iterations, NLL = -2.4975251456952385
+Optimization successful after 20 iterations, NLL = -0.5037963998522741
+Optimization successful after 20 iterations, NLL = -13.711078352531237
+Optimization successful after 20 iterations, NLL = 6.485501777391522
+Optimization successful after 20 iterations, NLL = -3.968951772777965
+Optimization successful after 20 iterations, NLL = -0.7676317453044966
+Optimization successful after 20 iterations, NLL = -0.14303019790431581
+Optimization successful after 20 iterations, NLL = 2.1946932480098873
+Optimization successful after 20 iterations, NLL = 2.890703094883507
+Optimization successful after 20 iterations, NLL = -1.5674066690316533
+Optimization successful after 20 iterations, NLL = 2.872213439837182
+Optimization successful after 20 iterations, NLL = -14.91403218449366
+Optimization successful after 20 iterations, NLL = -30.157020428187504
+Optimization successful after 20 iterations, NLL = -7.283969885069029
+Optimization successful after 20 iterations, NLL = 7.794136441977871
+Optimization successful after 20 iterations, NLL = 23.749508655239524
+Optimization successful after 20 iterations, NLL = 22.31912375317049
+Optimization successful after 20 iterations, NLL = -17.028441076651834
+Optimization successful after 20 iterations, NLL = -32.65342286141333
+Optimization successful after 20 iterations, NLL = -0.17145604864972608
+Optimization successful after 20 iterations, NLL = -7.590612414158831
+Optimization successful after 20 iterations, NLL = -4.402102952767953
+Optimization successful after 20 iterations, NLL = 3.7609965753848478
+Optimization successful after 20 iterations, NLL = 5.902120704978095
+Optimization successful after 20 iterations, NLL = 7.960523563852026
+Optimization successful after 20 iterations, NLL = -9.926861320988058
+Optimization successful after 20 iterations, NLL = -5.6273655302491745
+Optimization successful after 20 iterations, NLL = 15.991397424470518
+Optimization successful after 20 iterations, NLL = 35.35812633066676
+Optimization successful after 20 iterations, NLL = 42.39788975483232
+Optimization successful after 20 iterations, NLL = 41.23541758508365
+Optimization successful after 20 iterations, NLL = 29.782098326796724
+Optimization successful after 20 iterations, NLL = 38.08759560652308
+Optimization successful after 20 iterations, NLL = 27.65981736631031
+Optimization successful after 20 iterations, NLL = 22.382708242656815
+Optimization successful after 20 iterations, NLL = 15.502867613632299
+Optimization successful after 20 iterations, NLL = 6.272848981912927
+Optimization successful after 20 iterations, NLL = 17.732717187845793
+Optimization successful after 20 iterations, NLL = 11.319599095565005
+Optimization successful after 20 iterations, NLL = 13.280326870706517
+Optimization successful after 20 iterations, NLL = 9.323211451726863
+Optimization successful after 20 iterations, NLL = 7.472985106423688
+Optimization successful after 20 iterations, NLL = 16.974458110427648
+Optimization successful after 20 iterations, NLL = 10.665332848720867
+Optimization successful after 20 iterations, NLL = 5.66537299611795
+Optimization successful after 20 iterations, NLL = 22.345857468546484
+Optimization successful after 20 iterations, NLL = 17.25663022434467
+Optimization successful after 20 iterations, NLL = 13.738611597603192
+Optimization successful after 20 iterations, NLL = 21.402603423858068
+Optimization successful after 20 iterations, NLL = 6.6033041663258185
+Optimization successful after 20 iterations, NLL = 10.546675836157005
+Optimization successful after 20 iterations, NLL = -0.9190106184517424
+Optimization successful after 20 iterations, NLL = 4.069978567389727
+Optimization successful after 20 iterations, NLL = 13.164855235776152
+Optimization successful after 20 iterations, NLL = 3.607688661076371
+Optimization successful after 20 iterations, NLL = 4.3552170251710995
+Optimization successful after 20 iterations, NLL = 4.434940307408483
+Optimization successful after 20 iterations, NLL = 0.7370715410760638
+Optimization successful after 20 iterations, NLL = 4.828597718010651
+Computing differences (inPF - outPF)...
+
+================================================================================
+STATISTICAL RESULTS
+================================================================================
+
+
+------------------------------------------------------------
+METRIC: AbsError_resid
+------------------------------------------------------------
+
+[ 2-WAY RM-ANOVA on inPF-outPF differences | N = 24 ]
+                      Anova
+=================================================
+                    F Value Num DF  Den DF Pr > F
+-------------------------------------------------
+TMS_Group            4.7108 1.0000 23.0000 0.0405
+OriMapped            4.3372 3.0000 69.0000 0.0074
+TMS_Group:OriMapped  1.4427 3.0000 69.0000 0.2379
+=================================================
+
+
+[ POST-HOC PAIRED t-TESTS: TMS vs No TMS ]
+  Ori  30° : t(23) = -2.255, p = 0.0340 *   | d = -0.460 | MeanDiff = -1.073
+  Ori  60° : t(23) = -1.370, p = 0.1841 ns  | d = -0.280 | MeanDiff = -0.748
+  Ori 120° : t(23) =  0.084, p = 0.9338 ns  | d = 0.017 | MeanDiff = +0.039
+  Ori 150° : t(23) =  0.544, p = 0.5916 ns  | d = 0.111 | MeanDiff = +0.246
+
+
+------------------------------------------------------------
+METRIC: RT_resid
+------------------------------------------------------------
+
+[ 2-WAY RM-ANOVA on inPF-outPF differences | N = 24 ]
+                      Anova
+=================================================
+                    F Value Num DF  Den DF Pr > F
+-------------------------------------------------
+TMS_Group            0.8818 1.0000 23.0000 0.3575
+OriMapped            1.9933 3.0000 69.0000 0.1230
+TMS_Group:OriMapped  0.1845 3.0000 69.0000 0.9066
+=================================================
+
+
+[ POST-HOC PAIRED t-TESTS: TMS vs No TMS ]
+  Ori  30° : t(23) = -1.058, p = 0.3011 ns  | d = -0.216 | MeanDiff = -0.025
+  Ori  60° : t(23) = -0.288, p = 0.7756 ns  | d = -0.059 | MeanDiff = -0.009
+  Ori 120° : t(23) = -0.866, p = 0.3953 ns  | d = -0.177 | MeanDiff = -0.021
+  Ori 150° : t(23) = -0.108, p = 0.9150 ns  | d = -0.022 | MeanDiff = -0.003
+
+
+------------------------------------------------------------
+METRIC: BiasTowardsDiagonal_resid
+------------------------------------------------------------
+
+[ 2-WAY RM-ANOVA on inPF-outPF differences | N = 24 ]
+                      Anova
+=================================================
+                    F Value Num DF  Den DF Pr > F
+-------------------------------------------------
+TMS_Group            1.2704 1.0000 23.0000 0.2713
+OriMapped            0.0428 3.0000 69.0000 0.9881
+TMS_Group:OriMapped  0.0691 3.0000 69.0000 0.9762
+=================================================
+
+
+[ POST-HOC PAIRED t-TESTS: TMS vs No TMS ]
+  Ori  30° : t(23) = -0.420, p = 0.6787 ns  | d = -0.086 | MeanDiff = -0.288
+  Ori  60° : t(23) = -0.901, p = 0.3767 ns  | d = -0.184 | MeanDiff = -0.685
+  Ori 120° : t(23) = -0.547, p = 0.5898 ns  | d = -0.112 | MeanDiff = -0.359
+  Ori 150° : t(23) = -0.500, p = 0.6220 ns  | d = -0.102 | MeanDiff = -0.345
+
+
+------------------------------------------------------------
+METRIC: Precision
+------------------------------------------------------------
+
+[ 2-WAY RM-ANOVA on inPF-outPF differences | N = 23 ]
+                      Anova
+=================================================
+                    F Value Num DF  Den DF Pr > F
+-------------------------------------------------
+TMS_Group            0.0664 1.0000 22.0000 0.7991
+OriMapped            3.3473 3.0000 66.0000 0.0242
+TMS_Group:OriMapped  0.6089 3.0000 66.0000 0.6116
+=================================================
+
+
+[ POST-HOC PAIRED t-TESTS: TMS vs No TMS ]
+  Ori  30° : t(23) =  0.584, p = 0.5651 ns  | d = 0.119 | MeanDiff = +1.015
+  Ori  60° : t(23) =  0.643, p = 0.5263 ns  | d = 0.131 | MeanDiff = +1.304
+  Ori 120° : t(23) =  0.356, p = 0.7253 ns  | d = 0.073 | MeanDiff = +0.587
+  Ori 150° : t(22) = -0.759, p = 0.4561 ns  | d = -0.158 | MeanDiff = -2.191
+
+Done! Results saved to B02D_statistical_results.txt
+

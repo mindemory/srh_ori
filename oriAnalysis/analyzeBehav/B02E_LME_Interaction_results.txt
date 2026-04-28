@@ -1,0 +1,121 @@
+================================================================================
+LINEAR MIXED-EFFECTS (LME) ANALYSIS OF BEHAVIORAL METRICS
+B02E: Testing Continuous Interference (Bias ~ TMS * DiagType * initOffset)
+================================================================================
+
+================================================================================
+LME RESULTS FOR: abserrorOri
+================================================================================
+                                                  Mixed Linear Model Regression Results
+==========================================================================================================================================
+Model:                                       MixedLM                            Dependent Variable:                            abserrorOri
+No. Observations:                            14675                              Method:                                        REML       
+No. Groups:                                  24                                 Scale:                                         30.9620    
+Min. group size:                             527                                Log-Likelihood:                                -46073.4217
+Max. group size:                             624                                Converged:                                     Yes        
+Mean group size:                             611.5                                                                                        
+------------------------------------------------------------------------------------------------------------------------------------------
+                                                                                                Coef.  Std.Err.   z    P>|z| [0.025 0.975]
+------------------------------------------------------------------------------------------------------------------------------------------
+Intercept                                                                                        6.505    0.329 19.793 0.000  5.861  7.149
+C(TMS_Condition, Treatment('NoTMS'))[T.TMS_inPF]                                                 0.031    0.171  0.181 0.856 -0.305  0.367
+C(TMS_Condition, Treatment('NoTMS'))[T.TMS_outPF]                                                0.112    0.171  0.656 0.512 -0.223  0.448
+C(DiagType, Treatment('nearDiag'))[T.offDiag]                                                    0.749    0.191  3.914 0.000  0.374  1.123
+C(TMS_Condition, Treatment('NoTMS'))[T.TMS_inPF]:C(DiagType, Treatment('nearDiag'))[T.offDiag]  -0.493    0.242 -2.038 0.042 -0.968 -0.019
+C(TMS_Condition, Treatment('NoTMS'))[T.TMS_outPF]:C(DiagType, Treatment('nearDiag'))[T.offDiag] -0.467    0.242 -1.930 0.054 -0.941  0.007
+initOffset                                                                                      -0.001    0.001 -1.299 0.194 -0.003  0.001
+initOffset_sq                                                                                    0.000    0.000  7.469 0.000  0.000  0.000
+Group Var                                                                                        2.088    0.113                           
+==========================================================================================================================================
+
+
+--- Omnibus Wald Tests (ANOVA Style) ---
+                                                                            chi2  P>chi2  df constraint
+Intercept                                                               391.7495  0.0000              1
+C(TMS_Condition, Treatment('NoTMS'))                                      0.5166  0.7724              2
+C(DiagType, Treatment('nearDiag'))                                       15.3178  0.0001              1
+C(TMS_Condition, Treatment('NoTMS')):C(DiagType, Treatment('nearDiag'))   4.8600  0.0880              2
+initOffset                                                                1.6882  0.1938              1
+initOffset_sq                                                            55.7924  0.0000              1
+
+
+================================================================================
+LME RESULTS FOR: RT
+================================================================================
+                                                  Mixed Linear Model Regression Results
+==========================================================================================================================================
+Model:                                        MixedLM                            Dependent Variable:                            RT        
+No. Observations:                             14675                              Method:                                        REML      
+No. Groups:                                   24                                 Scale:                                         0.1323    
+Min. group size:                              527                                Log-Likelihood:                                -6083.6089
+Max. group size:                              624                                Converged:                                     Yes       
+Mean group size:                              611.5                                                                                       
+------------------------------------------------------------------------------------------------------------------------------------------
+                                                                                                Coef.  Std.Err.   z    P>|z| [0.025 0.975]
+------------------------------------------------------------------------------------------------------------------------------------------
+Intercept                                                                                        1.503    0.043 34.580 0.000  1.418  1.589
+C(TMS_Condition, Treatment('NoTMS'))[T.TMS_inPF]                                                -0.023    0.011 -2.053 0.040 -0.045 -0.001
+C(TMS_Condition, Treatment('NoTMS'))[T.TMS_outPF]                                               -0.029    0.011 -2.576 0.010 -0.051 -0.007
+C(DiagType, Treatment('nearDiag'))[T.offDiag]                                                   -0.004    0.013 -0.285 0.776 -0.028  0.021
+C(TMS_Condition, Treatment('NoTMS'))[T.TMS_inPF]:C(DiagType, Treatment('nearDiag'))[T.offDiag]  -0.012    0.016 -0.727 0.467 -0.043  0.020
+C(TMS_Condition, Treatment('NoTMS'))[T.TMS_outPF]:C(DiagType, Treatment('nearDiag'))[T.offDiag]  0.008    0.016  0.489 0.625 -0.023  0.039
+initOffset                                                                                      -0.000    0.000 -3.867 0.000 -0.000 -0.000
+initOffset_sq                                                                                    0.000    0.000 89.866 0.000  0.000  0.000
+Group Var                                                                                        0.043    0.035                           
+==========================================================================================================================================
+
+
+--- Omnibus Wald Tests (ANOVA Style) ---
+                                                                             chi2  P>chi2  df constraint
+Intercept                                                               1195.7655  0.0000              1
+C(TMS_Condition, Treatment('NoTMS'))                                       6.9544  0.0309              2
+C(DiagType, Treatment('nearDiag'))                                         0.0810  0.7760              1
+C(TMS_Condition, Treatment('NoTMS')):C(DiagType, Treatment('nearDiag'))    1.9907  0.3696              2
+initOffset                                                                14.9533  0.0001              1
+initOffset_sq                                                           8075.8828  0.0000              1
+
+
+================================================================================
+LME RESULTS FOR: BiasTowardsDiagonal
+================================================================================
+                                                        Mixed Linear Model Regression Results
+=====================================================================================================================================================
+Model:                                        MixedLM                             Dependent Variable:                             BiasTowardsDiagonal
+No. Observations:                             14675                               Method:                                         REML               
+No. Groups:                                   24                                  Scale:                                          68.3139            
+Min. group size:                              527                                 Log-Likelihood:                                 -51901.3193        
+Max. group size:                              624                                 Converged:                                      Yes                
+Mean group size:                              611.5                                                                                                  
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+                                                                                                           Coef.  Std.Err.   z    P>|z| [0.025 0.975]
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+Intercept                                                                                                   2.411    0.564  4.277 0.000  1.306  3.516
+C(TMS_Condition, Treatment('NoTMS'))[T.TMS_inPF]                                                           -0.131    0.254 -0.514 0.607 -0.630  0.368
+C(TMS_Condition, Treatment('NoTMS'))[T.TMS_outPF]                                                           0.185    0.254  0.725 0.468 -0.314  0.683
+C(DiagType, Treatment('nearDiag'))[T.offDiag]                                                              -0.376    0.284 -1.323 0.186 -0.933  0.181
+C(TMS_Condition, Treatment('NoTMS'))[T.TMS_inPF]:C(DiagType, Treatment('nearDiag'))[T.offDiag]              0.033    0.360  0.092 0.927 -0.672  0.738
+C(TMS_Condition, Treatment('NoTMS'))[T.TMS_outPF]:C(DiagType, Treatment('nearDiag'))[T.offDiag]             0.438    0.359  1.218 0.223 -0.267  1.142
+initOffset                                                                                                 -0.006    0.004 -1.598 0.110 -0.014  0.001
+C(TMS_Condition, Treatment('NoTMS'))[T.TMS_inPF]:initOffset                                                 0.007    0.005  1.460 0.144 -0.002  0.017
+C(TMS_Condition, Treatment('NoTMS'))[T.TMS_outPF]:initOffset                                                0.007    0.005  1.518 0.129 -0.002  0.017
+C(DiagType, Treatment('nearDiag'))[T.offDiag]:initOffset                                                    0.008    0.005  1.516 0.130 -0.002  0.019
+C(TMS_Condition, Treatment('NoTMS'))[T.TMS_inPF]:C(DiagType, Treatment('nearDiag'))[T.offDiag]:initOffset  -0.008    0.007 -1.193 0.233 -0.022  0.005
+C(TMS_Condition, Treatment('NoTMS'))[T.TMS_outPF]:C(DiagType, Treatment('nearDiag'))[T.offDiag]:initOffset -0.009    0.007 -1.362 0.173 -0.023  0.004
+initOffset_sq                                                                                               0.000    0.000  8.383 0.000  0.000  0.000
+Group Var                                                                                                   6.515    0.237                           
+=====================================================================================================================================================
+
+
+--- Omnibus Wald Tests (ANOVA Style) ---
+                                                                                      chi2  P>chi2  df constraint
+Intercept                                                                          18.2924  0.0000              1
+C(TMS_Condition, Treatment('NoTMS'))                                                2.0682  0.3555              2
+C(DiagType, Treatment('nearDiag'))                                                  1.7492  0.1860              1
+C(TMS_Condition, Treatment('NoTMS')):C(DiagType, Treatment('nearDiag'))             2.2184  0.3298              2
+initOffset                                                                          2.5536  0.1100              1
+C(TMS_Condition, Treatment('NoTMS')):initOffset                                     2.7336  0.2549              2
+C(DiagType, Treatment('nearDiag')):initOffset                                       2.2984  0.1295              1
+C(TMS_Condition, Treatment('NoTMS')):C(DiagType, Treatment('nearDiag')):initOffset  2.0486  0.3590              2
+initOffset_sq                                                                      70.2800  0.0000              1
+
+

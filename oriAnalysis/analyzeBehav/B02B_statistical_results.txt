@@ -1,0 +1,389 @@
+================================================================================
+Analysis Run: 2026-04-10 16:08:32
+Analysis: Covariate-Corrected (initOffset removed) 2-Way RM-ANOVA
+Factors : TMS_Condition x DiagType  (OffsetGroup removed — corrected out)
+DVs     : AbsError_resid, RT_resid, BiasTowardsDiagonal_resid, Precision
+================================================================================
+
+Loading data...
+Preparing features...
+
+--- Covariate Regression: initOffset trend removed (NoTMS pooled) ---
+  AbsError                      : poly(0) anchor = 6.610, coeffs = [ 2.40000e-04 -1.78000e-03  6.60988e+00], fit on 3395 NoTMS trials
+  errOri_scaled                 : poly(0) anchor = -0.271, coeffs = [-3.000e-05  1.087e-02 -2.706e-01], fit on 3395 NoTMS trials
+  BiasTowardsDiagonal           : poly(0) anchor = 1.852, coeffs = [ 3.7000e-04 -2.5800e-03  1.8518e+00], fit on 3395 NoTMS trials
+  RT                            : poly(0) anchor = 1.492, coeffs = [ 1.20000e-04 -1.30000e-04  1.49208e+00], fit on 3395 NoTMS trials
+Covariate regression complete.
+
+--- Residualization check (r with initOffset, should be near 0 after) ---
+  AbsError                        r_raw=-0.0110  r_resid=+0.0056
+  errOri_scaled                   r_raw=+0.0469  r_resid=-0.0148
+  BiasTowardsDiagonal             r_raw=+0.0006  r_resid=+0.0166
+  RT                              r_raw=-0.0260  r_resid=-0.0109
+
+Aggregating residualized DVs per Subject x TMS_Condition x DiagType...
+Fitting Mixture Models for Precision (on errOri_scaled_resid)...
+Optimization successful after 20 iterations, NLL = 4.668427607681325
+Optimization successful after 20 iterations, NLL = 24.347239597089146
+Optimization successful after 20 iterations, NLL = 17.19718725758243
+Optimization successful after 20 iterations, NLL = 15.034478819851707
+Optimization successful after 20 iterations, NLL = 26.688914130310323
+Optimization successful after 20 iterations, NLL = 25.000881473348336
+Optimization successful after 20 iterations, NLL = 19.06118241828009
+Optimization successful after 20 iterations, NLL = 35.41529272874662
+Optimization successful after 20 iterations, NLL = 34.62590273054741
+Optimization successful after 20 iterations, NLL = 47.249201414805334
+Optimization successful after 20 iterations, NLL = 62.50702696468996
+Optimization successful after 20 iterations, NLL = 43.02323580809645
+Optimization successful after 20 iterations, NLL = 23.36431841656563
+Optimization successful after 20 iterations, NLL = 24.472058603429073
+Optimization successful after 20 iterations, NLL = 51.85856358406129
+Optimization successful after 20 iterations, NLL = 38.82123897539326
+Optimization successful after 20 iterations, NLL = 19.052875505113693
+Optimization successful after 20 iterations, NLL = 59.70685836595773
+Optimization successful after 20 iterations, NLL = 5.610504422910014
+Optimization successful after 20 iterations, NLL = 17.086816799411967
+Optimization successful after 20 iterations, NLL = 27.758155413324022
+Optimization successful after 20 iterations, NLL = 44.073376783393485
+Optimization successful after 20 iterations, NLL = 7.321163514612491
+Optimization successful after 20 iterations, NLL = 44.64788477600801
+Optimization successful after 20 iterations, NLL = 34.48629729409481
+Optimization successful after 20 iterations, NLL = 49.233402224294636
+Optimization successful after 20 iterations, NLL = 62.87329886772046
+Optimization successful after 20 iterations, NLL = 66.6408737308181
+Optimization successful after 20 iterations, NLL = 70.85593605958483
+Optimization successful after 20 iterations, NLL = 69.884758047861
+Optimization successful after 20 iterations, NLL = 15.151943826468612
+Optimization successful after 20 iterations, NLL = 32.11653637875729
+Optimization successful after 20 iterations, NLL = 16.069380753377715
+Optimization successful after 20 iterations, NLL = 30.348701693253233
+Optimization successful after 20 iterations, NLL = 40.13319229686223
+Optimization successful after 20 iterations, NLL = 35.51343582615987
+Optimization successful after 20 iterations, NLL = 9.95446536444536
+Optimization successful after 20 iterations, NLL = 15.56189925914235
+Optimization successful after 20 iterations, NLL = 16.59253896833515
+Optimization successful after 20 iterations, NLL = 43.56538687368529
+Optimization successful after 20 iterations, NLL = 14.537648083154458
+Optimization successful after 20 iterations, NLL = 25.98394948625578
+Optimization successful after 20 iterations, NLL = 11.950015046465468
+Optimization successful after 20 iterations, NLL = 37.26304243499404
+Optimization successful after 20 iterations, NLL = 14.117752356792474
+Optimization successful after 20 iterations, NLL = 44.995873938245964
+Optimization successful after 20 iterations, NLL = 57.69794638216203
+Optimization successful after 20 iterations, NLL = 37.50403849103863
+Optimization successful after 20 iterations, NLL = 28.968215368749867
+Optimization successful after 20 iterations, NLL = 18.94313159302559
+Optimization successful after 20 iterations, NLL = 75.40569499637506
+Optimization successful after 20 iterations, NLL = 31.88348968956488
+Optimization successful after 20 iterations, NLL = 46.55934077449983
+Optimization successful after 20 iterations, NLL = 59.260418147343756
+Optimization successful after 20 iterations, NLL = 13.293062952411663
+Optimization successful after 20 iterations, NLL = 7.551398725072398
+Optimization successful after 20 iterations, NLL = 26.62951079741587
+Optimization successful after 20 iterations, NLL = 14.364814967834898
+Optimization successful after 20 iterations, NLL = 12.435455479731012
+Optimization successful after 20 iterations, NLL = 30.22638187343201
+Optimization successful after 20 iterations, NLL = 37.06448003854277
+Optimization successful after 20 iterations, NLL = 14.03859468115527
+Optimization successful after 20 iterations, NLL = 18.65122484649179
+Optimization successful after 20 iterations, NLL = 26.783415617694573
+Optimization successful after 20 iterations, NLL = 25.50759328786871
+Optimization successful after 20 iterations, NLL = 28.207066969924536
+Optimization successful after 20 iterations, NLL = -8.82049260041451
+Optimization successful after 20 iterations, NLL = 10.972465525099114
+Optimization successful after 20 iterations, NLL = 5.171768645111774
+Optimization successful after 20 iterations, NLL = 6.057614638567571
+Optimization successful after 20 iterations, NLL = 3.712737040782182
+Optimization successful after 20 iterations, NLL = 18.470982855076212
+Optimization successful after 20 iterations, NLL = 7.0400582395101905
+Optimization successful after 20 iterations, NLL = 22.95881797029404
+Optimization successful after 20 iterations, NLL = 29.955108977317096
+Optimization successful after 20 iterations, NLL = -2.129480370699634
+Optimization successful after 20 iterations, NLL = 28.92789130555501
+Optimization successful after 20 iterations, NLL = 51.32704275059167
+Optimization successful after 20 iterations, NLL = 38.98121078692144
+Optimization successful after 20 iterations, NLL = 40.62454539761393
+Optimization successful after 20 iterations, NLL = 54.7814985350598
+Optimization successful after 20 iterations, NLL = 52.5696671562106
+Optimization successful after 20 iterations, NLL = 52.91758237700938
+Optimization successful after 20 iterations, NLL = 55.30561350604005
+Optimization successful after 20 iterations, NLL = 0.528651427137566
+Optimization successful after 20 iterations, NLL = 1.2752229690356645
+Optimization successful after 20 iterations, NLL = -12.730631692847467
+Optimization successful after 20 iterations, NLL = 9.99237322591604
+Optimization successful after 20 iterations, NLL = 9.444592723836104
+Optimization successful after 20 iterations, NLL = 10.65236083211554
+Optimization successful after 20 iterations, NLL = 1.4733512395400212
+Optimization successful after 20 iterations, NLL = -0.6683218090134733
+Optimization successful after 20 iterations, NLL = 12.792725588893274
+Optimization successful after 20 iterations, NLL = 22.748304594197077
+Optimization successful after 20 iterations, NLL = 25.87462575698606
+Optimization successful after 20 iterations, NLL = 31.51285534203264
+Optimization successful after 20 iterations, NLL = 15.034539884784499
+Optimization successful after 20 iterations, NLL = 19.971501290708847
+Optimization successful after 20 iterations, NLL = 12.965268380312816
+Optimization successful after 20 iterations, NLL = 25.050534431019265
+Optimization successful after 20 iterations, NLL = 34.39600592120931
+Optimization successful after 20 iterations, NLL = 15.738504446098354
+Optimization successful after 20 iterations, NLL = 6.826985343003963
+Optimization successful after 20 iterations, NLL = 21.504105311909715
+Optimization successful after 20 iterations, NLL = 7.624906052000194
+Optimization successful after 20 iterations, NLL = 12.283789057082139
+Optimization successful after 20 iterations, NLL = -0.3835796089912247
+Optimization successful after 20 iterations, NLL = 20.319268706545085
+Optimization successful after 20 iterations, NLL = -0.9530847543902974
+Optimization successful after 20 iterations, NLL = -10.251400524574453
+Optimization successful after 20 iterations, NLL = -27.95774790161516
+Optimization successful after 20 iterations, NLL = -7.031989202042581
+Optimization successful after 20 iterations, NLL = -17.73216277474852
+Optimization successful after 20 iterations, NLL = -13.251038643633583
+Optimization successful after 20 iterations, NLL = 32.126830505057285
+Optimization successful after 20 iterations, NLL = 10.977797304923879
+Optimization successful after 20 iterations, NLL = 34.24238480798942
+Optimization successful after 20 iterations, NLL = 43.35998768696995
+Optimization successful after 20 iterations, NLL = 23.377972674827262
+Optimization successful after 20 iterations, NLL = 5.227345784491637
+Optimization successful after 20 iterations, NLL = -2.129400311148788
+Optimization successful after 20 iterations, NLL = 13.292833882470175
+Optimization successful after 20 iterations, NLL = 11.191285097643503
+Optimization successful after 20 iterations, NLL = 7.878239369070652
+Optimization successful after 20 iterations, NLL = -22.65513139073826
+Optimization successful after 20 iterations, NLL = -15.438276123914388
+Optimization successful after 20 iterations, NLL = 3.2842448885489715
+Optimization successful after 20 iterations, NLL = 3.0890539938098893
+Optimization successful after 20 iterations, NLL = 18.31046960622894
+Optimization successful after 20 iterations, NLL = -21.735427276373176
+Optimization successful after 20 iterations, NLL = -11.48171309778826
+Optimization successful after 20 iterations, NLL = 12.212361735251893
+Optimization successful after 20 iterations, NLL = 38.68189063850829
+Optimization successful after 20 iterations, NLL = 60.16590934263597
+Optimization successful after 20 iterations, NLL = 57.477853711596865
+Optimization successful after 20 iterations, NLL = 64.25015952878199
+Optimization successful after 20 iterations, NLL = 77.6936792687025
+Optimization successful after 20 iterations, NLL = 62.78746464920951
+Optimization successful after 20 iterations, NLL = 13.166142284573839
+Optimization successful after 20 iterations, NLL = 24.58094636323032
+Optimization successful after 20 iterations, NLL = 20.633390450861327
+Optimization successful after 20 iterations, NLL = 34.842050434405095
+Optimization successful after 20 iterations, NLL = 25.082898898061124
+Optimization successful after 20 iterations, NLL = 33.18188582829665
+
+
+================================================================================
+2-WAY RM-ANOVA: AbsError_resid ~ TMS_Condition * DiagType
+================================================================================
+N = 24 subjects with complete data in all 6 cells for AbsError_resid.
+                       Anova
+====================================================
+                       F Value Num DF  Den DF Pr > F
+----------------------------------------------------
+TMS_Condition           0.8338 2.0000 46.0000 0.4409
+DiagType               11.9137 1.0000 23.0000 0.0022
+TMS_Condition:DiagType  1.1884 2.0000 46.0000 0.3139
+====================================================
+
+
+Means for AbsError_resid:
+
+--- Main Effect: TMS_Condition ---
+                mean    sem
+TMS_Condition              
+NoTMS         -0.003  0.257
+TMS_inPF      -0.199  0.211
+TMS_outPF     -0.105  0.244
+
+--- Main Effect: DiagType ---
+           mean    sem
+DiagType              
+nearDiag -0.316  0.190
+offDiag   0.111  0.195
+
+--- Interaction: TMS_Condition x DiagType ---
+                  mean              sem        
+DiagType      nearDiag offDiag nearDiag offDiag
+TMS_Condition                                  
+NoTMS           -0.373   0.366    0.323   0.393
+TMS_inPF        -0.333  -0.065    0.295   0.305
+TMS_outPF       -0.242   0.031    0.376   0.315
+
+--- Full cell means (TMS_Condition x DiagType) ---
+TMS_Condition DiagType  AbsError_resid
+        NoTMS nearDiag          -0.373
+        NoTMS  offDiag           0.366
+     TMS_inPF nearDiag          -0.333
+     TMS_inPF  offDiag          -0.065
+    TMS_outPF nearDiag          -0.242
+    TMS_outPF  offDiag           0.031
+
+--- Paired t-tests: TMS_inPF vs NoTMS and TMS_outPF vs NoTMS, per DiagType ---
+  nearDiag   | TMS_inPF vs NoTMS: t(23)=0.182, p=0.8570 ns, d=0.037
+  nearDiag   | TMS_outPF vs NoTMS: t(23)=0.595, p=0.5575 ns, d=0.122
+  nearDiag   | TMS_inPF vs TMS_outPF: t(23)=-0.319, p=0.7529 ns, d=-0.065
+  offDiag    | TMS_inPF vs NoTMS: t(23)=-1.975, p=0.0604 ns, d=-0.403
+  offDiag    | TMS_outPF vs NoTMS: t(23)=-1.449, p=0.1608 ns, d=-0.296
+  offDiag    | TMS_inPF vs TMS_outPF: t(23)=-0.469, p=0.6437 ns, d=-0.096
+
+
+================================================================================
+2-WAY RM-ANOVA: RT_resid ~ TMS_Condition * DiagType
+================================================================================
+N = 24 subjects with complete data in all 6 cells for RT_resid.
+                       Anova
+====================================================
+                       F Value Num DF  Den DF Pr > F
+----------------------------------------------------
+TMS_Condition           1.3289 2.0000 46.0000 0.2747
+DiagType                0.5051 1.0000 23.0000 0.4844
+TMS_Condition:DiagType  1.0328 2.0000 46.0000 0.3641
+====================================================
+
+
+Means for RT_resid:
+
+--- Main Effect: TMS_Condition ---
+                    mean    sem
+TMS_Condition                  
+NoTMS          3.988e-04  0.034
+TMS_inPF      -2.949e-02  0.030
+TMS_outPF     -2.553e-02  0.030
+
+--- Main Effect: DiagType ---
+           mean    sem
+DiagType              
+nearDiag -0.016  0.025
+offDiag  -0.020  0.026
+
+--- Interaction: TMS_Condition x DiagType ---
+                  mean                 sem        
+DiagType      nearDiag    offDiag nearDiag offDiag
+TMS_Condition                                     
+NoTMS            0.001 -2.810e-04    0.048   0.049
+TMS_inPF        -0.022 -3.724e-02    0.042   0.043
+TMS_outPF       -0.028 -2.336e-02    0.042   0.044
+
+--- Full cell means (TMS_Condition x DiagType) ---
+TMS_Condition DiagType   RT_resid
+        NoTMS nearDiag  1.079e-03
+        NoTMS  offDiag -2.810e-04
+     TMS_inPF nearDiag -2.174e-02
+     TMS_inPF  offDiag -3.724e-02
+    TMS_outPF nearDiag -2.770e-02
+    TMS_outPF  offDiag -2.336e-02
+
+--- Paired t-tests: TMS_inPF vs NoTMS and TMS_outPF vs NoTMS, per DiagType ---
+  nearDiag   | TMS_inPF vs NoTMS: t(23)=-0.955, p=0.3496 ns, d=-0.195
+  nearDiag   | TMS_outPF vs NoTMS: t(23)=-1.170, p=0.2539 ns, d=-0.239
+  nearDiag   | TMS_inPF vs TMS_outPF: t(23)=0.656, p=0.5186 ns, d=0.134
+  offDiag    | TMS_inPF vs NoTMS: t(23)=-1.328, p=0.1972 ns, d=-0.271
+  offDiag    | TMS_outPF vs NoTMS: t(23)=-1.001, p=0.3273 ns, d=-0.204
+  offDiag    | TMS_inPF vs TMS_outPF: t(23)=-1.276, p=0.2146 ns, d=-0.261
+
+
+================================================================================
+2-WAY RM-ANOVA: BiasTowardsDiagonal_resid ~ TMS_Condition * DiagType
+================================================================================
+N = 24 subjects with complete data in all 6 cells for BiasTowardsDiagonal_resid.
+                       Anova
+====================================================
+                       F Value Num DF  Den DF Pr > F
+----------------------------------------------------
+TMS_Condition           1.9863 2.0000 46.0000 0.1488
+DiagType                0.8084 1.0000 23.0000 0.3779
+TMS_Condition:DiagType  0.4981 2.0000 46.0000 0.6109
+====================================================
+
+
+Means for BiasTowardsDiagonal_resid:
+
+--- Main Effect: TMS_Condition ---
+                mean    sem
+TMS_Condition              
+NoTMS         -0.020  0.454
+TMS_inPF      -0.089  0.387
+TMS_outPF      0.416  0.394
+
+--- Main Effect: DiagType ---
+           mean    sem
+DiagType              
+nearDiag  0.218  0.316
+offDiag  -0.014  0.356
+
+--- Interaction: TMS_Condition x DiagType ---
+                  mean              sem        
+DiagType      nearDiag offDiag nearDiag offDiag
+TMS_Condition                                  
+NoTMS            0.170  -0.211    0.576   0.713
+TMS_inPF         0.091  -0.269    0.479   0.616
+TMS_outPF        0.393   0.439    0.601   0.521
+
+--- Full cell means (TMS_Condition x DiagType) ---
+TMS_Condition DiagType  BiasTowardsDiagonal_resid
+        NoTMS nearDiag                      0.170
+        NoTMS  offDiag                     -0.211
+     TMS_inPF nearDiag                      0.091
+     TMS_inPF  offDiag                     -0.269
+    TMS_outPF nearDiag                      0.393
+    TMS_outPF  offDiag                      0.439
+
+--- Paired t-tests: TMS_inPF vs NoTMS and TMS_outPF vs NoTMS, per DiagType ---
+  nearDiag   | TMS_inPF vs NoTMS: t(23)=-0.228, p=0.8215 ns, d=-0.047
+  nearDiag   | TMS_outPF vs NoTMS: t(23)=0.834, p=0.4127 ns, d=0.170
+  nearDiag   | TMS_inPF vs TMS_outPF: t(23)=-0.697, p=0.4929 ns, d=-0.142
+  offDiag    | TMS_inPF vs NoTMS: t(23)=-0.168, p=0.8683 ns, d=-0.034
+  offDiag    | TMS_outPF vs NoTMS: t(23)=1.526, p=0.1406 ns, d=0.312
+  offDiag    | TMS_inPF vs TMS_outPF: t(23)=-2.013, p=0.0560 ns, d=-0.411
+
+
+================================================================================
+2-WAY RM-ANOVA: Precision ~ TMS_Condition * DiagType
+================================================================================
+N = 24 subjects with complete data in all 6 cells for Precision.
+                       Anova
+====================================================
+                       F Value Num DF  Den DF Pr > F
+----------------------------------------------------
+TMS_Condition           0.4763 2.0000 46.0000 0.6241
+DiagType                9.0544 1.0000 23.0000 0.0063
+TMS_Condition:DiagType  0.2381 2.0000 46.0000 0.7891
+====================================================
+
+
+Means for Precision:
+
+--- Main Effect: TMS_Condition ---
+                 mean    sem
+TMS_Condition               
+NoTMS          11.907  0.650
+TMS_inPF       12.440  0.686
+TMS_outPF      12.207  0.740
+
+--- Main Effect: DiagType ---
+            mean    sem
+DiagType               
+nearDiag  12.824  0.574
+offDiag   11.545  0.545
+
+--- Interaction: TMS_Condition x DiagType ---
+                  mean              sem        
+DiagType      nearDiag offDiag nearDiag offDiag
+TMS_Condition                                  
+NoTMS           12.721  11.093    0.899   0.929
+TMS_inPF        12.859  12.020    1.000   0.954
+TMS_outPF       12.891  11.522    1.113   0.978
+
+--- Full cell means (TMS_Condition x DiagType) ---
+TMS_Condition DiagType  Precision
+        NoTMS nearDiag     12.721
+        NoTMS  offDiag     11.093
+     TMS_inPF nearDiag     12.859
+     TMS_inPF  offDiag     12.020
+    TMS_outPF nearDiag     12.891
+    TMS_outPF  offDiag     11.522
+
+--- Paired t-tests: TMS_inPF vs NoTMS and TMS_outPF vs NoTMS, per DiagType ---
+  nearDiag   | TMS_inPF vs NoTMS: t(23)=0.174, p=0.8631 ns, d=0.036
+  nearDiag   | TMS_outPF vs NoTMS: t(23)=0.216, p=0.8310 ns, d=0.044
+  nearDiag   | TMS_inPF vs TMS_outPF: t(23)=-0.037, p=0.9711 ns, d=-0.007
+  offDiag    | TMS_inPF vs NoTMS: t(23)=1.334, p=0.1951 ns, d=0.272
+  offDiag    | TMS_outPF vs NoTMS: t(23)=0.624, p=0.5387 ns, d=0.127
+  offDiag    | TMS_inPF vs TMS_outPF: t(23)=0.533, p=0.5992 ns, d=0.109

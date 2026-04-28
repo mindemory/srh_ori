@@ -1,0 +1,64 @@
+================================================================================
+Analysis Run: 2026-04-24 16:17:59
+Analysis: One-Way Within-Subject Permutation Test (TMS_Condition) Split by Offset
+Offset Threshold: 50 degrees
+Metrics: RT, MAE, BiasTowardsDiagonal, Precision
+Permutations: 10,000
+================================================================================
+
+Loading data...
+Computing motor direction from oriArray...
+Filtering for motor certainty in large offsets...
+
+Running permutation tests (10,000 iterations each — may take a moment)...
+
+########################################
+### Results for: SMALL OFFSET (0-50°)
+########################################
+
+--- Permutation Test: RT ---
+  Observed F = 0.390,  permutation p = 0.6790  (N=24 subjects)
+  Not significant.
+
+--- Permutation Test: MAE ---
+  Observed F = 0.086,  permutation p = 0.9221  (N=24 subjects)
+  Not significant.
+
+--- Permutation Test: Bias ---
+  Observed F = 0.125,  permutation p = 0.8860  (N=24 subjects)
+  Not significant.
+
+--- Permutation Test: Precision ---
+  Observed F = 0.014,  permutation p = 0.9917  (N=24 subjects)
+  Not significant.
+
+########################################
+### Results for: LARGE OFFSET (50-90°, correct direction only)
+########################################
+
+--- Permutation Test: RT ---
+  Observed F = 3.075,  permutation p = 0.0503  (N=24 subjects)
+  ~ Trending (p < 0.10). Post-hoc exploratory pairwise tests:
+    NoTMS vs TMS_inPF: t=1.776, p_raw=0.0912, p_Bonf=0.2736 
+    NoTMS vs TMS_outPF: t=1.842, p_raw=0.0820, p_Bonf=0.2460 
+    TMS_inPF vs TMS_outPF: t=-0.228, p_raw=0.8218, p_Bonf=1.0000 
+
+--- Permutation Test: MAE ---
+  Observed F = 2.983,  permutation p = 0.0582  (N=24 subjects)
+  ~ Trending (p < 0.10). Post-hoc exploratory pairwise tests:
+    NoTMS vs TMS_inPF: t=2.389, p_raw=0.0237, p_Bonf=0.0711 
+    NoTMS vs TMS_outPF: t=1.668, p_raw=0.1081, p_Bonf=0.3243 
+    TMS_inPF vs TMS_outPF: t=-0.750, p_raw=0.4763, p_Bonf=1.0000 
+
+--- Permutation Test: Bias ---
+  Observed F = 3.139,  permutation p = 0.0502  (N=24 subjects)
+  ~ Trending (p < 0.10). Post-hoc exploratory pairwise tests:
+    NoTMS vs TMS_inPF: t=-1.912, p_raw=0.0609, p_Bonf=0.1827 
+    NoTMS vs TMS_outPF: t=0.283, p_raw=0.7680, p_Bonf=1.0000 
+    TMS_inPF vs TMS_outPF: t=2.721, p_raw=0.0123, p_Bonf=0.0369 *
+
+--- Permutation Test: Precision ---
+  Observed F = 2.335,  permutation p = 0.1028  (N=24 subjects)
+  Not significant.
+
+Done.

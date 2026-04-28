@@ -1,0 +1,154 @@
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:168: RuntimeWarning: invalid value encountered in intersection
+  return lib.intersection(a, b, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:553: RuntimeWarning: invalid value encountered in unary_union
+  return lib.unary_union(collections, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/constructive.py:246: RuntimeWarning: invalid value encountered in buffer
+  return lib.buffer(
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:168: RuntimeWarning: invalid value encountered in intersection
+  return lib.intersection(a, b, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:553: RuntimeWarning: invalid value encountered in unary_union
+  return lib.unary_union(collections, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:168: RuntimeWarning: invalid value encountered in intersection
+  return lib.intersection(a, b, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:553: RuntimeWarning: invalid value encountered in unary_union
+  return lib.unary_union(collections, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:168: RuntimeWarning: invalid value encountered in intersection
+  return lib.intersection(a, b, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:553: RuntimeWarning: invalid value encountered in unary_union
+  return lib.unary_union(collections, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/constructive.py:246: RuntimeWarning: invalid value encountered in buffer
+  return lib.buffer(
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/constructive.py:246: RuntimeWarning: invalid value encountered in buffer
+  return lib.buffer(
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:168: RuntimeWarning: invalid value encountered in intersection
+  return lib.intersection(a, b, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:553: RuntimeWarning: invalid value encountered in unary_union
+  return lib.unary_union(collections, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:168: RuntimeWarning: invalid value encountered in intersection
+  return lib.intersection(a, b, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:553: RuntimeWarning: invalid value encountered in unary_union
+  return lib.unary_union(collections, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/constructive.py:246: RuntimeWarning: invalid value encountered in buffer
+  return lib.buffer(
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/constructive.py:246: RuntimeWarning: invalid value encountered in buffer
+  return lib.buffer(
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:168: RuntimeWarning: invalid value encountered in intersection
+  return lib.intersection(a, b, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:553: RuntimeWarning: invalid value encountered in unary_union
+  return lib.unary_union(collections, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:168: RuntimeWarning: invalid value encountered in intersection
+  return lib.intersection(a, b, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:553: RuntimeWarning: invalid value encountered in unary_union
+  return lib.unary_union(collections, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:168: RuntimeWarning: invalid value encountered in intersection
+  return lib.intersection(a, b, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:553: RuntimeWarning: invalid value encountered in unary_union
+  return lib.unary_union(collections, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:168: RuntimeWarning: invalid value encountered in intersection
+  return lib.intersection(a, b, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:553: RuntimeWarning: invalid value encountered in unary_union
+  return lib.unary_union(collections, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/constructive.py:246: RuntimeWarning: invalid value encountered in buffer
+  return lib.buffer(
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/constructive.py:246: RuntimeWarning: invalid value encountered in buffer
+  return lib.buffer(
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:168: RuntimeWarning: invalid value encountered in intersection
+  return lib.intersection(a, b, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:553: RuntimeWarning: invalid value encountered in unary_union
+  return lib.unary_union(collections, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/constructive.py:246: RuntimeWarning: invalid value encountered in buffer
+  return lib.buffer(
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:168: RuntimeWarning: invalid value encountered in intersection
+  return lib.intersection(a, b, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:553: RuntimeWarning: invalid value encountered in unary_union
+  return lib.unary_union(collections, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/constructive.py:246: RuntimeWarning: invalid value encountered in buffer
+  return lib.buffer(
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:168: RuntimeWarning: invalid value encountered in intersection
+  return lib.intersection(a, b, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:553: RuntimeWarning: invalid value encountered in unary_union
+  return lib.unary_union(collections, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:168: RuntimeWarning: invalid value encountered in intersection
+  return lib.intersection(a, b, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:553: RuntimeWarning: invalid value encountered in unary_union
+  return lib.unary_union(collections, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/constructive.py:246: RuntimeWarning: invalid value encountered in buffer
+  return lib.buffer(
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/constructive.py:246: RuntimeWarning: invalid value encountered in buffer
+  return lib.buffer(
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:168: RuntimeWarning: invalid value encountered in intersection
+  return lib.intersection(a, b, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:553: RuntimeWarning: invalid value encountered in unary_union
+  return lib.unary_union(collections, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/constructive.py:246: RuntimeWarning: invalid value encountered in buffer
+  return lib.buffer(
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/constructive.py:246: RuntimeWarning: invalid value encountered in buffer
+  return lib.buffer(
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/constructive.py:246: RuntimeWarning: invalid value encountered in buffer
+  return lib.buffer(
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:168: RuntimeWarning: invalid value encountered in intersection
+  return lib.intersection(a, b, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:553: RuntimeWarning: invalid value encountered in unary_union
+  return lib.unary_union(collections, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:168: RuntimeWarning: invalid value encountered in intersection
+  return lib.intersection(a, b, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:553: RuntimeWarning: invalid value encountered in unary_union
+  return lib.unary_union(collections, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/constructive.py:246: RuntimeWarning: invalid value encountered in buffer
+  return lib.buffer(
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:168: RuntimeWarning: invalid value encountered in intersection
+  return lib.intersection(a, b, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:168: RuntimeWarning: invalid value encountered in intersection
+  return lib.intersection(a, b, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:553: RuntimeWarning: invalid value encountered in unary_union
+  return lib.unary_union(collections, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/constructive.py:246: RuntimeWarning: invalid value encountered in buffer
+  return lib.buffer(
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:168: RuntimeWarning: invalid value encountered in intersection
+  return lib.intersection(a, b, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:553: RuntimeWarning: invalid value encountered in unary_union
+  return lib.unary_union(collections, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/constructive.py:246: RuntimeWarning: invalid value encountered in buffer
+  return lib.buffer(
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:168: RuntimeWarning: invalid value encountered in intersection
+  return lib.intersection(a, b, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:553: RuntimeWarning: invalid value encountered in unary_union
+  return lib.unary_union(collections, **kwargs)
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/constructive.py:246: RuntimeWarning: invalid value encountered in buffer
+  return lib.buffer(
+/users/mrugank/.conda/envs/srh/lib/python3.10/site-packages/shapely/set_operations.py:553: RuntimeWarning: invalid value encountered in unary_union
+  return lib.unary_union(collections, **kwargs)
+
+Creating a new dataframe...
+We have 23 subjects so far: [1, 2, 3, 5, 6, 7, 8, 9, 11, 12, 14, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 28]
+
+Outlier Detection: Global Mean=-0.14, SD=10.58, Bounds=[-31.89, 31.61]
+Total LargeErrors: 172/14256 (1.2%)
+Plotting for 23 subjects...
+Final corrected grid saved to Phosphene_Maps_Grid_AllSubjects.png
+PHOSPHENE_AREAS = {
+    1: 336374.74,
+    2: 167536.34,
+    3: 117065.06,
+    5: 251938.71,
+    6: 181427.12,
+    7: 263543.54,
+    8: 48461.33,
+    9: 302323.34,
+    11: 109957.43,
+    12: 122747.67,
+    14: 231613.78,
+    16: 315987.92,
+    17: 41137.00,
+    18: 263938.35,
+    19: 321687.83,
+    20: 134379.74,
+    21: 99538.24,
+    22: 163113.10,
+    23: 31812.30,
+    24: 76675.30,
+    25: 106969.62,
+    26: 76766.58,
+    28: 24483.74,
+}
+
