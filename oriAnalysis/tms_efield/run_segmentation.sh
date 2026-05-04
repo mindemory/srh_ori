@@ -28,21 +28,31 @@ CORENUM=0
 # Loop over the subject numbers
 for sub in "${subs[@]}"; do
     sub_id=$(printf "sub%02d" $sub)
-    # Updated paths for TMS_ori project
-    work_dir="/d/DATD/datd/TMS_ori/SIMNIBS_output/${sub_id}/"
+    # Paths for TMS_ori project
+    input_dir="/d/DATD/datd/TMS_ori/brainsight/${sub_id}"
+    work_dir="/d/DATD/datd/TMS_ori/SIMNIBS_output/${sub_id}"
     LOG_DIR="/d/DATD/datd/TMS_ori/SIMNIBS_output/logs"
     LOG_FILE="${LOG_DIR}/charm_${sub_id}_${DATE}.log"
     
     mkdir -p "$LOG_DIR"
+    mkdir -p "$work_dir"
 
     echo "Starting processing for Subject: $sub_id on Core: $CORENUM (Log: $LOG_FILE)"
     
     (
-      # Ensure work_dir exists or create it? 
-      # Usually T1.nii should be there already.
-      if [ ! -d "$work_dir" ]; then
-        echo "Warning: Work directory $work_dir does not exist. Skipping $sub_id."
-        exit 1
+      # Copy T1.nii from brainsight if not in work_dir
+      if [ ! -e "${work_dir}/T1.nii" ]; then
+        if [ -e "${input_dir}/T1.nii" ]; then
+          cp "${input_dir}/T1.nii" "${work_dir}/"
+        else
+          echo "Error: T1.nii not found in $input_dir. Skipping $sub_id."
+          exit 1
+        fi
+      fi
+
+      # Optionally copy T2.nii if it exists in input_dir
+      if [ ! -e "${work_dir}/T2.nii" ] && [ -e "${input_dir}/T2.nii" ]; then
+        cp "${input_dir}/T2.nii" "${work_dir}/"
       fi
 
       cd "$work_dir"
