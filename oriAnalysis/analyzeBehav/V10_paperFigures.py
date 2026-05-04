@@ -9,6 +9,8 @@ from scipy import stats
 import warnings
 import os
 import modeller as md
+import sys
+import joblib
 
 warnings.filterwarnings('ignore')
 sns.set_theme(style="white", context="notebook")
@@ -16,94 +18,141 @@ sns.set_theme(style="white", context="notebook")
 output_dir = os.path.join(gm.p['datd'], 'Figures', 'paperFigures')
 os.makedirs(output_dir, exist_ok=True)
 
+# --- Global color scheme: darker = inPF / Radial, lighter = outPF / Tangential ---
+COL_A_BOX   = '#4472C4'   # darker blue  — inPF / Radial
+COL_A_STRIP = '#1A3A6B'   # deep navy
+COL_B_BOX   = '#A9C4E8'   # lighter blue — outPF / Tangential
+COL_B_STRIP = '#5B8DC7'   # mid blue
+
+# TMS condition colors — matching Fig 1B scatter (k / r / b)
+TMS_BOX_PAL   = {'No TMS': '#9E9E9E', 'Early TMS': '#EF9A9A', 'Middle TMS': '#90CAF9'}
+TMS_STRIP_PAL = {'No TMS': 'k',       'Early TMS': '#C62828',  'Middle TMS': '#1565C0'}
+# Paired dark/light shades per TMS (kept for other uses)
+TMS_DARK  = {'No TMS': '#424242', 'Early TMS': '#C62828', 'Middle TMS': '#0D47A1'}
+TMS_LIGHT = {'No TMS': '#BDBDBD', 'Early TMS': '#FFCDD2', 'Middle TMS': '#BBDEFB'}
+
+import matplotlib.patches as mpatches
+
+def _draw_paired_boxes(ax, long_df, x_order, A, B, tms_groups,
+                       show_legend=False, leg_labels=None):
+    """Draw touching paired boxes (A=full, B=0.65 alpha) using custom positions."""
+    bw   = 0.28   # box width
+    gap  = 0.15   # gap between TMS groups (center-to-center of pair vs next pair)
+
+    pos_map = {}
+    xtick_pos, xtick_lbl = [], []
+    for i, t in enumerate(tms_groups):
+        base = i * (2 * bw + gap)
+        pos_map[f'{t}|{A}'] = base
+        pos_map[f'{t}|{B}'] = base + bw   # touching, zero gap
+        xtick_pos.append(base + bw / 2)   # midpoint of pair
+        xtick_lbl.append(t)
+
+    rng = np.random.default_rng(42)
+    for key in x_order:
+        pos = pos_map.get(key)
+        if pos is None: continue
+        t   = key.split('|')[0]
+        cond = key.split('|', 1)[1]
+        vals = long_df[long_df['TMS_Cond'] == key]['NormValue'].dropna().values
+        if len(vals) < 3: continue
+
+        is_A = (cond == A)
+        col  = TMS_BOX_PAL[t]
+        scol = TMS_STRIP_PAL[t]
+        al   = 1.0 if is_A else 0.65
+        sal  = 0.7 if is_A else 0.35
+
+        ax.boxplot([vals], positions=[pos], widths=bw, patch_artist=True,
+                   showfliers=False, manage_ticks=False,
+                   boxprops=dict(facecolor=col, alpha=al, linewidth=0.8, edgecolor=scol),
+                   medianprops=dict(color='white', linewidth=2),
+                   whiskerprops=dict(color=scol, alpha=al, linewidth=0.8),
+                   capprops=dict(color=scol, alpha=al, linewidth=0.8))
+        jitter = rng.uniform(-bw * 0.28, bw * 0.28, len(vals))
+        ax.scatter(pos + jitter, vals, color=scol, alpha=sal, s=11, zorder=3)
+
+    ax.axhline(0.5, color='k', lw=1, ls='--', alpha=0.7)
+    ax.set_xticks(xtick_pos)
+    ax.set_xticklabels(xtick_lbl, fontsize=9)
+    xl = pos_map[x_order[0]] - bw * 0.8
+    xr = pos_map[x_order[-1]] + bw * 1.8
+    ax.set_xlim(xl, xr)
+    if ax.get_legend(): ax.get_legend().remove()
+    if show_legend:
+        notms_col = TMS_BOX_PAL['No TMS']
+        leg_a, leg_b = leg_labels or (A, B)
+        handles = [
+            mpatches.Patch(facecolor=notms_col, alpha=1.0, edgecolor='k', lw=0.8, label=leg_a),
+            mpatches.Patch(facecolor=notms_col, alpha=0.65, edgecolor='k', lw=0.8, label=leg_b),
+        ]
+        ax.legend(handles=handles, frameon=False, fontsize=8, loc='upper right')
+
 print("Loading data...")
 df = gm.master_df.copy()
 df.reset_index(drop=True, inplace=True)
 
-# User Request (V3 Refinement): Remove LargeError trials
-print(f"Total trials before filtering: {len(df)}")
+# Remove LargeError trials
 df = df[df['LargeError'] == 0].copy()
-print(f"Total trials after dropping LargeError=1: {len(df)}")
 
 # --- Feature Engineering ---
-df.rename(columns={
-    'TMScond_label': 'TMS',        
-    'stimPF_label': 'Hemifield',   
-    'targOriCategory': 'OriCat',
-    'hemisphereStimulated': 'HemiStim'
-}, inplace=True)
-
-# Metrics
+df.rename(columns={'TMScond_label': 'TMS', 'stimPF_label': 'Hemifield', 'targOriCategory': 'OriCat', 'hemisphereStimulated': 'HemiStim'}, inplace=True)
 df['BiasTowardsDiagonal'] = df['errOri_scaled']
 df.loc[df['OriCat'].isin([60, 150]), 'BiasTowardsDiagonal'] *= -1
 df['AbsError'] = np.abs(df['errOri_scaled'])
 df['AbsInitOffset'] = np.abs(df['initOffset'])
 
-# --- GROUPING LOGIC ---
-# TMS Group: No TMS vs TMS (Early/Middle combined)
-df['TMS_Group'] = df['TMS'].replace({'Early TMS': 'TMS', 'Middle TMS': 'TMS'})
-# Enforce order
-df['TMS_Group'] = pd.Categorical(df['TMS_Group'], categories=['No TMS', 'TMS'], ordered=True)
+# Continuous Motor Preference (CW Tendency)
+def get_cw_tendency_continuous(arr):
+    if not isinstance(arr, (list, np.ndarray)) or len(arr) < 2: return np.nan
+    diffs = np.diff(arr)
+    diffs = (diffs + 90) % 180 - 90
+    return 1.0 if np.sum(diffs) > 0 else 0.0
 
-# Offset Group: Small (0-25) vs Large (45-90). Intermediate (25-45) are ignored.
+df['CW_Tendency'] = df['oriArray'].apply(get_cw_tendency_continuous)
+df['initOffset'] = (df['initOri'] - df['targOriActual'] + 90) % 180 - 90 # Standardize
+
+# Orientation Axis Mapping (Radial vs Tangential)
+def get_ori_type(row):
+    ori, hemi, pf = row['OriCat'], row['HemiStim'], row['Hemifield']
+    if hemi == 'Left': # Stimulating Left Hemi -> Phosphene in Right VF
+        if pf == 'inPF': # Right VF
+            return 'Radial' if ori in [120, 150] else 'Tangential'
+        else: # Left VF
+            return 'Radial' if ori in [30, 60] else 'Tangential'
+    else: # Stimulating Right Hemi -> Phosphene in Left VF
+        if pf == 'inPF': # Left VF
+            return 'Radial' if ori in [30, 60] else 'Tangential'
+        else: # Right VF
+            return 'Radial' if ori in [120, 150] else 'Tangential'
+
+df['DiagType'] = df.apply(get_ori_type, axis=1)
+
+# --- GROUPING LOGIC ---
+df['TMS_Group'] = df['TMS'].replace({'Early TMS': 'TMS', 'Middle TMS': 'TMS'})
+df['TMS_Group'] = pd.Categorical(df['TMS_Group'], categories=['No TMS', 'TMS'], ordered=True)
 df['OffsetGroup'] = pd.cut(df['AbsInitOffset'], bins=[0, 25.1, 44.9, 90.1], labels=['Small Offset', 'Medium Offset', 'Large Offset'], include_lowest=True)
 df['OffsetGroup'] = df['OffsetGroup'].cat.remove_categories(['Medium Offset'])
-df['OffsetGroup3'] = pd.cut(df['AbsInitOffset'], bins=[0, 30, 60, 90], labels=['Small Offset', 'Medium Offset', 'Large Offset'], include_lowest=True)
-
-# Type Conversion for others
 df['Hemifield'] = pd.Categorical(df['Hemifield'], categories=['outPF', 'inPF'], ordered=True)
 df['OriCat'] = df['OriCat'].astype(int)
+df['OriCat45'] = df['OriCat'].replace({30: 'Acute (30+60)', 60: 'Acute (30+60)', 120: 'Obtuse (120+150)', 150: 'Obtuse (120+150)'})
 
-# Ori Group: 30/150 vs 60/120
-df['OriGroup'] = df['OriCat'].replace({
-    30: '30_150', 150: '30_150',
-    60: '60_120', 120: '60_120'
-})
-
-# OriCat45: 30+60 (diagonal ~45°) vs 120+150 (diagonal ~135°)
-df['OriCat45'] = df['OriCat'].replace({
-    30: 'Acute (30+60)', 60: 'Acute (30+60)',
-    120: 'Obtuse (120+150)', 150: 'Obtuse (120+150)'
-})
-
-# DiagType: Radial vs Tangential
-def classify_diag(row):
-    hemi_stim = row['HemiStim']
-    in_pf = row['Hemifield'] == 'inPF'
-    is_acute = row['OriCat45'] == 'Acute (30+60)'
-    
-    if hemi_stim == 'Left':
-        return 'Radial' if (in_pf and not is_acute) or (not in_pf and is_acute) else 'Tangential'
-    else: # Right TMS
-        return 'Radial' if (in_pf and is_acute) or (not in_pf and not is_acute) else 'Tangential'
-
-df['DiagType'] = df.apply(classify_diag, axis=1)
-
-# --- ORIENTATION BINNING ---
-# Bins: 0-180 in 5 deg steps
-ori_bins = np.arange(0, 185, 5)
-df['OriBin'] = pd.cut(df['targOriActual'], bins=ori_bins, include_lowest=True)
-df['OriBinCenter'] = df['OriBin'].apply(lambda x: x.mid).astype(float)
-
-
-# --- Reusable Plotting Functions (Updated for 2 Cols) ---
-
+# --- Statistical Helpers ---
 def run_permutation_test(vals, n_perms=10000):
-    """One-sample sign-flipping permutation test against 0."""
-    vals = np.array(vals)
-    vals = vals[~np.isnan(vals)]
+    vals = np.array(vals); vals = vals[~np.isnan(vals)]
     if len(vals) == 0: return 1.0
-    
-    observed_mean = np.mean(vals)
-    null_dist = []
-    for _ in range(n_perms):
-        # Flip signs randomly
-        flipped = vals * np.random.choice([-1, 1], size=len(vals))
-        null_dist.append(np.mean(flipped))
-    
-    null_dist = np.array(null_dist)
-    p_val = np.mean(np.abs(null_dist) >= np.abs(observed_mean))
-    return p_val
+    obs = np.mean(vals)
+    null = [np.mean(vals * np.random.choice([-1, 1], size=len(vals))) for _ in range(n_perms)]
+    p = np.mean(np.abs(null) >= np.abs(obs))
+    return max(p, 1/n_perms)
+
+def run_paired_permutation_test(v1, v2, n_perms=10000):
+    diffs = np.array(v1) - np.array(v2); diffs = diffs[~np.isnan(diffs)]
+    if len(diffs) == 0: return 1.0
+    obs = np.mean(diffs)
+    null = [np.mean(diffs * np.random.choice([-1, 1], size=len(diffs))) for _ in range(n_perms)]
+    p = np.mean(np.abs(null) >= np.abs(obs))
+    return max(p, 1/n_perms)
 
 def get_sig_label(p):
     if p < 0.001: return '***'
@@ -111,602 +160,603 @@ def get_sig_label(p):
     if p < 0.05: return '*'
     return 'ns'
 
-def plot_contrast_grid(data, contrast_cols, fig_title, filename, bin_col=None, bins=None):
-    """
-    Generic function to plot contrast indices (A-B)/(A+B).
-    For Diagonal Bias, we use Abs(bias) before normalization as requested.
-    """
-    print(f"Generating Figure: {fig_title}...")
-    metrics = [
-        ('AbsError', 'Abs Error'), 
-        ('RT', 'Reaction Time'), 
-        ('BiasTowardsDiagonal', 'Diag Attraction'),
-        ('Precision', 'Precision (K)')
-    ]
-    
+def plot_contrast_grid(data, contrast_cols, fig_title, filename, bin_col=None, bins=None, paired=False, metrics_subset=None, fig_folder=None, return_data=False):
+    if not return_data: print(f"Generating Figure: {fig_title}...")
+    save_dir = os.path.join(output_dir, fig_folder) if fig_folder else output_dir
+    os.makedirs(save_dir, exist_ok=True)
+    metrics = metrics_subset if metrics_subset else [('AbsError', 'Abs Error'), ('RT', 'Reaction Time'), ('BiasTowardsDiagonal', 'Diag Attraction'), ('Precision', 'Precision (K)')]
     tms_groups = ['No TMS', 'Early TMS', 'Middle TMS']
-    A_val, B_val = contrast_cols
+    A, B = contrast_cols; p_col = 'Hemifield' if A in ['inPF', 'outPF'] else 'DiagType'
+    g_cols = ['subjID', 'TMS', p_col]
+    if bin_col: g_cols.append(bin_col)
     
-    if A_val in ['inPF', 'outPF']:
-        pivot_col = 'Hemifield'
-    else:
-        pivot_col = 'DiagType'
-
-    # Pre-calculate Subject Means
-    group_cols = ['subjID', 'TMS', pivot_col]
-    if bin_col: group_cols.append(bin_col)
-    
-    df_subj = data.groupby(group_cols, observed=False)[['AbsError', 'RT', 'BiasTowardsDiagonal']].mean().reset_index()
-    
-    # Mixture Model fitting
-    print("  Fitting Mixture Models...")
-    mixture_stats = []
-    subjects = data['subjID'].unique()
-    for tms in tms_groups:
-        for val in [A_val, B_val]:
-            search_bins = bins if bins is not None else [None]
-            for b in search_bins:
-                for subj in subjects:
-                    mask = (data['TMS'] == tms) & (data[pivot_col] == val) & (data['subjID'] == subj)
-                    if bin_col and b is not None: mask &= (data[bin_col] == b)
-                    subset = data[mask]
-                    if len(subset) < 10: continue
+    df_s = data.groupby(g_cols, observed=False)[['AbsError', 'RT', 'BiasTowardsDiagonal']].mean().reset_index()
+    mix_s = []
+    for t in tms_groups:
+        for v in [A, B]:
+            s_bins = bins if bins else [None]
+            for b in s_bins:
+                for subj in data['subjID'].unique():
+                    mask = (data['TMS'] == t) & (data[p_col] == v) & (data['subjID'] == subj)
+                    if bin_col and b: mask &= (data[bin_col] == b)
+                    sub = data[mask]
+                    if len(sub) < 10: continue
                     try:
-                        res = md.fit_model(subset['errOri_scaled'].dropna().values, 'mixtureModel')
-                        item = {'TMS': tms, pivot_col: val, 'subjID': subj, 'Precision': res[1]}
+                        res = md.fit_model(sub['errOri_scaled'].dropna().values, 'mixtureModel', max_trials=100) # Faster trials for sensitivity
+                        item = {'TMS': t, p_col: v, 'subjID': subj, 'Precision': res[1]}
                         if bin_col: item[bin_col] = b
-                        mixture_stats.append(item)
+                        mix_s.append(item)
                     except: pass
+    df_m = pd.DataFrame(mix_s); df_all = pd.merge(df_s, df_m, on=g_cols, how='outer') if not df_m.empty else df_s
     
-    df_mix = pd.DataFrame(mixture_stats)
-    df_all = pd.merge(df_subj, df_mix, on=group_cols, how='outer') if not df_mix.empty else df_subj
-
-    num_bins = len(bins) if bins is not None else 1
-    n_rows, n_cols = 2, 2 * num_bins
-    fig, axes = plt.subplots(n_rows, n_cols, figsize=(5*n_cols, 10), squeeze=False)
-    fig.suptitle(fig_title, fontsize=16)
-
-    for i_met, (met, label) in enumerate(metrics):
+    # Calculate normalized ratios A/(A+B) and B/(A+B) for all metrics
+    results_list = []
+    for met, lab in metrics:
         if met not in df_all.columns: continue
-        row_base, col_base = (i_met // 2), (i_met % 2)
-        
-        for c_bin in range(num_bins):
-            ax = axes[row_base, col_base + 2*c_bin]
-            b_val = bins[c_bin] if bins is not None else None
+        piv = df_all.pivot_table(index=['subjID', 'TMS'], columns=p_col, values=met, observed=False).reset_index()
+        if A in piv.columns and B in piv.columns:
+            av_d, bv_d = (np.abs(piv[A]), np.abs(piv[B])) if met == 'BiasTowardsDiagonal' else (piv[A], piv[B])
+            total = av_d + bv_d + 1e-12
+            piv['CI'] = (av_d - bv_d) / total  # keep for return_data backward compat
+            piv[f'{A}_norm'] = av_d / total
+            piv[f'{B}_norm'] = bv_d / total
+            piv['Metric'] = lab
+            results_list.append(piv)
+    
+    if return_data: 
+        return pd.concat(results_list) if results_list else pd.DataFrame()
+
+    n_bins = len(bins) if bins else 1
+    fig, axes = plt.subplots(1, len(metrics) * n_bins, figsize=(6 * len(metrics), 5), squeeze=False)
+    stats_rows = []
+    
+    for im, (met, lab) in enumerate(metrics):
+        for cb in range(n_bins):
+            ax = axes[0, im + len(metrics)*cb]; bv = bins[cb] if bins else None
+            piv = next(d for d in results_list if d['Metric'].iloc[0] == lab)
+
+            long_rows = []
+            for t in tms_groups:
+                sub = piv[piv['TMS'] == t].dropna(subset=[f'{A}_norm', f'{B}_norm'])
+                for _, row in sub.iterrows():
+                    long_rows.append({'TMS': t, 'Condition': A, 'TMS_Cond': f'{t}|{A}', 'NormValue': row[f'{A}_norm'], 'subjID': row['subjID']})
+                    long_rows.append({'TMS': t, 'Condition': B, 'TMS_Cond': f'{t}|{B}', 'NormValue': row[f'{B}_norm'], 'subjID': row['subjID']})
+            long_df = pd.DataFrame(long_rows)
+            x_order = [f'{t}|{c}' for t in tms_groups for c in [A, B]]
+
+            _draw_paired_boxes(ax, long_df, x_order, A, B, tms_groups,
+                               show_legend=(im == 0 and cb == 0))
+
+            # Stats: permutation test vs 0.5
+            for it, t in enumerate(tms_groups):
+                sub = piv[piv['TMS'] == t].dropna(subset=[f'{A}_norm', f'{B}_norm'])
+                for col_key, cond in [(f'{A}_norm', A), (f'{B}_norm', B)]:
+                    v = sub[col_key].dropna().values
+                    if len(v) > 5:
+                        diffs = v - 0.5
+                        p = run_permutation_test(diffs)
+                        mean_v, sem_v = np.mean(v), stats.sem(v)
+                        cohen_d = np.mean(diffs) / np.std(diffs)
+                        t_stat, _ = stats.ttest_1samp(v, 0.5)
+                        stats_rows.append({'Metric': lab, 'Condition': cond, 'TMS': t, 'Bin': bv,
+                                           'Mean': mean_v, 'SEM': sem_v, 'p_perm': p,
+                                           'Cohen_d': cohen_d, 't_stat': t_stat, 'N': len(v)})
+
+            ax.set_title(f"{lab}" + (f"\n({bv})" if bv else ""))
+            ax.set_ylabel(f"Normalized {lab}")
             
-            subset_all = df_all
-            if bin_col: subset_all = subset_all[subset_all[bin_col] == b_val]
-            
-            piv = subset_all.pivot_table(index=['subjID', 'TMS'], columns=pivot_col, values=met, observed=False).reset_index()
-            if A_val not in piv.columns or B_val not in piv.columns: continue
-                
-            # ABS(BIAS) logic as requested
-            if met == 'BiasTowardsDiagonal':
-                a_data, b_data = np.abs(piv[A_val]), np.abs(piv[B_val])
+            # Set dynamic ylim based on user request
+            if lab == 'Abs Error':
+                ax.set_ylim(0.4, 0.6)
+            elif lab == 'Reaction Time':
+                ax.set_ylim(0.45, 0.55)
             else:
-                a_data, b_data = piv[A_val], piv[B_val]
-                
-            piv['ContrastIndex'] = (a_data - b_data) / (a_data + b_data + 1e-12)
-            piv = piv.dropna(subset=['ContrastIndex'])
+                ax.set_ylim(0.3, 0.7)
             
-            # Fixed alignment: no dodge, consistent palettes
-            sns.boxplot(
-                data=piv, x='TMS', y='ContrastIndex',
-                palette={'No TMS': '#E0E0E0', 'Early TMS': '#FFCDD2', 'Middle TMS': '#BBDEFB'},
-                order=tms_groups, ax=ax, showfliers=False
-            )
-            sns.stripplot(
-                data=piv, x='TMS', y='ContrastIndex',
-                palette={'No TMS': 'k', 'Early TMS': 'r', 'Middle TMS': 'b'},
-                order=tms_groups, ax=ax, alpha=0.5, size=4, jitter=True, dodge=False
-            )
-            
-            ax.axhline(0, color='k', lw=1, ls='--')
-            
-            for i_tms, tms in enumerate(tms_groups):
-                vals = piv[piv['TMS'] == tms]['ContrastIndex'].values
-                if len(vals) > 5:
-                    p_val = run_permutation_test(vals)
-                    sig = get_sig_label(p_val)
-                    y_max = piv['ContrastIndex'].max()
-                    y_pos = y_max + (piv['ContrastIndex'].max() - piv['ContrastIndex'].min()) * 0.15
-                    ax.text(i_tms, y_pos, f"{sig}\np={p_val:.3f}", ha='center', va='bottom', fontsize=8, fontweight='bold')
+            ax.set_xlabel('')
+            sns.despine(ax=ax, offset=5)
 
-            ax.set_title(f"{label}" + (f"\n({b_val})" if b_val else ""), fontsize=12)
-            ax.set_ylabel("Contrast Index", fontsize=10)
-            ax.set_xlabel("")
-            ax.set_xticklabels(['No', 'Early', 'Middle'], fontsize=9)
-
-    sns.despine()
-    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
-    save_path = os.path.join(output_dir, filename)
-    print(f"Saving to {save_path}")
-    plt.savefig(save_path, dpi=300)
-    plt.close()
-def plot_scatter_in_vs_out(data, fig_title, filename, custom_limits=None):
-    print(f"Generating Figure: {fig_title}...")
-    metrics = [
-        ('AbsError', 'Abs Error'), 
-        ('RT', 'Reaction Time'), 
-        ('BiasTowardsDiagonal', 'Diag Attraction'),
-        ('Precision', 'Precision (K)')
-    ]
-    
-    tms_conds = ['No TMS', 'Early TMS', 'Middle TMS']
-    
-    # 1. Subject Means for regular metrics
-    df_means = data.groupby(['subjID', 'TMS', 'Hemifield'], observed=False)[['AbsError', 'RT', 'BiasTowardsDiagonal']].mean().reset_index()
-    
-    # 2. Precision from mixture models
-    print("  Fitting Mixture Models (Scatter)...")
-    mixture_stats = []
-    hemis = ['inPF', 'outPF']
-    subjects = data['subjID'].unique()
-    
-    for tms in tms_conds:
-        for hemi in hemis:
-            for subj in subjects:
-                subset = data[
-                    (data['TMS'] == tms) & 
-                    (data['Hemifield'] == hemi) &
-                    (data['subjID'] == subj)
-                ]
-                if len(subset) < 10: continue
-                angles = subset['errOri_scaled'].dropna().values
-                try:
-                    res = md.fit_model(angles, 'mixtureModel')
-                    g, K = res
-                    if g < 0 or g > 1 or K < 0 or K > 50: g, K = np.nan, np.nan
-                except:
-                    g, K = np.nan, np.nan
-                
-                if not np.isnan(K):
-                    mixture_stats.append({
-                        'TMS': tms, 'Hemifield': hemi, 'subjID': subj,
-                        'Precision': K
-                    })
-    df_mix = pd.DataFrame(mixture_stats)
-    
-    # Merge
-    if not df_mix.empty:
-        df_all = pd.merge(df_means, df_mix, on=['subjID', 'TMS', 'Hemifield'], how='outer')
-    else:
-        df_all = df_means
+    if stats_rows:
+        sdf = pd.DataFrame(stats_rows)
+        def format_p(p): return f"{p:.4e}" if p < 0.001 else f"{p:.4f}"
+        sdf['p_perm'] = sdf['p_perm'].apply(format_p)
+        for c in ['Mean', 'SEM', 'Cohen_d']:
+            if c in sdf.columns: sdf[c] = sdf[c].apply(lambda x: f"{x:.4f}" if pd.notnull(x) else x)
+        sdf.to_csv(os.path.join(save_dir, filename.replace('.png', '_Stats.csv')), index=False)
         
-    fig, axes = plt.subplots(2, 2, figsize=(10, 10))
-    axes = axes.flatten()
-    fig.suptitle(fig_title, fontsize=16)
+    plt.tight_layout()
+    plt.savefig(os.path.join(save_dir, filename), dpi=300)
+    plt.savefig(os.path.join(save_dir, filename.replace('.png', '.svg')))
+    plt.close()
+
+def plot_scatter_in_vs_out(data, fig_title, filename, metrics_subset=None, fig_folder=None, p_col='Hemifield', A='inPF', B='outPF'):
+    print(f"Generating Figure: {fig_title}...")
+    save_dir = os.path.join(output_dir, fig_folder) if fig_folder else output_dir
+    os.makedirs(save_dir, exist_ok=True)
     
-    palette = {'No TMS': 'k', 'Early TMS': 'r', 'Middle TMS': 'b'}
+    metrics = metrics_subset if metrics_subset else [('AbsError', 'Abs Error'), ('RT', 'Reaction Time'), ('Precision', 'Precision (K)')]
+    tms_conds = ['No TMS', 'Early TMS', 'Middle TMS']
+    df_means = data.groupby(['subjID', 'TMS', p_col], observed=False)[['AbsError', 'RT']].mean().reset_index()
     
+    mixture_stats = []
+    for t in tms_conds:
+        for v in [A, B]:
+            for s in data['subjID'].unique():
+                sub = data[(data['TMS'] == t) & (data[p_col] == v) & (data['subjID'] == s)]
+                if len(sub) < 10: continue
+                try:
+                    res = md.fit_model(sub['errOri_scaled'].dropna().values, 'mixtureModel', max_trials=100)
+                    mixture_stats.append({'TMS': t, p_col: v, 'subjID': s, 'Precision': res[1]})
+                except: pass
+    df_mix = pd.DataFrame(mixture_stats)
+    df_all = pd.merge(df_means, df_mix, on=['subjID', 'TMS', p_col], how='outer') if not df_mix.empty else df_means
+    
+    fig, axes = plt.subplots(1, len(metrics), figsize=(6 * len(metrics), 5), squeeze=False); axes = axes.flatten()
     for i, (met, label) in enumerate(metrics):
         ax = axes[i]
+        piv = df_all.pivot_table(index=['subjID', 'TMS'], columns=p_col, values=met, observed=False).reset_index()
+        if A not in piv.columns or B not in piv.columns: continue
+        for t in tms_conds:
+            sub = piv[piv['TMS'] == t].dropna(subset=[A, B])
+            if len(sub) == 0: continue
+            if met == 'Precision':
+                count_val = (sub[A] < sub[B]).sum(); sym = '<'
+            else:
+                count_val = (sub[A] > sub[B]).sum(); sym = '>'
+            label_text = f"{t} (n={count_val} {A}{sym}{B})"
+            ax.scatter(sub[B], sub[A], color={'No TMS': 'k', 'Early TMS': 'r', 'Middle TMS': 'b'}[t], alpha=0.4, s=20)
+            ax.errorbar(sub[B].mean(), sub[A].mean(), xerr=sub[B].sem(), yerr=sub[A].sem(), fmt='o', color={'No TMS': 'k', 'Early TMS': 'r', 'Middle TMS': 'b'}[t], markersize=10, markeredgecolor='white', label=label_text)
         
-        if met not in df_all.columns: continue
-        
-        piv = df_all.pivot_table(index=['subjID', 'TMS'], columns='Hemifield', values=met, observed=False).reset_index()
-        piv.columns.name = None
-        
-        if 'inPF' not in piv.columns or 'outPF' not in piv.columns:
-            continue
-            
-        piv = piv.dropna(subset=['inPF', 'outPF'])
-        if piv.empty: continue
-        
-        for tms in tms_conds:
-            sub = piv[piv['TMS'] == tms]
-            if sub.empty: continue
-            
-            # Individual dots
-            ax.scatter(sub['outPF'], sub['inPF'], color=palette[tms], alpha=0.6, s=20)
-            
-            # Mean crosshair
-            mean_out = sub['outPF'].mean()
-            mean_in = sub['inPF'].mean()
-            sem_out = sub['outPF'].sem()
-            sem_in = sub['inPF'].sem()
-            
-            ax.errorbar(mean_out, mean_in, xerr=sem_out, yerr=sem_in, 
-                        fmt='o', color=palette[tms], markersize=12, 
-                        markeredgecolor='white', label=tms)
-            
-        # Identity line
-        all_vals = piv[['inPF', 'outPF']].values.flatten()
-        if len(all_vals) == 0: continue
-        
-        min_v = np.nanmin(all_vals)
-        max_v = np.nanmax(all_vals)
-        margin = (max_v - min_v) * 0.1
-        min_val = min_v - margin
-        max_val = max_v + margin
-        
-        ax.plot([min_val, max_val], [min_val, max_val], 'k--', alpha=0.5, zorder=0)
-        
-        ax.set_aspect('equal', 'box')
-        
-        ax.set_xlim(min_val, max_val)
-        ax.set_ylim(min_val, max_val)
-        
-        ax.set_title(label)
-        ax.set_xlabel(f"outPF")
-        ax.set_ylabel(f"inPF")
-        
-        if i == 0:
-            ax.legend(title='TMS Group', loc='best')
-
-    sns.despine()
+        v = piv[[A, B]].values.flatten(); l, h = np.nanmin(v), np.nanmax(v)
+        ax.plot([l, h], [l, h], 'k--', alpha=0.3)
+        ax.set_aspect('equal', 'box'); ax.set_title(label); ax.set_xlabel(B); ax.set_ylabel(A)
+        ax.legend(fontsize=8, frameon=False, loc='upper left')
     plt.tight_layout()
-    save_path = os.path.join(output_dir, filename)
-    print(f"Saving to {save_path}")
-    plt.savefig(save_path, dpi=300)
+    plt.savefig(os.path.join(save_dir, filename), dpi=300)
+    plt.savefig(os.path.join(save_dir, filename.replace('.png', '.svg')))
     plt.close()
 
-def plot_scatter_diag_contrast_in_vs_out(data, fig_title, filename):
-    """
-    Plots (Radial - Tangential) / (Radial + Tangential) for inPF vs outPF.
-    Each point is a subject, colored by TMS condition.
-    """
+def plot_scatter_diag_contrast_in_vs_out(data, fig_title, filename, metrics_subset=None, fig_folder=None):
     print(f"Generating Figure: {fig_title}...")
-    metrics = [
-        ('AbsError', 'Abs Error'), 
-        ('RT', 'Reaction Time'), 
-        ('BiasTowardsDiagonal', 'Diag Attraction'),
-        ('Precision', 'Precision (K)')
-    ]
+    save_dir = os.path.join(output_dir, fig_folder) if fig_folder else output_dir
+    os.makedirs(save_dir, exist_ok=True)
     
+    metrics = metrics_subset if metrics_subset else [('AbsError', 'Abs Error'), ('RT', 'Reaction Time'), ('Precision', 'Precision (K)')]
     tms_conds = ['No TMS', 'Early TMS', 'Middle TMS']
-    
-    # 1. Subject Means
-    df_means = data.groupby(['subjID', 'TMS', 'Hemifield', 'DiagType'], observed=False)[['AbsError', 'RT', 'BiasTowardsDiagonal']].mean().reset_index()
-    
-    # 2. Mixture Models
-    print("  Fitting Mixture Models (Scatter)...")
+    df_means = data.groupby(['subjID', 'TMS', 'Hemifield', 'DiagType'], observed=False)[['AbsError', 'RT']].mean().reset_index()
     mixture_stats = []
-    subjects = data['subjID'].unique()
-    for tms in tms_conds:
-        for hemi in ['inPF', 'outPF']:
-            for diag in ['Radial', 'Tangential']:
-                for subj in subjects:
-                    mask = (data['TMS'] == tms) & (data['Hemifield'] == hemi) & (data['DiagType'] == diag) & (data['subjID'] == subj)
-                    subset = data[mask]
+    for t in tms_conds:
+        for h in ['inPF', 'outPF']:
+            for d in ['Radial', 'Tangential']:
+                for s in data['subjID'].unique():
+                    subset = data[(data['TMS'] == t) & (data['Hemifield'] == h) & (data['DiagType'] == d) & (data['subjID'] == s)]
                     if len(subset) < 10: continue
                     try:
                         res = md.fit_model(subset['errOri_scaled'].dropna().values, 'mixtureModel')
-                        mixture_stats.append({'TMS': tms, 'Hemifield': hemi, 'DiagType': diag, 'subjID': subj, 'Precision': res[1]})
+                        mixture_stats.append({'TMS': t, 'Hemifield': h, 'DiagType': d, 'subjID': s, 'Precision': res[1]})
                     except: pass
-    df_mix = pd.DataFrame(mixture_stats)
-    df_all = pd.merge(df_means, df_mix, on=['subjID', 'TMS', 'Hemifield', 'DiagType'], how='outer') if not df_mix.empty else df_means
+    df_mix = pd.DataFrame(mixture_stats); df_all = pd.merge(df_means, df_mix, on=['subjID', 'TMS', 'Hemifield', 'DiagType'], how='outer') if not df_mix.empty else df_means
     
-    fig, axes = plt.subplots(2, 2, figsize=(10, 10))
-    axes = axes.flatten()
-    fig.suptitle(fig_title, fontsize=16)
-    palette = {'No TMS': 'k', 'Early TMS': 'r', 'Middle TMS': 'b'}
-    
+    fig, axes = plt.subplots(1, len(metrics), figsize=(6 * len(metrics), 5), squeeze=False); axes = axes.flatten()
     for i, (met, label) in enumerate(metrics):
-        ax = axes[i]
-        if met not in df_all.columns: continue
-        
-        # Calculate Diagonal Contrast Index for each Subject/TMS/Hemi
-        piv_diag = df_all.pivot_table(index=['subjID', 'TMS', 'Hemifield'], columns='DiagType', values=met, observed=False).reset_index()
-        if 'Radial' not in piv_diag.columns or 'Tangential' not in piv_diag.columns: continue
-        
-        if met == 'BiasTowardsDiagonal':
-            a_val, b_val = np.abs(piv_diag['Radial']), np.abs(piv_diag['Tangential'])
-        else:
-            a_val, b_val = piv_diag['Radial'], piv_diag['Tangential']
-            
-        piv_diag['DiagContrast'] = (a_val - b_val) / (a_val + b_val + 1e-12)
-        piv_diag = piv_diag.dropna(subset=['DiagContrast'])
-        
-        # Now pivot Hemifield so inPF and outPF are columns
-        piv_hemi = piv_diag.pivot_table(index=['subjID', 'TMS'], columns='Hemifield', values='DiagContrast', observed=False).reset_index()
-        if 'inPF' not in piv_hemi.columns or 'outPF' not in piv_hemi.columns: continue
-        
-        piv_hemi = piv_hemi.dropna(subset=['inPF', 'outPF'])
-        
-        for tms in tms_conds:
-            sub = piv_hemi[piv_hemi['TMS'] == tms]
-            if sub.empty: continue
-            
-            ax.scatter(sub['outPF'], sub['inPF'], color=palette[tms], alpha=0.6, s=30, edgecolor='white', linewidth=0.5)
-            
-            # Mean crosshair
-            m_out, m_in = sub['outPF'].mean(), sub['inPF'].mean()
-            s_out, s_in = sub['outPF'].sem(), sub['inPF'].sem()
-            ax.errorbar(m_out, m_in, xerr=s_out, yerr=s_in, fmt='o', color=palette[tms], markersize=12, markeredgecolor='white', label=tms)
-            
-        # Identity line and Zero lines
-        all_vals = piv_hemi[['inPF', 'outPF']].values.flatten()
-        if len(all_vals) > 0:
-            limit = np.max(np.abs(all_vals)) * 1.2
-            ax.plot([-limit, limit], [-limit, limit], 'k--', alpha=0.3)
-            ax.axhline(0, color='k', alpha=0.1, lw=1)
-            ax.axvline(0, color='k', alpha=0.1, lw=1)
-            ax.set_xlim(-limit, limit); ax.set_ylim(-limit, limit)
-            
-        ax.set_aspect('equal', 'box')
-        ax.set_title(f"Diag Contrast Index: {label}")
-        ax.set_xlabel("outPF (Radial vs Tangential)")
-        ax.set_ylabel("inPF (Radial vs Tangential)")
-        if i == 1: ax.legend(title='TMS Group', loc='best', fontsize='small')
-
-    sns.despine()
+        ax = axes[i]; piv = df_all.pivot_table(index=['subjID', 'TMS', 'Hemifield'], columns='DiagType', values=met, observed=False).reset_index()
+        if 'Radial' not in piv.columns or 'Tangential' not in piv.columns: continue
+        piv['CI'] = (piv['Radial'] - piv['Tangential']) / (piv['Radial'] + piv['Tangential'] + 1e-12)
+        piv_h = piv.pivot_table(index=['subjID', 'TMS'], columns='Hemifield', values='CI', observed=False).reset_index()
+        if 'inPF' not in piv_h.columns or 'outPF' not in piv_h.columns: continue
+        for t in tms_conds:
+            sub = piv_h[piv_h['TMS'] == t].dropna(subset=['inPF', 'outPF'])
+            if met == 'Precision':
+                count_val = (sub['inPF'] < sub['outPF']).sum(); sym = '<'
+            else:
+                count_val = (sub['inPF'] > sub['outPF']).sum(); sym = '>'
+            label_text = f"{t} (n={count_val} in{sym}out)"
+            ax.scatter(sub['outPF'], sub['inPF'], color={'No TMS': 'k', 'Early TMS': 'r', 'Middle TMS': 'b'}[t], alpha=0.4, s=30, edgecolor='white')
+            ax.errorbar(sub['outPF'].mean(), sub['inPF'].mean(), xerr=sub['outPF'].sem(), yerr=sub['inPF'].sem(), fmt='o', color={'No TMS': 'k', 'Early TMS': 'r', 'Middle TMS': 'b'}[t], markersize=10, markeredgecolor='white', label=label_text)
+        v = piv_h[['inPF', 'outPF']].values.flatten(); l, h = np.nanmin(v), np.nanmax(v)
+        ax.plot([l, h], [l, h], 'k--', alpha=0.3); ax.axhline(0, color='k', alpha=0.1); ax.axvline(0, color='k', alpha=0.1)
+        ax.set_aspect('equal', 'box'); ax.set_title(f"Radial Sensitivity: {label}"); ax.set_xlabel("outPF (CI)"); ax.set_ylabel("inPF (CI)")
+        ax.legend(fontsize=8, frameon=False, loc='upper left')
     plt.tight_layout()
-    save_path = os.path.join(output_dir, filename)
-    print(f"Saving to {save_path}")
-    plt.savefig(save_path, dpi=300)
+    plt.savefig(os.path.join(save_dir, filename), dpi=300)
+    plt.savefig(os.path.join(save_dir, filename.replace('.png', '.svg')))
     plt.close()
 
-hemi_palette = {'inPF': '#e91e63', 'outPF': '#ff9800'}
-ori_palette = {30: '#1f77b4', 60: '#2ca02c', 120: '#ff7f0e', 150: '#d62728'}
-ori_group_palette = {'30_150': '#009688', '60_120': '#9c27b0'}
-ori_cat45_palette = {'Acute (30+60)': '#3f51b5', 'Obtuse (120+150)': '#e91e63'}
-diag_palette = {'Radial': '#E65100', 'Tangential': '#00B8D4'}
-
-# Fig 1: Hemifield Contrast Index (inPF vs outPF)
-plot_contrast_grid(
-    df, contrast_cols=('inPF', 'outPF'),
-    fig_title="1. Selective TMS Effect: (inPF - outPF) / (inPF + outPF)",
-    filename="Fig1_ContrastIndex_Hemifield.png"
-)
-
-# Fig 1A: Scatterplot (Keep as is, it already shows individual points and means)
-plot_scatter_in_vs_out(
-    df,
-    fig_title="1A. Individual Performance: outPF vs inPF",
-    filename="Fig1A_Scatter_in_vs_out.png"
-)
-
-# Fig 2: Diagonal Contrast Index (Radial vs Tangential)
-plot_contrast_grid(
-    df, contrast_cols=('Radial', 'Tangential'),
-    fig_title="2. Diagonal Selective Effect: (Radial - Tangential) / (Radial + Tangential)",
-    filename="Fig2_ContrastIndex_DiagType.png"
-)
-
-# Fig 2A: Diagonal Contrast Scatter (inPF vs outPF)
-plot_scatter_diag_contrast_in_vs_out(
-    df,
-    fig_title="2A. Diagonal Contrast Index: outPF vs inPF",
-    filename="Fig2A_Scatter_diag_contrast_in_vs_out.png"
-)
-
-# Fig 3: Diagonal Contrast Index Split by Offset
-plot_contrast_grid(
-    df, contrast_cols=('Radial', 'Tangential'),
-    fig_title="3. Diagonal Selective Effect | Split by Offset",
-    filename="Fig3_ContrastIndex_DiagType_SplitOffset.png",
-    bin_col='OffsetGroup',
-    bins=['Small Offset', 'Large Offset']
-)
-
-# Fig 3A/3B: Diagonal Contrast Scatter (inPF vs outPF)
-plot_scatter_diag_contrast_in_vs_out(
-    df[df['OffsetGroup'] == 'Small Offset'],
-    fig_title="3A. Diagonal Contrast Index: outPF vs inPF (Small Offset)",
-    filename="Fig3A_Scatter_diag_contrast_in_vs_out_SmallOffset.png"
-)
-
-plot_scatter_diag_contrast_in_vs_out(
-    df[df['OffsetGroup'] == 'Large Offset'],
-    fig_title="3B. Diagonal Contrast Index: outPF vs inPF (Large Offset)",
-    filename="Fig3B_Scatter_diag_contrast_in_vs_out_LargeOffset.png"
-)
-
-# ---------------------------------------------------------------------------
-# Fig 4: Model RDMs and RSA Boxplots
-# ---------------------------------------------------------------------------
-def get_upper_tri(mat):
-    idx = np.triu_indices(mat.shape[0], k=1)
-    return mat[idx]
-
-CENTERS_4CAT = np.array([30, 60, 120, 150])
-
-def build_model_rdms(x_sorted):
-    x_cat   = CENTERS_4CAT[np.argmin(np.abs(CENTERS_4CAT - x_sorted[:, None]), axis=1)]
-    x_broad = np.where(x_sorted < 90, 45, 135)
-    H1 = get_upper_tri(np.abs(x_sorted[:, None] - x_sorted[None, :]))
-    H2 = get_upper_tri(np.abs(x_cat[:, None]    - x_cat[None, :]))
-    H3 = get_upper_tri(np.abs(x_broad[:, None]  - x_broad[None, :]))
-    return H1, H2, H3
-
-def compute_partial_rsa_with_perms(x_ori, y_resp, min_pairs=20):
-    if len(x_ori) < 10: return None
-    sort_idx = np.argsort(x_ori)
-    x_s = x_ori[sort_idx]
-    y_s = y_resp[sort_idx]
-    H1, H2, H3 = build_model_rdms(x_s)
-    
-    # Compute Partial RSA
-    # Target data RDM
-    data_vec = get_upper_tri(np.abs(y_s[:, None] - y_s[None, :]))
-    ry = stats.rankdata(data_vec)
-    ry_cent = ry - ry.mean()
-    ry_norm = np.linalg.norm(ry_cent) + 1e-12
-    
-    rh1 = stats.rankdata(H1)
-    rh2 = stats.rankdata(H2)
-    rh3 = stats.rankdata(H3)
-    
-    ones = np.ones(len(rh1))
-    
-    # Check for variance in models
-    std2 = np.std(H2)
-    std3 = np.std(H3)
-    
-    # Default zeros
-    r1, r2, r3 = 0, 0, 0
-
-    if std3 < 1e-8:
-        # H3 is constant
-        r3 = 0
-        if std2 < 1e-8:
-            # H2 and H3 are constant, just compute raw r1
-            rh1_cent = rh1 - rh1.mean()
-            r1 = np.dot(ry_cent, rh1_cent) / (ry_norm * (np.linalg.norm(rh1_cent) + 1e-12))
-            r2 = 0
-        else:
-            # H3 constant, partial r2 | H3 is just raw r2
-            rh2_cent = rh2 - rh2.mean()
-            r2 = np.dot(ry_cent, rh2_cent) / (ry_norm * (np.linalg.norm(rh2_cent) + 1e-12))
-            # Partial r1 | H2
-            X2 = np.column_stack([ones, rh2])
-            res_x1 = rh1 - X2 @ (np.linalg.pinv(X2) @ rh1)
-            res_y1 = ry - X2 @ (np.linalg.pinv(X2) @ ry)
-            r1 = np.dot(res_x1 - res_x1.mean(), res_y1 - res_y1.mean()) / (np.linalg.norm(res_x1 - res_x1.mean()) * np.linalg.norm(res_y1 - res_y1.mean()) + 1e-12)
-    else:
-        # H3 has variance
-        r3 = np.dot(ry_cent, rh3 - rh3.mean()) / (ry_norm * (np.linalg.norm(rh3 - rh3.mean()) + 1e-12))
-        if std2 < 1e-8:
-            r2 = 0
-            # Partial r1 | H3
-            X = np.column_stack([ones, rh3])
-            res_x1 = rh1 - X @ (np.linalg.pinv(X) @ rh1)
-            res_y = ry - X @ (np.linalg.pinv(X) @ ry)
-            r1 = np.dot(res_x1 - res_x1.mean(), res_y - res_y.mean()) / (np.linalg.norm(res_x1 - res_x1.mean()) * np.linalg.norm(res_y - res_y.mean()) + 1e-12)
-        else:
-            # Standard 3-model partial RSA
-            X2 = np.column_stack([ones, rh3])
-            res_x2 = rh2 - X2 @ (np.linalg.pinv(X2) @ rh2)
-            res_y2 = ry - X2 @ (np.linalg.pinv(X2) @ ry)
-            r2 = np.dot(res_x2 - res_x2.mean(), res_y2 - res_y2.mean()) / (np.linalg.norm(res_x2 - res_x2.mean()) * np.linalg.norm(res_y2 - res_y2.mean()) + 1e-12)
-            
-            X3 = np.column_stack([ones, rh2, rh3])
-            res_x1 = rh1 - X3 @ (np.linalg.pinv(X3) @ rh1)
-            res_y3 = ry - X3 @ (np.linalg.pinv(X3) @ ry)
-            r1 = np.dot(res_x1 - res_x1.mean(), res_y3 - res_y3.mean()) / (np.linalg.norm(res_x1 - res_x1.mean()) * np.linalg.norm(res_y3 - res_y3.mean()) + 1e-12)
-    
-    return {'r3': r3, 'r2': r2, 'r1': r1}
-
-def plot_model_rdms_fig4(data, fig_title, filename):
+def plot_scatter_radial_vs_tangential_overlay(data, fig_title, filename, hemi='inPF', metrics_subset=None, fig_folder=None):
     print(f"Generating Figure: {fig_title}...")
-    x_plot = np.linspace(0, 179, 180)
-    x_cat = CENTERS_4CAT[np.argmin(np.abs(CENTERS_4CAT - x_plot[:, None]), axis=1)]
-    x_broad = np.where(x_plot < 90, 45, 135)
+    save_dir = os.path.join(output_dir, fig_folder) if fig_folder else output_dir
+    os.makedirs(save_dir, exist_ok=True)
     
-    H1_full = np.abs(x_plot[:, None] - x_plot[None, :])
-    H2_full = np.abs(x_cat[:, None] - x_cat[None, :])
-    H3_full = np.abs(x_broad[:, None] - x_broad[None, :])
-
-    sns.set_style("ticks")
-    fig, axs = plt.subplots(2, 3, figsize=(18, 10))
-
-    # ROW 1: Models
-    models = [(H3_full, 'H3: 2-Category'), (H2_full, 'H2: 4-Category'), (H1_full, 'H1: Continuous')]
-    for col_idx, (mat, title) in enumerate(models):
-        ax = axs[0, col_idx]
-        im = ax.imshow(mat, cmap='RdBu_r', origin='lower', extent=[0, 180, 0, 180])
-        ax.set_title(title, fontsize=13, fontweight='bold')
-        ax.set_xticks([0, 90, 180]); ax.set_yticks([0, 90, 180])
-        plt.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
-
-    # ROW 2: RSA Hemifield Difference Boxplots (Offset < 45)
-    print("  Computing RSA Hemifield Difference (Offset < 45)...")
-    rsa_stats = []
-    tms_groups = ['No TMS', 'Early TMS', 'Middle TMS']
-    subjects = data['subjID'].unique()
-    sub_data = data[np.abs(data['initOffset']) < 45]
-
-    for tms in tms_groups:
-        for subj in subjects:
-            res_dict = {'subjID': subj, 'TMS': tms}
-            valid_subj = True
-            for hemi in ['inPF', 'outPF']:
-                subset = sub_data[(sub_data['TMS'] == tms) & (sub_data['Hemifield'] == hemi) & (sub_data['subjID'] == subj)]
-                if len(subset) < 10: valid_subj = False; break
-                res = compute_partial_rsa_with_perms(subset['targOriActual'].values, subset['finalOri'].values)
-                res_dict[f'r1_{hemi}'], res_dict[f'r2_{hemi}'], res_dict[f'r3_{hemi}'] = res['r1'], res['r2'], res['r3']
-            
-            if valid_subj:
-                for r_key in ['r1', 'r2', 'r3']:
-                    res_dict[f'{r_key}_Diff'] = res_dict[f'{r_key}_inPF'] - res_dict[f'{r_key}_outPF']
-                rsa_stats.append(res_dict)
-                    
-    df_rsa = pd.DataFrame(rsa_stats)
-    metrics = [('r3_Diff', 'Δ H3 RSA'), ('r2_Diff', 'Δ H2|H3 RSA'), ('r1_Diff', 'Δ H1|H2,H3 RSA')]
-    tms_palette = {'No TMS': 'k', 'Early TMS': 'r', 'Middle TMS': 'b'}
+    metrics = metrics_subset if metrics_subset else [('AbsError', 'Abs Error'), ('Precision', 'Precision (K)')]
+    palette = {'No TMS': 'k', 'Early TMS': 'r', 'Middle TMS': 'b'}
+    df_means = data.groupby(['subjID', 'TMS', 'Hemifield', 'DiagType'], observed=False)[['AbsError', 'RT']].mean().reset_index()
+    mix_s = []
+    for t in ['No TMS', 'Early TMS', 'Middle TMS']:
+        for d in ['Radial', 'Tangential']:
+            for s in data['subjID'].unique():
+                subset = data[(data['TMS'] == t) & (data['Hemifield'] == hemi) & (data['DiagType'] == d) & (data['subjID'] == s)]
+                if len(subset) < 10: continue
+                try:
+                    res = md.fit_model(subset['errOri_scaled'].dropna().values, 'mixtureModel'); mix_s.append({'TMS': t, 'Hemifield': hemi, 'DiagType': d, 'subjID': s, 'Precision': res[1]})
+                except: pass
+    df_mix = pd.DataFrame(mix_s); df_all = pd.merge(df_means, df_mix, on=['subjID', 'TMS', 'Hemifield', 'DiagType'], how='outer') if not df_mix.empty else df_means
     
-    for col_idx, (met, title) in enumerate(metrics):
-        ax = axs[1, col_idx]
-        if df_rsa.empty: continue
-        sns.boxplot(data=df_rsa, x='TMS', y=met, palette=tms_palette, ax=ax, boxprops={'facecolor': 'none'}, showfliers=False, order=tms_groups)
-        sns.stripplot(data=df_rsa, x='TMS', y=met, palette=tms_palette, alpha=0.6, ax=ax, order=tms_groups, size=5, jitter=True)
-        ax.axhline(0, color='k', lw=1, ls='--')
-        for i_tms, tms in enumerate(tms_groups):
-            vals = df_rsa[df_rsa['TMS'] == tms][met].dropna().values
-            if len(vals) > 5:
-                p_val = run_permutation_test(vals)
-                sig = get_sig_label(p_val)
-                ax.text(i_tms, ax.get_ylim()[1]*0.9, f"{sig}\np={p_val:.3f}", ha='center', fontsize=9, fontweight='bold')
-        ax.set_title(title, fontsize=13, fontweight='bold')
-        ax.set_ylabel("RSA Hemifield Diff (in - out)")
-        sns.despine(ax=ax)
-
+    fig, axes = plt.subplots(1, len(metrics), figsize=(6 * len(metrics), 5), squeeze=False); axes = axes.flatten()
+    for i, (met, label) in enumerate(metrics):
+        ax = axes[i]; piv = df_all.pivot_table(index=['subjID', 'TMS'], columns='DiagType', values=met, observed=False).reset_index()
+        if 'Radial' not in piv.columns or 'Tangential' not in piv.columns: continue
+        for t in ['No TMS', 'Early TMS', 'Middle TMS']:
+            sub = piv[piv['TMS'] == t].dropna(subset=['Radial', 'Tangential'])
+            if met == 'Precision':
+                count_val = (sub['Radial'] > sub['Tangential']).sum(); sym = '>'
+            else:
+                count_val = (sub['Radial'] < sub['Tangential']).sum(); sym = '<'
+            label_text = f"{t} (n={count_val} rad{sym}tang)"
+            ax.scatter(sub['Radial'], sub['Tangential'], color=palette[t], alpha=0.4, s=30, edgecolor='white')
+            ax.errorbar(sub['Radial'].mean(), sub['Tangential'].mean(), xerr=sub['Radial'].sem(), yerr=sub['Tangential'].sem(), fmt='o', color=palette[t], markersize=10, markeredgecolor='white', label=label_text)
+        
+        all_v = np.concatenate([piv['Radial'].values, piv['Tangential'].values])
+        l, h = np.nanmin(all_v), np.nanmax(all_v)
+        ax.plot([l, h], [l, h], 'k--', alpha=0.3)
+        ax.set_aspect('equal', 'box'); ax.set_title(label); ax.set_xlabel("Radial"); ax.set_ylabel("Tangential")
+        ax.legend(fontsize=8, frameon=False, loc='upper left')
     plt.tight_layout()
-    plt.savefig(os.path.join(output_dir, filename), dpi=300)
+    plt.savefig(os.path.join(save_dir, filename), dpi=300)
+    plt.savefig(os.path.join(save_dir, filename.replace('.png', '.svg')))
     plt.close()
 
-def plot_scatter_rsa_fig4A(data, fig_title, filename):
+def plot_sat_grid(data, fig_title, filename, fig_folder=None):
     print(f"Generating Figure: {fig_title}...")
-    print("  Computing RSA Hemifield Scatter (Offset < 45)...")
-    rsa_stats = []
-    tms_groups = ['No TMS', 'Early TMS', 'Middle TMS']
-    subjects = data['subjID'].unique()
-    sub_data = data[np.abs(data['initOffset']) < 45]
+    save_dir = os.path.join(output_dir, fig_folder) if fig_folder else output_dir
+    os.makedirs(save_dir, exist_ok=True)
     
-    for tms in tms_groups:
-        for subj in subjects:
-            res_dict = {'subjID': subj, 'TMS': tms}
-            valid_subj = True
-            for hemi in ['inPF', 'outPF']:
-                subset = sub_data[(sub_data['TMS'] == tms) & (sub_data['Hemifield'] == hemi) & (sub_data['subjID'] == subj)]
-                if len(subset) < 10: 
-                    valid_subj = False; break
-                res = compute_partial_rsa_with_perms(subset['targOriActual'].values, subset['finalOri'].values)
-                if not res: 
-                    valid_subj = False; break
-                res_dict[f'r1_{hemi}'] = res['r1']
-                res_dict[f'r2_{hemi}'] = res['r2']
-                res_dict[f'r3_{hemi}'] = res['r3']
-            if valid_subj: rsa_stats.append(res_dict)
-                    
-    df_rsa = pd.DataFrame(rsa_stats)
-    if df_rsa.empty: return
-
-    metrics = [('r3', 'H3 RSA'), ('r2', 'H2|H3 RSA'), ('r1', 'H1|H2,H3 RSA')]
-    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
-    tms_palette = {'No TMS': 'k', 'Early TMS': 'r', 'Middle TMS': 'b'}
+    fig, axes_2d = plt.subplots(2, 2, figsize=(14, 12)); axes = axes_2d.flatten()
+    tms_colors = {'No TMS': 'k', 'Early TMS': 'r', 'Middle TMS': 'b'}
     
-    for i, (met_base, label) in enumerate(metrics):
-        ax = axes[i]
-        in_col, out_col = f'{met_base}_inPF', f'{met_base}_outPF'
+    # 0. RT Distribution KDE
+    sns.kdeplot(data=data, x='RT', hue='TMS', palette=tms_colors, ax=axes[0], fill=False, linewidth=2, common_norm=False)
+    axes[0].set_title('RT distribution', fontweight='bold', pad=15)
+    axes[0].set_xlabel('Reaction Time (s)'); axes[0].set_ylabel('Density')
+    
+    # 1. Compile Smoothing (3-bin rolling average on 25 deciles)
+    n_bins, window_size = 25, 3
+    decile_data = []
+    for (subj, tms), subj_df in data.groupby(['subjID', 'TMS']):
+        if len(subj_df) < n_bins: continue
+        subj_df = subj_df.copy(); subj_df['abs_initOffset'] = np.abs(subj_df['initOffset'])
         
-        for tms in tms_groups:
-            sub = df_rsa[df_rsa['TMS'] == tms].dropna(subset=[in_col, out_col])
-            if sub.empty: continue
-            ax.scatter(sub[out_col], sub[in_col], color=tms_palette[tms], alpha=0.6, s=30, edgecolor='white', linewidth=0.5)
-            ax.errorbar(sub[out_col].mean(), sub[in_col].mean(), xerr=sub[out_col].sem(), yerr=sub[in_col].sem(), fmt='o', color=tms_palette[tms], markersize=12, markeredgecolor='white', label=tms)
-            
-        all_v = df_rsa[[in_col, out_col]].values.flatten()
-        # Robust limit: 95th percentile or max, but capped at something reasonable
-        v_limit = np.nanmax(np.abs(all_v))
-        limit = min(v_limit, 0.4) * 1.1 # Cap at 0.4 to avoid outlier stretching
+        # RT deciles
+        subj_df['RT_Decile'] = pd.qcut(subj_df['RT'], q=n_bins, labels=False, duplicates='drop')
+        agg_rt = subj_df.groupby('RT_Decile').agg({'RT': 'mean', 'AbsError': 'mean'}).reset_index()
+        agg_rt.update(agg_rt[['RT', 'AbsError']].rolling(window=window_size, center=True).mean())
         
-        ax.plot([-limit, limit], [-limit, limit], 'k--', alpha=0.3)
-        ax.axhline(0, color='k', alpha=0.1); ax.axvline(0, color='k', alpha=0.1)
-        ax.set_xlim(-limit, limit); ax.set_ylim(-limit, limit)
-        ax.set_aspect('equal', 'box')
-        ax.set_title(label, fontweight='bold')
-        ax.set_xlabel("outPF RSA (Correlation)"); ax.set_ylabel("inPF RSA (Correlation)")
-        if i == 0: ax.legend(frameon=False)
-        sns.despine(ax=ax)
-
+        # Offset deciles
+        subj_df['Offset_Decile'] = pd.qcut(subj_df['abs_initOffset'], q=n_bins, labels=False, duplicates='drop')
+        agg_off = subj_df.groupby('Offset_Decile').agg({'abs_initOffset': 'mean', 'RT': 'mean', 'AbsError': 'mean'}).reset_index()
+        agg_off.update(agg_off[['abs_initOffset', 'RT', 'AbsError']].rolling(window=3, center=True).mean())
+        
+        agg_rt['subjID'], agg_rt['TMS'] = subj, tms
+        agg_off['subjID'], agg_off['TMS'] = subj, tms
+        decile_data.append((agg_rt, agg_off))
+    
+    df_rt_all = pd.concat([d[0] for d in decile_data])
+    df_off_all = pd.concat([d[1] for d in decile_data])
+    df_rt_all['Group_RT'] = df_rt_all.groupby(['RT_Decile', 'TMS'])['RT'].transform('mean')
+    df_off_all['Group_Offset'] = df_off_all.groupby(['Offset_Decile', 'TMS'])['abs_initOffset'].transform('mean')
+    
+    # Plot 1: Angular Error vs Reaction Time 
+    sns.lineplot(data=df_rt_all, x='Group_RT', y='AbsError', hue='TMS', palette=tms_colors, errorbar=('ci', 95), marker=None, ax=axes[1], linewidth=3)
+    axes[1].set_title('Angular Error vs Reaction Time', fontweight='bold', pad=15)
+    axes[1].set_xlabel('Reaction Time (s)'); axes[1].set_ylabel('Angular Error (°)')
+    
+    # Plot 2: RT vs Absolute Init Offset
+    sns.lineplot(data=df_off_all, x='Group_Offset', y='RT', hue='TMS', palette=tms_colors, errorbar=('ci', 95), marker=None, ax=axes[2], linewidth=3)
+    axes[2].set_title('Reaction Time vs. Init Offset', fontweight='bold', pad=15)
+    axes[2].set_xlabel('Absolute Init Offset (°)'); axes[2].set_ylabel('Reaction Time (s)')
+    
+    # Plot 3: Angular Error vs Absolute Init Offset
+    sns.lineplot(data=df_off_all, x='Group_Offset', y='AbsError', hue='TMS', palette=tms_colors, errorbar=('ci', 95), marker=None, ax=axes[3], linewidth=3)
+    axes[3].set_title('Angular Error vs. Init Offset', fontweight='bold', pad=15)
+    axes[3].set_xlabel('Absolute Init Offset (°)'); axes[3].set_ylabel('Angular Error (°)')
+    
+    for ax in axes: ax.legend(fontsize=8, frameon=False); sns.despine(ax=ax, offset=10)
     plt.tight_layout()
-    plt.savefig(os.path.join(output_dir, filename), dpi=300)
+    plt.savefig(os.path.join(save_dir, filename), dpi=300)
+    plt.savefig(os.path.join(save_dir, filename.replace('.png', '.svg')))
     plt.close()
 
-# Fig 4: Model RDMs and RSA Hemifield Contrast
-plot_model_rdms_fig4(df, fig_title="4. RSA Hemifield Contrast (Offset < 45)", filename="Fig4_RSA_HemifieldContrast.png")
+def compute_sat_stats(data, filename):
+    print("Computing SAT Statistics...")
+    stats_list = []
+    data = data.copy(); data['AbsInitOffset'] = np.abs(data['initOffset'])
+    
+    for t in ['No TMS', 'Early TMS', 'Middle TMS']:
+        for s in data['subjID'].unique():
+            sub = data[(data['TMS'] == t) & (data['subjID'] == s)]
+            if len(sub) < 20: continue
+            
+            # Relationships
+            r_err_off, _ = stats.spearmanr(sub['AbsInitOffset'], sub['AbsError'], nan_policy='omit')
+            r_rt_off, _ = stats.spearmanr(sub['AbsInitOffset'], sub['RT'], nan_policy='omit')
+            r_err_rt, _ = stats.spearmanr(sub['RT'], sub['AbsError'], nan_policy='omit')
+            
+            stats_list.append({'subjID': s, 'TMS': t, 'r_Error_Offset': r_err_off, 'r_RT_Offset': r_rt_off, 'r_Error_RT': r_err_rt})
+    
+    df_stats = pd.DataFrame(stats_list)
+    results = []
+    for t in ['No TMS', 'Early TMS', 'Middle TMS']:
+        sub_t = df_stats[df_stats['TMS'] == t]
+        for met in ['r_Error_Offset', 'r_RT_Offset', 'r_Error_RT']:
+            vals = sub_t[met].dropna().values
+            if len(vals) == 0: continue
+            p = run_permutation_test(vals)
+            results.append({'TMS': t, 'Metric': met, 'Mean_r': np.mean(vals), 'SEM_r': stats.sem(vals), 'p_perm': p, 'd': np.mean(vals)/np.std(vals)})
+    
+    res_df = pd.DataFrame(results)
+    def format_p(p): return f"{p:.4e}" if p < 0.001 else f"{p:.4f}"
+    res_df['p_perm'] = res_df['p_perm'].apply(format_p)
+    for c in ['Mean_r', 'SEM_r', 'd']:
+        if c in res_df.columns: res_df[c] = res_df[c].apply(lambda x: f"{x:.4f}" if pd.notnull(x) else x)
+    res_df.to_csv(os.path.join(output_dir, 'Fig3', filename), index=False)
+    print(f"SAT Stats saved to: {os.path.join(output_dir, 'Fig3', filename)}")
+    return res_df
 
-# Fig 4A: RSA Hemifield Scatter
-plot_scatter_rsa_fig4A(df, fig_title="4A. RSA Hemifield Scatter (Offset < 45)", filename="Fig4A_RSA_HemifieldScatter.png")
+# --- Motor Preference Figure ---
+# (Triggered at the end of script)
+
+# MAIN CALLS
+# Fig 1 & 1A
+plot_contrast_grid(df, ('inPF', 'outPF'), "1. Selective TMS Effect: (inPF - outPF) / (inPF + outPF)", "Fig1_ContrastIndex_Hemifield.png", metrics_subset=[('AbsError', 'Abs Error'), ('RT', 'Reaction Time'), ('Precision', 'Precision (K)')], fig_folder='Fig1')
+plot_scatter_in_vs_out(df, "1A. Individual Performance: outPF vs inPF", "Fig1A_Scatter_in_vs_out.png", metrics_subset=[('AbsError', 'Abs Error'), ('RT', 'Reaction Time'), ('Precision', 'Precision (K)')], fig_folder='Fig1')
+
+# Fig 2 suite
+metrics_fig2 = [('AbsError', 'Abs Error'), ('Precision', 'Precision (K)')]
+plot_contrast_grid(df, ('Radial', 'Tangential'), "2. Radial Sensitivity: (Radial - Tangential) / (Radial + Tangential)", "Fig2_ContrastIndex_DiagType.png", paired=False, metrics_subset=metrics_fig2, fig_folder='Fig2')
+plot_scatter_diag_contrast_in_vs_out(df, "2A. Radial Sensitivity: outPF vs inPF", "Fig2A_Scatter_diag_contrast_in_vs_out.png", metrics_subset=metrics_fig2, fig_folder='Fig2')
+plot_scatter_radial_vs_tangential_overlay(df, "2B. Radial Sensitivity Overlay", "Fig2B_Scatter_Radial_vs_Tangential.png", metrics_subset=metrics_fig2, fig_folder='Fig2')
+
+
+
+# Fig 3: SAT & Motor Preference
+#plot_sat_grid(df, "3. Speed-Accuracy Tradeoff Dashboard", "Fig3_SAT.png", fig_folder='Fig3')
+#compute_sat_stats(df, "Fig3_SAT_Stats.csv")
+
+# Fig 4: Threshold Sensitivity (No TMS)
+# Fig 4: Threshold Sensitivity (Sliding Window)
+def process_sliding_window(start, data, width=30):
+    end = start + width
+    print(f"  Processing window: [{start}, {end}]...")
+    mask = (data['AbsInitOffset'] >= start) & (data['AbsInitOffset'] < end)
+    sub = data[mask].copy()
+    
+    thresh_results = []
+    # Hemifield
+    h_data = plot_contrast_grid(sub, ('inPF', 'outPF'), "", "", metrics_subset=[('AbsError', 'Accuracy'), ('Precision', 'Precision')], return_data=True)
+    if h_data is not None and not h_data.empty:
+        h_data = h_data.reset_index(drop=True).copy()
+        h_data['Type'] = 'Hemifield (HCI)'
+        h_data['WindowStart'] = start
+        thresh_results.append(h_data)
+    
+    # Radial Sensitivity
+    r_data = plot_contrast_grid(sub, ('Radial', 'Tangential'), "", "", metrics_subset=[('AbsError', 'Accuracy'), ('Precision', 'Precision')], return_data=True)
+    if r_data is not None and not r_data.empty:
+        r_data = r_data.reset_index(drop=True).copy()
+        r_data['Type'] = 'Radial Sensitivity (RSI)'
+        r_data['WindowStart'] = start
+        thresh_results.append(r_data)
+        
+    return pd.concat(thresh_results) if thresh_results else pd.DataFrame()
+
+def plot_threshold_sensitivity(data):
+    print("Generating Figure 4: Sliding Window Analysis (Parallel, All TMS)...")
+    window_starts = np.arange(0, 61, 5)
+    
+    all_subject_data = joblib.Parallel(n_jobs=-1)(
+        joblib.delayed(process_sliding_window)(start, data) for start in window_starts
+    )
+    
+    full_df = pd.concat(all_subject_data).reset_index(drop=True)
+    if full_df.empty: return
+    full_df['WindowCenter'] = full_df['WindowStart'] + 15
+    
+    fig, axes = plt.subplots(2, 2, figsize=(15, 12), sharex=True)
+    types = ['Hemifield (HCI)', 'Radial Sensitivity (RSI)']
+    metrics = ['Accuracy', 'Precision']
+    tms_colors = {'No TMS': '#E0E0E0', 'Early TMS': '#FFCDD2', 'Middle TMS': '#BBDEFB'}
+    
+    for r, t in enumerate(types):
+        for c, m in enumerate(metrics):
+            ax = axes[r, c]
+            sub = full_df[(full_df['Type'] == t) & (full_df['Metric'] == m)]
+            
+            if not sub.empty:
+                sns.lineplot(data=sub, x='WindowCenter', y='CI', hue='TMS', ax=ax, palette=tms_colors, 
+                             hue_order=['No TMS', 'Early TMS', 'Middle TMS'], errorbar='se', marker='o', linewidth=2)
+                ax.axhline(0, color='k', linestyle='--', lw=1, alpha=0.5)
+            
+            ax.set_title(f"{t}: {m}", fontweight='bold')
+            ax.set_ylabel("Contrast Index")
+            if r == 1: ax.set_xlabel("Window Center (deg)")
+            else: ax.set_xlabel("")
+            if ax.get_legend(): ax.get_legend().remove()
+            sns.despine(ax=ax, offset=10)
+        
+    # Add a single legend for the whole figure
+    handles, labels = axes[0, 0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, 1.02), ncol=3, frameon=False)
+    
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    # Save Fig 4A
+    save_dir = os.path.join(output_dir, 'Fig4')
+    os.makedirs(save_dir, exist_ok=True)
+    plt.savefig(os.path.join(save_dir, 'Fig4A_SlidingWindow.png'), dpi=300)
+    plt.savefig(os.path.join(save_dir, 'Fig4A_SlidingWindow.svg'))
+    plt.close()
+    print(f"Fig 4A saved to: {save_dir}")
+
+def generate_figure_4(data):
+    # Panel A: Sliding Window
+    # plot_threshold_sensitivity(data)
+    
+    # Filter for Small Offsets (< 45 degrees)
+    sub_45 = data[data['AbsInitOffset'] < 45].copy()
+    print("\n--- Generating Figure 4B & 4C (Threshold < 45 deg) ---")
+    
+    save_dir = os.path.join(output_dir, 'Fig4')
+    os.makedirs(save_dir, exist_ok=True)
+    tms_groups = ['No TMS', 'Early TMS', 'Middle TMS']
+    tms_colors = {'No TMS': '#E0E0E0', 'Early TMS': '#FFCDD2', 'Middle TMS': '#BBDEFB'}
+    metrics_4b = [('AbsError', 'Accuracy'), ('Precision', 'Precision')]
+    stats_rows = []
+
+    # Get aggregated data
+    h_data = plot_contrast_grid(sub_45, ('inPF', 'outPF'), "", "", metrics_subset=metrics_4b, return_data=True)
+    r_data = plot_contrast_grid(sub_45, ('Radial', 'Tangential'), "", "", metrics_subset=metrics_4b, return_data=True)
+
+    # Panel 4B: Consolidated Boxplots (2x2) — normalized ratios
+    fig, axes = plt.subplots(2, 2, figsize=(12, 10))
+    for ic, (met_col, lab) in enumerate(metrics_4b):
+
+        # HCI Row
+        ax_h = axes[0, ic]
+        sub_h = h_data[h_data['Metric'] == lab]
+        long_h = []
+        for t in tms_groups:
+            s = sub_h[sub_h['TMS'] == t].dropna(subset=['inPF_norm', 'outPF_norm'])
+            for _, row in s.iterrows():
+                long_h.append({'TMS': t, 'Condition': 'inPF',  'TMS_Cond': f'{t}|inPF',  'NormValue': row['inPF_norm'],  'subjID': row['subjID']})
+                long_h.append({'TMS': t, 'Condition': 'outPF', 'TMS_Cond': f'{t}|outPF', 'NormValue': row['outPF_norm'], 'subjID': row['subjID']})
+        long_h_df = pd.DataFrame(long_h)
+        x_h = [f'{t}|{c}' for t in tms_groups for c in ['inPF', 'outPF']]
+        _draw_paired_boxes(ax_h, long_h_df, x_h, 'inPF', 'outPF', tms_groups,
+                           show_legend=(ic == 0), leg_labels=('inPF', 'outPF'))
+        # Titles based on metric and row
+        h_title = f"{'Abs Error' if lab == 'Accuracy' else lab} (spatial differences)"
+        r_title = f"{'Abs Error' if lab == 'Accuracy' else lab} (radial sensitivity)"
+        
+        ax_h.set_title(h_title); ax_h.set_ylabel("Normalized Value"); ax_h.set_ylim(0.2, 0.8); ax_h.set_xlabel('')
+        for it, t in enumerate(tms_groups):
+            s = sub_h[sub_h['TMS'] == t].dropna(subset=['inPF_norm', 'outPF_norm'])
+            for col_key, cond in [('inPF_norm', 'inPF'), ('outPF_norm', 'outPF')]:
+                v = s[col_key].dropna().values
+                if len(v) > 5:
+                    diffs = v - 0.5
+                    p = run_permutation_test(diffs); mean_v, sem_v = np.mean(v), stats.sem(v); d = np.mean(diffs)/np.std(diffs)
+                    stats_rows.append({'Panel': '4B', 'Type': 'HCI', 'Condition': cond, 'Metric': lab, 'TMS': t, 'Mean': mean_v, 'SEM': sem_v, 'p': p, 'd': d})
+        sns.despine(ax=ax_h, offset=5)
+
+        # RSI Row
+        ax_r = axes[1, ic]
+        sub_r = r_data[r_data['Metric'] == lab]
+        long_r = []
+        for t in tms_groups:
+            s = sub_r[sub_r['TMS'] == t].dropna(subset=['Radial_norm', 'Tangential_norm'])
+            for _, row in s.iterrows():
+                long_r.append({'TMS': t, 'Condition': 'Radial',     'TMS_Cond': f'{t}|Radial',     'NormValue': row['Radial_norm'],     'subjID': row['subjID']})
+                long_r.append({'TMS': t, 'Condition': 'Tangential', 'TMS_Cond': f'{t}|Tangential', 'NormValue': row['Tangential_norm'], 'subjID': row['subjID']})
+        long_r_df = pd.DataFrame(long_r)
+        x_r = [f'{t}|{c}' for t in tms_groups for c in ['Radial', 'Tangential']]
+        _draw_paired_boxes(ax_r, long_r_df, x_r, 'Radial', 'Tangential', tms_groups,
+                           show_legend=(ic == 0), leg_labels=('Radial', 'Tangential'))
+        ax_r.set_title(r_title); ax_r.set_ylabel("Normalized Value"); ax_r.set_ylim(0.2, 0.8); ax_r.set_xlabel('')
+        for it, t in enumerate(tms_groups):
+            s = sub_r[sub_r['TMS'] == t].dropna(subset=['Radial_norm', 'Tangential_norm'])
+            for col_key, cond in [('Radial_norm', 'Radial'), ('Tangential_norm', 'Tangential')]:
+                v = s[col_key].dropna().values
+                if len(v) > 5:
+                    diffs = v - 0.5
+                    p = run_permutation_test(diffs); mean_v, sem_v = np.mean(v), stats.sem(v); d = np.mean(diffs)/np.std(diffs)
+                    stats_rows.append({'Panel': '4B', 'Type': 'RSI', 'Condition': cond, 'Metric': lab, 'TMS': t, 'Mean': mean_v, 'SEM': sem_v, 'p': p, 'd': d})
+        sns.despine(ax=ax_r, offset=5)
+
+    plt.tight_layout()
+    plt.savefig(os.path.join(save_dir, 'Fig4B_Boxplots.png'), dpi=300)
+    plt.savefig(os.path.join(save_dir, 'Fig4B_Boxplots.svg'))
+    plt.close()
+
+    # Panel 4C: Combined 2x2 (Row 0 = HCI like Fig 1B, Row 1 = RSI like Fig 2C)
+    print("Generating Figure 4C...")
+    metrics_4c = [('AbsError', 'Accuracy'), ('Precision', 'Precision')]
+    palette = {'No TMS': 'k', 'Early TMS': 'r', 'Middle TMS': 'b'}
+    tms_conds = ['No TMS', 'Early TMS', 'Middle TMS']
+
+    # Data prep: HCI (same as plot_scatter_in_vs_out)
+    df_hci_means = sub_45.groupby(['subjID', 'TMS', 'Hemifield'], observed=False)[['AbsError', 'RT']].mean().reset_index()
+    mix_hci = []
+    for t in tms_conds:
+        for v in ['inPF', 'outPF']:
+            for s in sub_45['subjID'].unique():
+                sub = sub_45[(sub_45['TMS'] == t) & (sub_45['Hemifield'] == v) & (sub_45['subjID'] == s)]
+                if len(sub) < 10: continue
+                try:
+                    res = md.fit_model(sub['errOri_scaled'].dropna().values, 'mixtureModel', max_trials=100)
+                    mix_hci.append({'TMS': t, 'Hemifield': v, 'subjID': s, 'Precision': res[1]})
+                except: pass
+    df_hci = pd.merge(df_hci_means, pd.DataFrame(mix_hci), on=['subjID', 'TMS', 'Hemifield'], how='outer') if mix_hci else df_hci_means
+
+    # Data prep: RSI (same as plot_scatter_radial_vs_tangential_overlay)
+    df_rsi_means = sub_45.groupby(['subjID', 'TMS', 'DiagType'], observed=False)[['AbsError', 'RT']].mean().reset_index()
+    mix_rsi = []
+    for t in tms_conds:
+        for d in ['Radial', 'Tangential']:
+            for s in sub_45['subjID'].unique():
+                sub = sub_45[(sub_45['TMS'] == t) & (sub_45['DiagType'] == d) & (sub_45['subjID'] == s)]
+                if len(sub) < 10: continue
+                try:
+                    res = md.fit_model(sub['errOri_scaled'].dropna().values, 'mixtureModel', max_trials=100)
+                    mix_rsi.append({'TMS': t, 'DiagType': d, 'subjID': s, 'Precision': res[1]})
+                except: pass
+    df_rsi = pd.merge(df_rsi_means, pd.DataFrame(mix_rsi), on=['subjID', 'TMS', 'DiagType'], how='outer') if mix_rsi else df_rsi_means
+
+    fig, axes = plt.subplots(2, 2, figsize=(12, 10))
+    for ic, (met, lab) in enumerate(metrics_4c):
+        # Row 0: HCI — inPF vs outPF
+        ax = axes[0, ic]
+        piv = df_hci.pivot_table(index=['subjID', 'TMS'], columns='Hemifield', values=met, observed=False).reset_index()
+        if 'inPF' in piv.columns and 'outPF' in piv.columns:
+            for t in tms_conds:
+                sub = piv[piv['TMS'] == t].dropna(subset=['inPF', 'outPF'])
+                if sub.empty: continue
+                count = (sub['inPF'] < sub['outPF']).sum() if met == 'Precision' else (sub['inPF'] > sub['outPF']).sum()
+                sym = '<' if met == 'Precision' else '>'
+                ax.scatter(sub['outPF'], sub['inPF'], color=palette[t], alpha=0.4, s=30, edgecolor='white')
+                ax.errorbar(sub['outPF'].mean(), sub['inPF'].mean(), xerr=sub['outPF'].sem(), yerr=sub['inPF'].sem(),
+                            fmt='o', color=palette[t], markersize=10, markeredgecolor='white',
+                            label=f"{t} (n={count} in{sym}out)")
+            v = piv[['inPF', 'outPF']].values.flatten(); lo, hi = np.nanmin(v), np.nanmax(v)
+            ax.plot([lo, hi], [lo, hi], 'k--', alpha=0.3)
+        ax.set_aspect('equal', 'box'); ax.set_title(f"HCI: {lab}"); ax.set_xlabel("outPF"); ax.set_ylabel("inPF")
+        ax.legend(fontsize=8, frameon=False, loc='upper left'); sns.despine(ax=ax, offset=10)
+
+        # Row 1: RSI — Radial vs Tangential
+        ax = axes[1, ic]
+        piv = df_rsi.pivot_table(index=['subjID', 'TMS'], columns='DiagType', values=met, observed=False).reset_index()
+        if 'Radial' in piv.columns and 'Tangential' in piv.columns:
+            for t in tms_conds:
+                sub = piv[piv['TMS'] == t].dropna(subset=['Radial', 'Tangential'])
+                if sub.empty: continue
+                count = (sub['Radial'] > sub['Tangential']).sum() if met == 'Precision' else (sub['Radial'] < sub['Tangential']).sum()
+                sym = '>' if met == 'Precision' else '<'
+                ax.scatter(sub['Radial'], sub['Tangential'], color=palette[t], alpha=0.4, s=30, edgecolor='white')
+                ax.errorbar(sub['Radial'].mean(), sub['Tangential'].mean(), xerr=sub['Radial'].sem(), yerr=sub['Tangential'].sem(),
+                            fmt='o', color=palette[t], markersize=10, markeredgecolor='white',
+                            label=f"{t} (n={count} rad{sym}tang)")
+            all_v = np.concatenate([piv['Radial'].dropna().values, piv['Tangential'].dropna().values])
+            lo, hi = np.nanmin(all_v), np.nanmax(all_v)
+            ax.plot([lo, hi], [lo, hi], 'k--', alpha=0.3)
+        ax.set_aspect('equal', 'box'); ax.set_title(f"RSI: {lab}"); ax.set_xlabel("Radial"); ax.set_ylabel("Tangential")
+        ax.legend(fontsize=8, frameon=False, loc='upper left'); sns.despine(ax=ax, offset=10)
+
+    plt.tight_layout()
+    plt.savefig(os.path.join(save_dir, 'Fig4C_Scatter.png'), dpi=300)
+    plt.savefig(os.path.join(save_dir, 'Fig4C_Scatter.svg'))
+    plt.close()
+
+    
+    pd.DataFrame(stats_rows).to_csv(os.path.join(save_dir, 'Fig4_Stats.csv'), index=False)
+    print(f"Fig 4 panels and stats saved to: {save_dir}")
+generate_figure_4(df)
+
+# print("\n--- Triggering V05 Motor Preference Analysis ---")
+# exec(open("V05_oriRotation.py").read())
