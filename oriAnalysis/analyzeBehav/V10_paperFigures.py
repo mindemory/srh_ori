@@ -14,6 +14,8 @@ import joblib
 
 warnings.filterwarnings('ignore')
 sns.set_theme(style="white", context="notebook")
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
 # Output Dir
 output_dir = os.path.join(gm.p['datd'], 'Figures', 'paperFigures')
 os.makedirs(output_dir, exist_ok=True)
@@ -267,6 +269,7 @@ def plot_contrast_grid(data, contrast_cols, fig_title, filename, bin_col=None, b
     plt.tight_layout()
     plt.savefig(os.path.join(save_dir, filename), dpi=300)
     plt.savefig(os.path.join(save_dir, filename.replace('.png', '.svg')))
+    plt.savefig(os.path.join(save_dir, filename.replace('.png', '.pdf')))
     plt.close()
 
 def plot_scatter_in_vs_out(data, fig_title, filename, metrics_subset=None, fig_folder=None, p_col='Hemifield', A='inPF', B='outPF'):
@@ -314,6 +317,7 @@ def plot_scatter_in_vs_out(data, fig_title, filename, metrics_subset=None, fig_f
     plt.tight_layout()
     plt.savefig(os.path.join(save_dir, filename), dpi=300)
     plt.savefig(os.path.join(save_dir, filename.replace('.png', '.svg')))
+    plt.savefig(os.path.join(save_dir, filename.replace('.png', '.pdf')))
     plt.close()
 
 def plot_scatter_diag_contrast_in_vs_out(data, fig_title, filename, metrics_subset=None, fig_folder=None):
@@ -360,6 +364,7 @@ def plot_scatter_diag_contrast_in_vs_out(data, fig_title, filename, metrics_subs
     plt.tight_layout()
     plt.savefig(os.path.join(save_dir, filename), dpi=300)
     plt.savefig(os.path.join(save_dir, filename.replace('.png', '.svg')))
+    plt.savefig(os.path.join(save_dir, filename.replace('.png', '.pdf')))
     plt.close()
 
 def plot_scatter_radial_vs_tangential_overlay(data, fig_title, filename, hemi='inPF', metrics_subset=None, fig_folder=None):
@@ -377,32 +382,89 @@ def plot_scatter_radial_vs_tangential_overlay(data, fig_title, filename, hemi='i
                 subset = data[(data['TMS'] == t) & (data['Hemifield'] == hemi) & (data['DiagType'] == d) & (data['subjID'] == s)]
                 if len(subset) < 10: continue
                 try:
-                    res = md.fit_model(subset['errOri_scaled'].dropna().values, 'mixtureModel'); mix_s.append({'TMS': t, 'Hemifield': hemi, 'DiagType': d, 'subjID': s, 'Precision': res[1]})
+                    res = md.fit_model(subset['errOri_scaled'].dropna().values, 'mixtureModel', max_trials=100); mix_s.append({'TMS': t, 'Hemifield': hemi, 'DiagType': d, 'subjID': s, 'Precision': res[1]})
                 except: pass
     df_mix = pd.DataFrame(mix_s); df_all = pd.merge(df_means, df_mix, on=['subjID', 'TMS', 'Hemifield', 'DiagType'], how='outer') if not df_mix.empty else df_means
     
-    fig, axes = plt.subplots(1, len(metrics), figsize=(6 * len(metrics), 5), squeeze=False); axes = axes.flatten()
+    # 3 rows, 2 columns layout
+    # Row 1: Left = Abs Error (Radial vs Tangential Overlay), Right = Precision (Radial vs Tangential Overlay)
+    # Row 2: Left = Radial Abs Error (No TMS vs Early/Middle TMS), Right = Radial Precision (No TMS vs Early/Middle TMS)
+    # Row 3: Left = Tangential Abs Error (No TMS vs Early/Middle TMS), Right = Tangential Precision (No TMS vs Early/Middle TMS)
+    fig, axes = plt.subplots(3, 2, figsize=(12, 16))
+    
+    # Row 1 (Overlay plots)
     for i, (met, label) in enumerate(metrics):
-        ax = axes[i]; piv = df_all.pivot_table(index=['subjID', 'TMS'], columns='DiagType', values=met, observed=False).reset_index()
+        ax = axes[0, i]
+        piv = df_all.pivot_table(index=['subjID', 'TMS'], columns='DiagType', values=met, observed=False).reset_index()
         if 'Radial' not in piv.columns or 'Tangential' not in piv.columns: continue
         for t in ['No TMS', 'Early TMS', 'Middle TMS']:
             sub = piv[piv['TMS'] == t].dropna(subset=['Radial', 'Tangential'])
-            if met == 'Precision':
-                count_val = (sub['Radial'] > sub['Tangential']).sum(); sym = '>'
-            else:
-                count_val = (sub['Radial'] < sub['Tangential']).sum(); sym = '<'
-            label_text = f"{t} (n={count_val} rad{sym}tang)"
+            if len(sub) == 0: continue
+            t_stat, _ = stats.ttest_rel(sub['Tangential'].values, sub['Radial'].values)
+            p_val = run_paired_permutation_test(sub['Tangential'].values, sub['Radial'].values, n_perms=10000)
+            p_str = "p<0.001" if p_val < 0.001 else f"p={p_val:.3f}"
+            label_text = f"{t} (t={t_stat:.2f}, {p_str})"
             ax.scatter(sub['Radial'], sub['Tangential'], color=palette[t], alpha=0.4, s=30, edgecolor='white')
             ax.errorbar(sub['Radial'].mean(), sub['Tangential'].mean(), xerr=sub['Radial'].sem(), yerr=sub['Tangential'].sem(), fmt='o', color=palette[t], markersize=10, markeredgecolor='white', label=label_text)
         
-        all_v = np.concatenate([piv['Radial'].values, piv['Tangential'].values])
-        l, h = np.nanmin(all_v), np.nanmax(all_v)
-        ax.plot([l, h], [l, h], 'k--', alpha=0.3)
-        ax.set_aspect('equal', 'box'); ax.set_title(label); ax.set_xlabel("Radial"); ax.set_ylabel("Tangential")
+        all_v = np.concatenate([piv['Radial'].dropna().values, piv['Tangential'].dropna().values])
+        if len(all_v) > 0:
+            l, h = np.nanmin(all_v), np.nanmax(all_v)
+            ax.plot([l, h], [l, h], 'k--', alpha=0.3)
+        ax.set_aspect('equal', 'box')
+        ax.set_title(f"{label} (Radial vs Tangential)", fontsize=11, fontweight='bold')
+        ax.set_xlabel("Radial")
+        ax.set_ylabel("Tangential")
         ax.legend(fontsize=8, frameon=False, loc='upper left')
+        sns.despine(ax=ax, offset=5)
+        
+    # Row 2 and Row 3 (Comparisons vs No TMS)
+    for r_idx, d_type in enumerate(['Radial', 'Tangential'], start=1):
+        for m_idx, (met, label) in enumerate(metrics):
+            ax = axes[r_idx, m_idx]
+            piv_tms = df_all.pivot_table(index='subjID', columns=['TMS', 'DiagType'], values=met, observed=False)
+            
+            col_no_tms = ('No TMS', d_type)
+            if col_no_tms not in piv_tms.columns:
+                continue
+                
+            all_v = []
+            
+            # Plot both Early TMS and Middle TMS
+            for t_comp, color in [('Early TMS', 'r'), ('Middle TMS', 'b')]:
+                col_comp = (t_comp, d_type)
+                if col_comp in piv_tms.columns:
+                    sub_df = piv_tms[[col_no_tms, col_comp]].dropna()
+                    x_vals = sub_df[col_no_tms].values
+                    y_vals = sub_df[col_comp].values
+                    
+                    if len(x_vals) > 0:
+                        t_stat, _ = stats.ttest_rel(y_vals, x_vals)
+                        p_val = run_paired_permutation_test(y_vals, x_vals, n_perms=10000)
+                        p_str = "p<0.001" if p_val < 0.001 else f"p={p_val:.3f}"
+                        label_text = f"{t_comp} (t={t_stat:.2f}, {p_str})"
+                        
+                        ax.scatter(x_vals, y_vals, color=color, alpha=0.4, s=30, edgecolor='white')
+                        ax.errorbar(x_vals.mean(), y_vals.mean(), xerr=stats.sem(x_vals), yerr=stats.sem(y_vals), fmt='o', color=color, markersize=10, markeredgecolor='white', label=label_text)
+                        
+                        all_v.extend(x_vals)
+                        all_v.extend(y_vals)
+                        
+            if len(all_v) > 0:
+                l, h = np.nanmin(all_v), np.nanmax(all_v)
+                ax.plot([l, h], [l, h], 'k--', alpha=0.3)
+                
+            ax.set_aspect('equal', 'box')
+            ax.set_title(f"{d_type} - {label}\n(TMS vs No TMS)", fontsize=11, fontweight='bold')
+            ax.set_xlabel("No TMS")
+            ax.set_ylabel("TMS")
+            ax.legend(fontsize=8, frameon=False, loc='upper left')
+            sns.despine(ax=ax, offset=5)
+            
     plt.tight_layout()
     plt.savefig(os.path.join(save_dir, filename), dpi=300)
     plt.savefig(os.path.join(save_dir, filename.replace('.png', '.svg')))
+    plt.savefig(os.path.join(save_dir, filename.replace('.png', '.pdf')))
     plt.close()
 
 def plot_sat_grid(data, fig_title, filename, fig_folder=None):
@@ -463,6 +525,7 @@ def plot_sat_grid(data, fig_title, filename, fig_folder=None):
     plt.tight_layout()
     plt.savefig(os.path.join(save_dir, filename), dpi=300)
     plt.savefig(os.path.join(save_dir, filename.replace('.png', '.svg')))
+    plt.savefig(os.path.join(save_dir, filename.replace('.png', '.pdf')))
     plt.close()
 
 def compute_sat_stats(data, filename):
@@ -506,14 +569,207 @@ def compute_sat_stats(data, filename):
 
 # MAIN CALLS
 # Fig 1 & 1A
-plot_contrast_grid(df, ('inPF', 'outPF'), "1. Selective TMS Effect: (inPF - outPF) / (inPF + outPF)", "Fig1_ContrastIndex_Hemifield.png", metrics_subset=[('AbsError', 'Abs Error'), ('RT', 'Reaction Time'), ('Precision', 'Precision (K)')], fig_folder='Fig1')
-plot_scatter_in_vs_out(df, "1A. Individual Performance: outPF vs inPF", "Fig1A_Scatter_in_vs_out.png", metrics_subset=[('AbsError', 'Abs Error'), ('RT', 'Reaction Time'), ('Precision', 'Precision (K)')], fig_folder='Fig1')
+# plot_contrast_grid(df, ('inPF', 'outPF'), "1. Selective TMS Effect: (inPF - outPF) / (inPF + outPF)", "Fig1_ContrastIndex_Hemifield.png", metrics_subset=[('AbsError', 'Abs Error'), ('RT', 'Reaction Time'), ('Precision', 'Precision (K)')], fig_folder='Fig1')
+# plot_scatter_in_vs_out(df, "1A. Individual Performance: outPF vs inPF", "Fig1A_Scatter_in_vs_out.png", metrics_subset=[('AbsError', 'Abs Error'), ('RT', 'Reaction Time'), ('Precision', 'Precision (K)')], fig_folder='Fig1')
 
 # Fig 2 suite
 metrics_fig2 = [('AbsError', 'Abs Error'), ('Precision', 'Precision (K)')]
 plot_contrast_grid(df, ('Radial', 'Tangential'), "2. Radial Sensitivity: (Radial - Tangential) / (Radial + Tangential)", "Fig2_ContrastIndex_DiagType.png", paired=False, metrics_subset=metrics_fig2, fig_folder='Fig2')
 plot_scatter_diag_contrast_in_vs_out(df, "2A. Radial Sensitivity: outPF vs inPF", "Fig2A_Scatter_diag_contrast_in_vs_out.png", metrics_subset=metrics_fig2, fig_folder='Fig2')
 plot_scatter_radial_vs_tangential_overlay(df, "2B. Radial Sensitivity Overlay", "Fig2B_Scatter_Radial_vs_Tangential.png", metrics_subset=metrics_fig2, fig_folder='Fig2')
+
+def _draw_overlay_boxes(ax, data_dict, tms_groups, A, B, show_legend=False):
+    """4 boxes per TMS group grouped by hemifield:
+      inPF-Radial (solid) | inPF-Tangential (solid lighter)  [mid_gap]
+      outPF-Radial (hatched) | outPF-Tangential (hatched lighter)
+    """
+    bw         = 0.22   # box width
+    inner_gap  = 0.04   # gap between Radial and Tangential within the same hemifield
+    mid_gap    = 0.14   # gap between inPF pair and outPF pair
+    tms_gap    = 0.30   # extra space between consecutive TMS groups
+
+    step = 4 * bw + inner_gap + mid_gap + tms_gap   # full width of one TMS group
+    pos_map = {}
+    xtick_pos, xtick_lbl = [], []
+
+    for i, t in enumerate(tms_groups):
+        base = i * step
+        # inPF pair first, outPF pair second — mid_gap between them
+        pos_map[f'{t}|{A}|inPF']  = base
+        pos_map[f'{t}|{B}|inPF']  = base + bw + inner_gap
+        pos_map[f'{t}|{A}|outPF'] = base + 2*bw + inner_gap + mid_gap
+        pos_map[f'{t}|{B}|outPF'] = base + 3*bw + 2*inner_gap + mid_gap
+        # x-tick at the centre of the 4 boxes
+        xtick_pos.append(base + 1.5*bw + inner_gap + mid_gap / 2)
+        xtick_lbl.append(t)
+
+    rng = np.random.default_rng(42)
+    key_order = [f'{t}|{c}|{h}' for t in tms_groups for h in ['inPF', 'outPF'] for c in [A, B]]
+    for key in key_order:
+        pos  = pos_map.get(key)
+        if pos is None: continue
+        t, cond, hemi = key.split('|')
+        vals = data_dict.get(key, np.array([]))
+        if len(vals) < 3: continue
+
+        is_A  = (cond == A)
+        col   = TMS_BOX_PAL[t]
+        scol  = TMS_STRIP_PAL[t]
+        al    = 1.0 if is_A else 0.65
+        sal   = 0.7 if is_A else 0.35
+        hatch = None if hemi == 'inPF' else '///'
+
+        ax.boxplot([vals], positions=[pos], widths=bw, patch_artist=True,
+                   showfliers=False, manage_ticks=False,
+                   boxprops=dict(facecolor=col, alpha=al, linewidth=0.8,
+                                 edgecolor=scol, hatch=hatch),
+                   medianprops=dict(color='white', linewidth=2),
+                   whiskerprops=dict(color=scol, alpha=al, linewidth=0.8),
+                   capprops=dict(color=scol, alpha=al, linewidth=0.8))
+        jitter = rng.uniform(-bw * 0.28, bw * 0.28, len(vals))
+        ax.scatter(pos + jitter, vals, color=scol, alpha=sal, s=10, zorder=3)
+
+    ax.axhline(0.5, color='k', lw=1, ls='--', alpha=0.7)
+    ax.set_xticks(xtick_pos)
+    ax.set_xticklabels(xtick_lbl, fontsize=9)
+    xl = pos_map[key_order[0]] - bw * 0.8
+    xr = pos_map[key_order[-1]] + bw * 1.8
+    ax.set_xlim(xl, xr)
+    if ax.get_legend(): ax.get_legend().remove()
+    if show_legend:
+        nc = TMS_BOX_PAL['No TMS']
+        handles = [
+            mpatches.Patch(facecolor=nc, alpha=1.0,  edgecolor='k', lw=0.8, hatch=None,  label=f'inPF · {A}'),
+            mpatches.Patch(facecolor=nc, alpha=0.65, edgecolor='k', lw=0.8, hatch=None,  label=f'inPF · {B}'),
+            mpatches.Patch(facecolor=nc, alpha=1.0,  edgecolor='k', lw=0.8, hatch='///', label=f'outPF · {A}'),
+            mpatches.Patch(facecolor=nc, alpha=0.65, edgecolor='k', lw=0.8, hatch='///', label=f'outPF · {B}'),
+        ]
+        ax.legend(handles=handles, frameon=False, fontsize=8, loc='upper right')
+
+
+def plot_contrast_grid_by_hemifield(data, fig_title, filename, metrics_subset=None, fig_folder=None):
+    """Fig 2C: Radial vs Tangential contrast overlaid for inPF (solid) and outPF (hatched).
+    1 row × N-metric columns — 4 boxes per TMS group."""
+    print(f"Generating Figure: {fig_title}...")
+    save_dir = os.path.join(output_dir, fig_folder) if fig_folder else output_dir
+    os.makedirs(save_dir, exist_ok=True)
+
+    metrics    = metrics_subset if metrics_subset else [('AbsError', 'Abs Error'), ('Precision', 'Precision (K)')]
+    hemifields = ['inPF', 'outPF']
+    tms_groups = ['No TMS', 'Early TMS', 'Middle TMS']
+    A, B       = 'Radial', 'Tangential'
+
+    n_cols = len(metrics)
+    fig, axes = plt.subplots(1, n_cols, figsize=(7 * n_cols, 5), squeeze=False)
+    stats_rows = []
+
+    # ── Aggregate data for BOTH hemifields ──────────────────────────────────
+    all_results = {}   # {hemi: list of pivot DataFrames (one per metric)}
+    for hemi in hemifields:
+        hemi_data = data[data['Hemifield'] == hemi].copy()
+        g_cols    = ['subjID', 'TMS', 'DiagType']
+        df_s      = hemi_data.groupby(g_cols, observed=False)[
+                        ['AbsError', 'RT', 'BiasTowardsDiagonal']].mean().reset_index()
+        mix_s = []
+        for t in tms_groups:
+            for d in [A, B]:
+                for subj in hemi_data['subjID'].unique():
+                    mask = ((hemi_data['TMS'] == t) & (hemi_data['DiagType'] == d) &
+                            (hemi_data['subjID'] == subj))
+                    sub  = hemi_data[mask]
+                    if len(sub) < 10: continue
+                    try:
+                        res = md.fit_model(sub['errOri_scaled'].dropna().values,
+                                           'mixtureModel', max_trials=100)
+                        mix_s.append({'TMS': t, 'DiagType': d, 'subjID': subj,
+                                      'Precision': res[1]})
+                    except: pass
+        df_m   = pd.DataFrame(mix_s)
+        df_all = pd.merge(df_s, df_m, on=g_cols, how='outer') if not df_m.empty else df_s
+
+        results_list = []
+        for met, lab in metrics:
+            if met not in df_all.columns: continue
+            piv = df_all.pivot_table(index=['subjID', 'TMS'], columns='DiagType',
+                                     values=met, observed=False).reset_index()
+            if A in piv.columns and B in piv.columns:
+                av_d  = np.abs(piv[A]) if met == 'BiasTowardsDiagonal' else piv[A]
+                bv_d  = np.abs(piv[B]) if met == 'BiasTowardsDiagonal' else piv[B]
+                total = av_d + bv_d + 1e-12
+                piv[f'{A}_norm'] = av_d / total
+                piv[f'{B}_norm'] = bv_d / total
+                piv['Metric']    = lab
+                results_list.append(piv)
+        all_results[hemi] = results_list
+
+    # ── Plot: one column per metric ─────────────────────────────────────────
+    for im, (met, lab) in enumerate(metrics):
+        ax = axes[0, im]
+
+        # Build data_dict: key = '{tms}|{cond}|{hemi}' → array of norm values
+        data_dict = {}
+        for hemi in hemifields:
+            match = [d for d in all_results[hemi] if d['Metric'].iloc[0] == lab]
+            if not match: continue
+            piv = match[0]
+            for t in tms_groups:
+                sub = piv[piv['TMS'] == t].dropna(subset=[f'{A}_norm', f'{B}_norm'])
+                data_dict[f'{t}|{A}|{hemi}'] = sub[f'{A}_norm'].values
+                data_dict[f'{t}|{B}|{hemi}'] = sub[f'{B}_norm'].values
+
+        _draw_overlay_boxes(ax, data_dict, tms_groups, A, B, show_legend=(im == 0))
+        ax.set_title(lab, fontsize=11)
+        ax.set_ylabel('Normalized Value')
+        if lab == 'Abs Error':
+            ax.set_ylim(0.35, 0.65)
+        elif 'Precision' in lab:
+            ax.set_ylim(0.2, 0.8)
+        ax.set_xlabel('')
+        sns.despine(ax=ax, offset=5)
+
+        # ── Stats: paired Radial_vs_Tangential per hemifield × TMS ──────────
+        for hemi in hemifields:
+            match = [d for d in all_results[hemi] if d['Metric'].iloc[0] == lab]
+            if not match: continue
+            piv = match[0]
+            for t in tms_groups:
+                sub      = piv[piv['TMS'] == t].dropna(subset=[f'{A}_norm', f'{B}_norm'])
+                v_a      = sub[f'{A}_norm'].dropna().values
+                v_b      = sub[f'{B}_norm'].dropna().values
+                n_paired = min(len(v_a), len(v_b))
+                if n_paired > 5:
+                    p_pair    = run_paired_permutation_test(v_a[:n_paired], v_b[:n_paired])
+                    diff_mean = np.mean(v_a[:n_paired] - v_b[:n_paired])
+                    diff_std  = np.std(v_a[:n_paired] - v_b[:n_paired])
+                    t_pair, _ = stats.ttest_rel(v_a[:n_paired], v_b[:n_paired])
+                    stats_rows.append({
+                        'Hemifield': hemi, 'Metric': lab,
+                        'Condition': f'{A}_vs_{B}', 'TMS': t, 'Bin': None,
+                        'Mean': diff_mean,
+                        'SEM':  stats.sem(v_a[:n_paired] - v_b[:n_paired]),
+                        'p_perm':  p_pair,
+                        'Cohen_d': diff_mean / diff_std if diff_std > 0 else np.nan,
+                        't_stat':  t_pair, 'N': n_paired,
+                    })
+
+    plt.suptitle(fig_title, fontsize=12, y=1.02)
+    plt.tight_layout()
+    plt.savefig(os.path.join(save_dir, filename), dpi=300, bbox_inches='tight')
+    plt.savefig(os.path.join(save_dir, filename.replace('.png', '.svg')), bbox_inches='tight')
+    plt.savefig(os.path.join(save_dir, filename.replace('.png', '.pdf')), bbox_inches='tight')
+    plt.close()
+
+    if stats_rows:
+        sdf = pd.DataFrame(stats_rows)
+        def format_p(p): return f"{p:.4e}" if p < 0.001 else f"{p:.4f}"
+        sdf['p_perm'] = sdf['p_perm'].apply(format_p)
+        for c in ['Mean', 'SEM', 'Cohen_d']:
+            if c in sdf.columns:
+                sdf[c] = sdf[c].apply(lambda x: f"{x:.4f}" if pd.notnull(x) else x)
+        sdf.to_csv(os.path.join(save_dir, filename.replace('.png', '_Stats.csv')), index=False)
+
+# Fig 2C: Radial vs Tangential overlaid — inPF solid, outPF hatched
+plot_contrast_grid_by_hemifield(df, "2C. Radial Sensitivity by Hemifield (inPF solid / outPF hatched)", "Fig2C_ContrastIndex_DiagType_byHemifield.png", metrics_subset=metrics_fig2, fig_folder='Fig2')
 
 
 
@@ -592,6 +848,7 @@ def plot_threshold_sensitivity(data):
     os.makedirs(save_dir, exist_ok=True)
     plt.savefig(os.path.join(save_dir, 'Fig4A_SlidingWindow.png'), dpi=300)
     plt.savefig(os.path.join(save_dir, 'Fig4A_SlidingWindow.svg'))
+    plt.savefig(os.path.join(save_dir, 'Fig4A_SlidingWindow.pdf'))
     plt.close()
     print(f"Fig 4A saved to: {save_dir}")
 
@@ -673,6 +930,7 @@ def generate_figure_4(data):
     plt.tight_layout()
     plt.savefig(os.path.join(save_dir, 'Fig4B_Boxplots.png'), dpi=300)
     plt.savefig(os.path.join(save_dir, 'Fig4B_Boxplots.svg'))
+    plt.savefig(os.path.join(save_dir, 'Fig4B_Boxplots.pdf'))
     plt.close()
 
     # Panel 4C: Combined 2x2 (Row 0 = HCI like Fig 1B, Row 1 = RSI like Fig 2C)
@@ -751,8 +1009,60 @@ def generate_figure_4(data):
     plt.tight_layout()
     plt.savefig(os.path.join(save_dir, 'Fig4C_Scatter.png'), dpi=300)
     plt.savefig(os.path.join(save_dir, 'Fig4C_Scatter.svg'))
+    plt.savefig(os.path.join(save_dir, 'Fig4C_Scatter.pdf'))
     plt.close()
 
+    # Panel 4D: 2 rows comparison plots (Row 0 = Radial, Row 1 = Tangential)
+    print("Generating Figure 4D...")
+    fig, axes = plt.subplots(2, 2, figsize=(12, 11))
+    metrics_4d = [('AbsError', 'Abs Error'), ('Precision', 'Precision (K)')]
+    
+    for r_idx, d_type in enumerate(['Radial', 'Tangential']):
+        for m_idx, (met, label) in enumerate(metrics_4d):
+            ax = axes[r_idx, m_idx]
+            df_rsi_filtered = df_rsi[df_rsi['DiagType'] == d_type]
+            piv_tms = df_rsi_filtered.pivot_table(index='subjID', columns='TMS', values=met, observed=False)
+            
+            if 'No TMS' not in piv_tms.columns:
+                continue
+                
+            all_v = []
+            
+            # Plot both Early TMS and Middle TMS
+            for t_comp, color in [('Early TMS', 'r'), ('Middle TMS', 'b')]:
+                if t_comp in piv_tms.columns:
+                    sub_df = piv_tms[['No TMS', t_comp]].dropna()
+                    x_vals = sub_df['No TMS'].values
+                    y_vals = sub_df[t_comp].values
+                    
+                    if len(x_vals) > 0:
+                        t_stat, _ = stats.ttest_rel(y_vals, x_vals)
+                        p_val = run_paired_permutation_test(y_vals, x_vals, n_perms=10000)
+                        p_str = "p<0.001" if p_val < 0.001 else f"p={p_val:.3f}"
+                        label_text = f"{t_comp} (t={t_stat:.2f}, {p_str})"
+                        
+                        ax.scatter(x_vals, y_vals, color=color, alpha=0.4, s=30, edgecolor='white')
+                        ax.errorbar(x_vals.mean(), y_vals.mean(), xerr=stats.sem(x_vals), yerr=stats.sem(y_vals), fmt='o', color=color, markersize=10, markeredgecolor='white', label=label_text)
+                        
+                        all_v.extend(x_vals)
+                        all_v.extend(y_vals)
+                        
+            if len(all_v) > 0:
+                l, h = np.nanmin(all_v), np.nanmax(all_v)
+                ax.plot([l, h], [l, h], 'k--', alpha=0.3)
+                
+            ax.set_aspect('equal', 'box')
+            ax.set_title(f"{d_type} - {label}\n(TMS vs No TMS)", fontsize=11, fontweight='bold')
+            ax.set_xlabel("No TMS")
+            ax.set_ylabel("TMS")
+            ax.legend(fontsize=8, frameon=False, loc='upper left')
+            sns.despine(ax=ax, offset=5)
+            
+    plt.tight_layout()
+    plt.savefig(os.path.join(save_dir, 'Fig4D_Scatter.png'), dpi=300)
+    plt.savefig(os.path.join(save_dir, 'Fig4D_Scatter.svg'))
+    plt.savefig(os.path.join(save_dir, 'Fig4D_Scatter.pdf'))
+    plt.close()
     
     pd.DataFrame(stats_rows).to_csv(os.path.join(save_dir, 'Fig4_Stats.csv'), index=False)
     print(f"Fig 4 panels and stats saved to: {save_dir}")

@@ -4,7 +4,8 @@
 #Updated for TMS_ori project: 05/04/2026
 
 # Define the array of subject numbers
-subs=(1 2 3 5 6 7 8 9 11 12 14 16 17 18 19 20 21 22 23 24 25 26 28)
+subs=(26 19 24 25 18 28 23 17 22)
+BATCH_SIZE=2
 
 original_dir=$(pwd)
 
@@ -24,6 +25,7 @@ DATE=$(date +%Y%m%d_%H%M%S)
 
 # Initialize the core number counter
 CORENUM=0
+BATCH_COUNT=0
 
 # Loop over the subject numbers
 for sub in "${subs[@]}"; do
@@ -59,16 +61,22 @@ for sub in "${subs[@]}"; do
       
       # Check if T2.nii exists
       if [ -e "T2.nii" ]; then
-        command=(charm "$sub_id" "T1.nii" "T2.nii" "--forceqform")
+        command=(charm "$sub_id" "T1.nii" "T2.nii" "--forceqform" "--forcerun")
       else
-        command=(charm "$sub_id" "T1.nii" "--forceqform")
+        command=(charm "$sub_id" "T1.nii" "--forceqform" "--forcerun")
       fi
       
+      # Manually remove existing m2m folder to avoid shutil.rmtree issues on network mounts
+      if [ -d "m2m_${sub_id}" ]; then
+        echo "Removing existing m2m_${sub_id} folder..."
+        rm -rf "m2m_${sub_id}"
+      fi
+
       {
         echo "Standard Output:"
         "${command[@]}"
         echo "Standard Error:" >&2
-      } &> "$LOG_FILE" &
+      } &> "$LOG_FILE"
     ) &
 
     # Note: taskset is Linux-specific. If running on Mac, this will fail.
@@ -80,6 +88,15 @@ for sub in "${subs[@]}"; do
     if [ $CORENUM -ge $MAX_CORE ]; then
         CORENUM=0
     fi
+
+    # Wait after every BATCH_SIZE subjects before launching the next batch
+    ((BATCH_COUNT++))
+    if [ $((BATCH_COUNT % BATCH_SIZE)) -eq 0 ]; then
+        echo "Waiting for batch of $BATCH_SIZE to finish before starting next batch..."
+        wait
+        echo "Batch done. Starting next batch."
+    fi
+
 done
 
 wait
